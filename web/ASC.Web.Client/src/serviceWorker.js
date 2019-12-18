@@ -9,6 +9,7 @@
 
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://bit.ly/CRA-PWA
+import firebase from 'firebase';
 
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
@@ -53,11 +54,37 @@ export function register(config) {
     });
   }
 }
-
+async function askNotifications(){
+  try {
+    const messaging = firebase.messaging();
+    await messaging.requestPermission();
+    const token = await messaging.getToken();
+    localStorage.setItem("notification-token", token);
+    return token;
+  } catch (error) {
+    console.error(error);
+  }
+}
 function registerValidSW(swUrl, config) {
+  var firebaseConfig = {
+    apiKey: "",
+    projectId: "",
+    messagingSenderId: "",
+    appId: ""
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  if(!localStorage.getItem("notification-token")){
+    askNotifications();
+  }
+
   navigator.serviceWorker
     .register(swUrl)
     .then(registration => {
+
+      var messaging = firebase.messaging();
+      messaging.useServiceWorker(registration);
+
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
