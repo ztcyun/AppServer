@@ -42,6 +42,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+
 using SecurityContext = ASC.Core.SecurityContext;
 
 namespace ASC.Employee.Core.Controllers
@@ -158,13 +159,13 @@ namespace ASC.Employee.Core.Controllers
         }
 
         [Read]
-        public IEnumerable<EmployeeWraper> GetAll()
+        public IEnumerable<EmployeeWraperFull> GetAll()
         {
             return GetByStatus(EmployeeStatus.Active);
         }
 
         [Read("status/{status}")]
-        public IEnumerable<EmployeeWraper> GetByStatus(EmployeeStatus status)
+        public IEnumerable<EmployeeWraperFull> GetByStatus(EmployeeStatus status)
         {
             if (CoreBaseSettings.Personal) throw new Exception("Method not available");
             Guid? groupId = null;
