@@ -73,7 +73,7 @@ namespace ASC.People
                 config.Filters.Add(new TypeFilterAttribute(typeof(FormatFilter)));
 
                 config.OutputFormatters.Clear();
-                config.OutputFormatters.Add(new JsonOutputFormatter(StandardResolver.ExcludeNull));
+                config.OutputFormatters.Add(new JsonOutputFormatter(StandardResolver.ExcludeNullCamelCase));
                 config.InputFormatters.Clear();
                 config.InputFormatters.Add(new JsonInputFormatter());
 

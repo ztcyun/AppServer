@@ -18,7 +18,9 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+
+using Utf8Json.AspNetCoreMvcFormatter;
+using Utf8Json.Resolvers;
 
 namespace ASC.Web.Api
 {
@@ -36,10 +38,10 @@ namespace ASC.Web.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
-                    .AddNewtonsoftJson()
+                    //                    .AddNewtonsoftJson()
                     .AddXmlSerializerFormatters();
 
-            services.AddTransient<IConfigureOptions<MvcNewtonsoftJsonOptions>, CustomJsonOptionsWrapper>();
+            //            services.AddTransient<IConfigureOptions<MvcNewtonsoftJsonOptions>, CustomJsonOptionsWrapper>();
 
             services.AddMemoryCache();
 
@@ -60,9 +62,15 @@ namespace ASC.Web.Api
                 config.Filters.Add(new TypeFilterAttribute(typeof(PaymentFilter)));
                 config.Filters.Add(new TypeFilterAttribute(typeof(IpSecurityFilter)));
                 config.Filters.Add(new TypeFilterAttribute(typeof(ProductSecurityFilter)));
-                config.Filters.Add(new CustomResponseFilterAttribute());
+                //                config.Filters.Add(new CustomResponseFilterAttribute());
                 config.Filters.Add(new CustomExceptionFilterAttribute());
                 config.Filters.Add(new TypeFilterAttribute(typeof(FormatFilter)));
+
+
+                config.OutputFormatters.Clear();
+                config.OutputFormatters.Add(new JsonOutputFormatter(StandardResolver.ExcludeNullCamelCase));
+                config.InputFormatters.Clear();
+                config.InputFormatters.Add(new JsonInputFormatter());
 
                 config.OutputFormatters.RemoveType<XmlSerializerOutputFormatter>();
                 config.OutputFormatters.Add(new XmlOutputFormatter());
