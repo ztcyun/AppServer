@@ -245,9 +245,9 @@ namespace ASC.Api.Settings
 
         [AllowAnonymous]
         [Read("cultures")]
-        public List<CultureInfo> GetSupportedCultures()
+        public IEnumerable<string> GetSupportedCultures()
         {
-            return SetupInfo.EnabledCultures;
+            return SetupInfo.EnabledCultures.Select(r => r.Name);
         }
 
         [Read("timezones")]
