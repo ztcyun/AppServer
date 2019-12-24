@@ -76,11 +76,11 @@ export const request = function(options) {
     
     if(!response || !response.data || response.isAxiosError)
       return null;
+    const totalCountHeader = "x-total-count";
+    if(response.headers.hasOwnProperty(totalCountHeader))
+      return { total: +response.headers[totalCountHeader], items: response.data };
 
-    if(response.data.hasOwnProperty("total"))
-      return { total: +response.data.total, items: response.data.response };
-
-    return response.data.response;
+    return response.data;
   };
   const onError = function(error) {
     console.error("Request Failed:", error.config);

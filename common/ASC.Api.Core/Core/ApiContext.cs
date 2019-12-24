@@ -27,8 +27,10 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+
 using ASC.Core;
 using ASC.Core.Tenants;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -187,14 +189,7 @@ namespace ASC.Api.Core
         {
             set
             {
-                if (HttpContext.Items.ContainsKey(nameof(TotalCount)))
-                {
-                    HttpContext.Items[nameof(TotalCount)] = value;
-                }
-                else
-                {
-                    HttpContext.Items.Add(nameof(TotalCount), value);
-                }
+                HttpContext.Response.Headers.Add("X-Total-Count", value?.ToString());
             }
         }
 
