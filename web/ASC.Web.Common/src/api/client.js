@@ -59,10 +59,17 @@ const checkResponseError = res => {
     throw new Error(res.data.error.message);
   }
 
-  if(res.isAxiosError && res.message) {
-    console.error(res.message);
-    //toastr.error(res.message);
-    throw new Error(res.message);
+  if(res.isAxiosError) {
+    if(res.response && res.response.data && res.response.data.message) {
+      console.error(res.response.data.message);
+      //toastr.error(res.message);
+      throw new Error(res.response.data.message);
+    }
+    if(res.message) {
+      console.error(res.message);
+      //toastr.error(res.message);
+      throw new Error(res.message);
+    }
   }
 };
 
