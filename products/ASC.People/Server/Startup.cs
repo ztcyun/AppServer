@@ -46,10 +46,7 @@ namespace ASC.People
             services.AddHttpContextAccessor();
 
             services.AddControllers().AddControllersAsServices()
-                //.AddNewtonsoftJson()
                 .AddXmlSerializerFormatters();
-
-            //services.AddTransient<IConfigureOptions<MvcNewtonsoftJsonOptions>, CustomJsonOptionsWrapper>();
 
             services.AddMemoryCache();
 
@@ -68,14 +65,13 @@ namespace ASC.People
                 config.Filters.Add(new TypeFilterAttribute(typeof(PaymentFilter)));
                 config.Filters.Add(new TypeFilterAttribute(typeof(IpSecurityFilter)));
                 config.Filters.Add(new TypeFilterAttribute(typeof(ProductSecurityFilter)));
-                //config.Filters.Add(new CustomResponseFilterAttribute());
                 config.Filters.Add(new CustomExceptionFilterAttribute());
                 config.Filters.Add(new TypeFilterAttribute(typeof(FormatFilter)));
 
                 config.OutputFormatters.Clear();
                 config.OutputFormatters.Add(new JsonOutputFormatter(StandardResolver.ExcludeNullCamelCase));
                 config.InputFormatters.Clear();
-                config.InputFormatters.Add(new JsonInputFormatter());
+                config.InputFormatters.Add(new ASC.Api.Core.JsonInputFormatter(StandardResolver.AllowPrivateExcludeNullCamelCase));
 
                 config.OutputFormatters.RemoveType<XmlSerializerOutputFormatter>();
                 config.OutputFormatters.Add(new XmlOutputFormatter());
