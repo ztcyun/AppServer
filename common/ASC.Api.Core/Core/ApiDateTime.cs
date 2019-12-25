@@ -28,13 +28,15 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization;
+
 using ASC.Core;
-using Newtonsoft.Json;
+
+using Utf8Json;
 
 namespace ASC.Api.Core
 {
     [DataContract(Name = "date", Namespace = "")]
-    [JsonConverter(typeof(ApiDateTimeConverter))]
+    [JsonFormatter(typeof(ApiDateTimeFormatter))]
     [TypeConverter(typeof(ApiDateTimeTypeConverter))]
     public class ApiDateTime : IComparable<ApiDateTime>, IComparable
     {
@@ -318,43 +320,28 @@ namespace ASC.Api.Core
         }
     }
 
-    public class ApiDateTimeConverter : JsonConverter
+    class ApiDateTimeFormatter : IJsonFormatter<ApiDateTime>
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public void Serialize(ref JsonWriter writer, ApiDateTime value, IJsonFormatterResolver formatterResolver)
         {
-            if (value is ApiDateTime)
-            {
-                writer.WriteValue(value.ToString());
-            }
+            if (value == null) { writer.WriteNull(); return; }
+
+            formatterResolver.GetFormatterWithVerify<string>().Serialize(ref writer, value.ToString(), formatterResolver);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public ApiDateTime Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
         {
-            if (reader.ValueType != null)
+            if (reader.ReadIsNull()) return null;
+
+            var date = formatterResolver.GetFormatterWithVerify<string>().Deserialize(ref reader, formatterResolver);
+            if (DateTime.TryParseExact(date, ApiDateTime.Formats, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var result))
             {
-                if (reader.ValueType.Name == "String")
-                {
-                    if (DateTime.TryParseExact(reader.Value?.ToString(), ApiDateTime.Formats, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var result))
-                    {
-                        return new ApiDateTime(result, TimeSpan.Zero);
-                    }
-                    else
-                    {
-                        return new ApiDateTime();
-                    }
-                }
-                else if (reader.ValueType.Name == "DateTime")
-                {
-                    return new ApiDateTime((DateTime)reader.Value, TimeSpan.Zero);
-                }
+                return new ApiDateTime(result, TimeSpan.Zero);
             }
-
-            return DateTime.MinValue;
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return typeof(ApiDateTime).IsAssignableFrom(objectType);
+            else
+            {
+                return new ApiDateTime();
+            }
         }
     }
 }
