@@ -31,13 +31,15 @@
   "Message": "Чат",
 
   "ActivationLink": "Activation link",
-  "AddPhoto": "Add photo",
+  "AddPhoto": "Добавить фотографию",
+  "AddСomment": "Добавить комментарий",
   "TemporaryPassword": "Temporary password",
   "SexMale": "Мужской",
   "SexFemale": "Женский",
   "RequiredField": "Обязательное поле",
   "ChangeButton": "Изменить",
   "Phone": "Телефон",
+  "ChangesSavedSuccessfully": "Изменения успешно сохранены",
 
   "CustomEmployedSinceDate": "{{employedSinceDate}}",
   "CustomPosition": "{{position}}",
