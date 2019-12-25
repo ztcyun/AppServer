@@ -178,7 +178,7 @@ namespace ASC.Employee.Core.Controllers
         }
 
         [Read("@self")]
-        public EmployeeWraper Self()
+        public EmployeeWraperFull Self()
         {
             return EmployeeWraperFullHelper.GetFull(UserManager.GetUsers(SecurityContext.CurrentAccount.ID));
         }
@@ -412,8 +412,8 @@ namespace ASC.Employee.Core.Controllers
             var address = new MailAddress(memberModel.Email);
             user.Email = address.Address;
             //Set common fields
-            user.FirstName = memberModel.Firstname;
-            user.LastName = memberModel.Lastname;
+            user.FirstName = memberModel.FirstName;
+            user.LastName = memberModel.LastName;
             user.Title = memberModel.Title;
             user.Location = memberModel.Location;
             user.Notes = memberModel.Comment;
@@ -422,7 +422,7 @@ namespace ASC.Employee.Core.Controllers
                            : ("female".Equals(memberModel.Sex, StringComparison.OrdinalIgnoreCase) ? (bool?)false : null);
 
             user.BirthDate = memberModel.Birthday != null && memberModel.Birthday != DateTime.MinValue ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.Birthday)) : (DateTime?)null;
-            user.WorkFromDate = memberModel.Worksfrom != null && memberModel.Worksfrom != DateTime.MinValue ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.Worksfrom)) : DateTime.UtcNow.Date;
+            user.WorkFromDate = memberModel.WorksFrom != null && memberModel.WorksFrom != DateTime.MinValue ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.WorksFrom)) : DateTime.UtcNow.Date;
 
             UpdateContacts(memberModel.Contacts, user);
 
@@ -455,8 +455,8 @@ namespace ASC.Employee.Core.Controllers
             var address = new MailAddress(memberModel.Email);
             user.Email = address.Address;
             //Set common fields
-            user.FirstName = memberModel.Firstname;
-            user.LastName = memberModel.Lastname;
+            user.FirstName = memberModel.FirstName;
+            user.LastName = memberModel.LastName;
             user.Title = memberModel.Title;
             user.Location = memberModel.Location;
             user.Notes = memberModel.Comment;
@@ -465,7 +465,7 @@ namespace ASC.Employee.Core.Controllers
                            : ("female".Equals(memberModel.Sex, StringComparison.OrdinalIgnoreCase) ? (bool?)false : null);
 
             user.BirthDate = memberModel.Birthday != null ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.Birthday)) : (DateTime?)null;
-            user.WorkFromDate = memberModel.Worksfrom != null ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.Worksfrom)) : DateTime.UtcNow.Date;
+            user.WorkFromDate = memberModel.WorksFrom != null ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.WorksFrom)) : DateTime.UtcNow.Date;
 
             UpdateContacts(memberModel.Contacts, user);
 
@@ -542,8 +542,8 @@ namespace ASC.Employee.Core.Controllers
             {
                 //Set common fields
 
-                user.FirstName = memberModel.Firstname ?? user.FirstName;
-                user.LastName = memberModel.Lastname ?? user.LastName;
+                user.FirstName = memberModel.FirstName ?? user.FirstName;
+                user.LastName = memberModel.LastName ?? user.LastName;
                 user.Location = memberModel.Location ?? user.Location;
 
                 if (isAdmin)
@@ -567,7 +567,7 @@ namespace ASC.Employee.Core.Controllers
                 user.BirthDate = null;
             }
 
-            user.WorkFromDate = memberModel.Worksfrom != null ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.Worksfrom)) : user.WorkFromDate;
+            user.WorkFromDate = memberModel.WorksFrom != null ? TenantUtil.DateTimeFromUtc(Convert.ToDateTime(memberModel.WorksFrom)) : user.WorkFromDate;
 
             if (user.WorkFromDate == resetDate)
             {
