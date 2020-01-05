@@ -61,6 +61,7 @@ namespace ASC.Web.Api
                 config.Filters.Add(new CustomExceptionFilterAttribute());
                 config.Filters.Add(new TypeFilterAttribute(typeof(FormatFilter)));
 
+                config.MaxIAsyncEnumerableBufferLimit = int.MaxValue;
 
                 config.OutputFormatters.Clear();
                 config.OutputFormatters.Add(new JsonOutputFormatter(StandardResolver.ExcludeNullCamelCase));

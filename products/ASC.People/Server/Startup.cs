@@ -24,7 +24,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using Utf8Json.AspNetCoreMvcFormatter;
 using Utf8Json.Resolvers;
 
 namespace ASC.People
@@ -67,8 +66,10 @@ namespace ASC.People
                 config.Filters.Add(new CustomExceptionFilterAttribute());
                 config.Filters.Add(new TypeFilterAttribute(typeof(FormatFilter)));
 
+                config.MaxIAsyncEnumerableBufferLimit = int.MaxValue;
+
                 config.OutputFormatters.Clear();
-                config.OutputFormatters.Add(new JsonOutputFormatter(StandardResolver.ExcludeNullCamelCase));
+                config.OutputFormatters.Add(new ASC.Api.Core.JsonOutputFormatter(StandardResolver.ExcludeNullCamelCase));
                 config.InputFormatters.Clear();
                 config.InputFormatters.Add(new ASC.Api.Core.JsonInputFormatter(StandardResolver.AllowPrivateExcludeNullCamelCase));
 

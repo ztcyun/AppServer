@@ -7,6 +7,48 @@ using Utf8Json;
 
 namespace ASC.Api.Core
 {
+    public class JsonOutputFormatter : IOutputFormatter //, IApiResponseTypeMetadataProvider
+    {
+        const string ContentType = "application/json";
+
+        readonly IJsonFormatterResolver resolver;
+
+        public JsonOutputFormatter()
+            : this(null)
+        {
+
+        }
+        public JsonOutputFormatter(IJsonFormatterResolver resolver)
+        {
+            this.resolver = resolver ?? JsonSerializer.DefaultResolver;
+        }
+
+        //public IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)
+        //{
+        //    return SupportedContentTypes;
+        //}
+
+        public bool CanWriteResult(OutputFormatterCanWriteContext context)
+        {
+            return true;
+        }
+
+        public Task WriteAsync(OutputFormatterWriteContext context)
+        {
+            context.HttpContext.Response.ContentType = ContentType;
+
+            // when 'object' use the concrete type(object.GetType())
+            if (context.ObjectType == typeof(object))
+            {
+                return JsonSerializer.NonGeneric.SerializeAsync(context.HttpContext.Response.BodyWriter.AsStream(), context.Object, resolver);
+            }
+            else
+            {
+                return JsonSerializer.NonGeneric.SerializeAsync(context.ObjectType, context.HttpContext.Response.BodyWriter.AsStream(), context.Object, resolver);
+            }
+        }
+    }
+
     public class JsonInputFormatter : IInputFormatter
     {
         private readonly IJsonFormatterResolver resolver;
