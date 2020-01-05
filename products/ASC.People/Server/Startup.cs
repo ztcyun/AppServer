@@ -1,6 +1,8 @@
 
 using System;
+using System.Linq;
 
+using ASC.Api.Core;
 using ASC.Api.Core.Auth;
 using ASC.Api.Core.Core;
 using ASC.Api.Core.Middleware;
@@ -19,6 +21,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +66,7 @@ namespace ASC.People
                 config.Filters.Add(new TypeFilterAttribute(typeof(PaymentFilter)));
                 config.Filters.Add(new TypeFilterAttribute(typeof(IpSecurityFilter)));
                 config.Filters.Add(new TypeFilterAttribute(typeof(ProductSecurityFilter)));
+                config.Filters.Add(new CustomResponseFilterAttribute());
                 config.Filters.Add(new CustomExceptionFilterAttribute());
                 config.Filters.Add(new TypeFilterAttribute(typeof(FormatFilter)));
 
@@ -160,4 +164,18 @@ namespace ASC.People
             app.UseStaticFiles();
         }
     }
+
+    public class CustomResponseFilterAttribute : ResultFilterAttribute
+    {
+        public override void OnResultExecuting(ResultExecutingContext context)
+        {
+            if (context.Result is ObjectResult result && result.Value is IQueryable q)
+            {
+                result.Value = new QueryResult { Result = q };
+            }
+
+            base.OnResultExecuting(context);
+        }
+    }
+
 }

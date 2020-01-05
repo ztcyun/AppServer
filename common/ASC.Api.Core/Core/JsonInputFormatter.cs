@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,6 +41,11 @@ namespace ASC.Api.Core
             context.HttpContext.Response.ContentType = ContentType;
 
             // when 'object' use the concrete type(object.GetType())
+            if (context.Object is QueryResult q)
+            {
+                return JsonSerializer.NonGeneric.SerializeAsync(context.HttpContext.Response.BodyWriter.AsStream(), q.Result, resolver);
+            }
+
             if (context.ObjectType == typeof(object))
             {
                 return JsonSerializer.NonGeneric.SerializeAsync(context.HttpContext.Response.BodyWriter.AsStream(), context.Object, resolver);
@@ -76,5 +82,10 @@ namespace ASC.Api.Core
             var obj = JsonSerializer.NonGeneric.Deserialize(context.ModelType, memoryStream, resolver);
             return await InputFormatterResult.SuccessAsync(obj);
         }
+    }
+
+    public class QueryResult
+    {
+        public IQueryable Result { get; set; }
     }
 }
