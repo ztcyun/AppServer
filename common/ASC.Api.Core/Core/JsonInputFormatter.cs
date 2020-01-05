@@ -1,13 +1,15 @@
 ﻿using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Net.Http.Headers;
 
 using Utf8Json;
 
 namespace ASC.Api.Core
 {
-    public class JsonOutputFormatter : IOutputFormatter //, IApiResponseTypeMetadataProvider
+    public class JsonOutputFormatter : TextOutputFormatter //, IApiResponseTypeMetadataProvider
     {
         const string ContentType = "application/json";
 
@@ -21,19 +23,19 @@ namespace ASC.Api.Core
         public JsonOutputFormatter(IJsonFormatterResolver resolver)
         {
             this.resolver = resolver ?? JsonSerializer.DefaultResolver;
+            SupportedEncodings.Add(Encoding.UTF8);
+            SupportedEncodings.Add(Encoding.Unicode);
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json").CopyAsReadOnly());
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json").CopyAsReadOnly());
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+json").CopyAsReadOnly());
         }
 
-        //public IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)
-        //{
-        //    return SupportedContentTypes;
-        //}
-
-        public bool CanWriteResult(OutputFormatterCanWriteContext context)
+        public override bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             return true;
         }
 
-        public Task WriteAsync(OutputFormatterWriteContext context)
+        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             context.HttpContext.Response.ContentType = ContentType;
 
@@ -49,7 +51,7 @@ namespace ASC.Api.Core
         }
     }
 
-    public class JsonInputFormatter : IInputFormatter
+    public class JsonInputFormatter : TextInputFormatter
     {
         private readonly IJsonFormatterResolver resolver;
 
@@ -62,12 +64,12 @@ namespace ASC.Api.Core
             this.resolver = (resolver ?? JsonSerializer.DefaultResolver);
         }
 
-        public bool CanRead(InputFormatterContext context)
+        public override bool CanRead(InputFormatterContext context)
         {
             return true;
         }
 
-        public async Task<InputFormatterResult> ReadAsync(InputFormatterContext context)
+        public async override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
         {
             using var memoryStream = new MemoryStream();
             await context.HttpContext.Request.Body.StreamCopyToAsync(memoryStream);
