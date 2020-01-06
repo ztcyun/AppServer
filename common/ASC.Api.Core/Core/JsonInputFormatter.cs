@@ -10,7 +10,7 @@ using Utf8Json;
 
 namespace ASC.Api.Core
 {
-    public class JsonOutputFormatter : TextOutputFormatter //, IApiResponseTypeMetadataProvider
+    public class JsonOutputFormatter : TextOutputFormatter
     {
         const string ContentType = "application/json";
 
@@ -36,23 +36,24 @@ namespace ASC.Api.Core
             return true;
         }
 
-        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
+        public async override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             context.HttpContext.Response.ContentType = ContentType;
 
             // when 'object' use the concrete type(object.GetType())
             if (context.Object is QueryResult q)
             {
-                return JsonSerializer.NonGeneric.SerializeAsync(context.HttpContext.Response.BodyWriter.AsStream(), q.Result, resolver);
+                await JsonSerializer.NonGeneric.SerializeAsync(context.HttpContext.Response.Body, q.Result, resolver);
+                return;
             }
 
             if (context.ObjectType == typeof(object))
             {
-                return JsonSerializer.NonGeneric.SerializeAsync(context.HttpContext.Response.BodyWriter.AsStream(), context.Object, resolver);
+                await JsonSerializer.NonGeneric.SerializeAsync(context.HttpContext.Response.BodyWriter.AsStream(), context.Object, resolver);
             }
             else
             {
-                return JsonSerializer.NonGeneric.SerializeAsync(context.ObjectType, context.HttpContext.Response.BodyWriter.AsStream(), context.Object, resolver);
+                await JsonSerializer.NonGeneric.SerializeAsync(context.ObjectType, context.HttpContext.Response.BodyWriter.AsStream(), context.Object, resolver);
             }
         }
     }
@@ -68,6 +69,11 @@ namespace ASC.Api.Core
         public JsonInputFormatter(IJsonFormatterResolver resolver)
         {
             this.resolver = (resolver ?? JsonSerializer.DefaultResolver);
+            SupportedEncodings.Add(Encoding.UTF8);
+            SupportedEncodings.Add(Encoding.Unicode);
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json").CopyAsReadOnly());
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json").CopyAsReadOnly());
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+json").CopyAsReadOnly());
         }
 
         public override bool CanRead(InputFormatterContext context)
