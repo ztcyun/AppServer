@@ -15,3 +15,6 @@
 /products/ASC.People/Data/
 Data/
 Logs/
+.data/
+build/.DS_Store
+.DS_Store
