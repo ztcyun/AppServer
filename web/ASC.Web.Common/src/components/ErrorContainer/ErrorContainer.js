@@ -6,8 +6,9 @@ import { Text, Button } from "asc-web-components";
 
 const ErrorContainer = props => {
   //console.log("ErrorContainer render");
-
   const { headerText, bodyText, buttonText, buttonUrl, ...rest } = props;
+
+  const onClickButton = () => window.location.href = buttonUrl;
 
   return (
     <StyledErrorContainer {...rest}>
@@ -276,7 +277,7 @@ const ErrorContainer = props => {
           />
         </svg>
         <svg
-          id="baloon"
+          id="balloon"
           width="92"
           height="139"
           viewBox="0 0 92 139"
@@ -334,11 +335,11 @@ const ErrorContainer = props => {
         <div id="button-container">
           <Button
             id="button"
-            size="big"
-            scale
-            primary
             label={buttonText}
-            onClick={() => (window.location.href = buttonUrl)}
+            onClick={onClickButton}
+            primary
+            scale
+            size="big"
           />
         </div>
       )}

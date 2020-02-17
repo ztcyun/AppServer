@@ -931,23 +931,23 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  #baloon {
+  #balloon {
     position: absolute;
     left: 25.33%;
     top: 13.69%;
     width: 12.26%;
     height: 38.08%;
     z-index: 11;
-    -webkit-animation: fadein_baloon 1s,
-      move_baloon 1s linear 1s infinite alternate;
-    -moz-animation: fadein_baloon 1s,
-      move_baloon 1s linear 1s infinite alternate;
-    -ms-animation: fadein_baloon 1s, move_baloon 1s linear 1s infinite alternate;
-    -o-animation: fadein_baloon 1s, move_baloon 1s linear 1s infinite alternate;
-    animation: fadein_baloon 1s, move_baloon 1s linear 1s infinite alternate;
+    -webkit-animation: fadein_balloon 1s,
+      move_balloon 1s linear 1s infinite alternate;
+    -moz-animation: fadein_balloon 1s,
+      move_balloon 1s linear 1s infinite alternate;
+    -ms-animation: fadein_balloon 1s, move_balloon 1s linear 1s infinite alternate;
+    -o-animation: fadein_balloon 1s, move_balloon 1s linear 1s infinite alternate;
+    animation: fadein_balloon 1s, move_balloon 1s linear 1s infinite alternate;
   }
 
-  @keyframes fadein_baloon {
+  @keyframes fadein_balloon {
     from {
       left: 25.33%;
       top: 8.21%;
@@ -959,7 +959,7 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  @-moz-keyframes fadein_baloon {
+  @-moz-keyframes fadein_balloon {
     from {
       left: 25.33%;
       top: 8.21%;
@@ -971,7 +971,7 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  @-webkit-keyframes fadein_baloon {
+  @-webkit-keyframes fadein_balloon {
     from {
       left: 25.33%;
       top: 8.21%;
@@ -983,7 +983,7 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  @-ms-keyframes fadein_baloon {
+  @-ms-keyframes fadein_balloon {
     from {
       left: 25.33%;
       top: 8.21%;
@@ -995,7 +995,7 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  @keyframes move_baloon {
+  @keyframes move_balloon {
     from {
       top: 13.69%;
     }
@@ -1005,7 +1005,7 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  @-moz-keyframes move_baloon {
+  @-moz-keyframes move_balloon {
     from {
       top: 13.69%;
     }
@@ -1015,7 +1015,7 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  @-webkit-keyframes move_baloon {
+  @-webkit-keyframes move_balloon {
     from {
       top: 13.69%;
     }
@@ -1025,7 +1025,7 @@ const StyledErrorContainer = styled.div`
     }
   }
 
-  @-ms-keyframes move_baloon {
+  @-ms-keyframes move_balloon {
     from {
       top: 13.69%;
     }
