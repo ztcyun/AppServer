@@ -4,9 +4,6 @@ import { Loader } from "asc-web-components";
 import PageLayout from "../PageLayout";
 
 export class ExternalRedirect extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   componentDidMount() {
     const { to } = this.props;
