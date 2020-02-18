@@ -15,13 +15,13 @@ const Badge = props => {
   };
 
   const {
-    fontSize,
-    color,
-    fontWeight,
     backgroundColor,
     borderRadius,
+    color,
+    fontSize,
+    fontWeight,
+    maxWidth,
     padding,
-    maxWidth
   } = props;
 
   return (
@@ -32,13 +32,14 @@ const Badge = props => {
       <StyledInner
         backgroundColor={backgroundColor}
         borderRadius={borderRadius}
-        padding={padding}
         maxWidth={maxWidth}
+        padding={padding}
       >
         <Text
-          fontWeight={fontWeight}
           color={color}
-          fontSize={fontSize}>
+          fontSize={fontSize}
+          fontWeight={fontWeight}
+        >
           {props.label}
         </Text>
       </StyledInner>
@@ -47,29 +48,29 @@ const Badge = props => {
 };
 
 Badge.propTypes = {
-  label: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   backgroundColor: PropTypes.string,
+  borderRadius: PropTypes.string,
+  className: PropTypes.string,
   color: PropTypes.string,
   fontSize: PropTypes.string,
   fontWeight: PropTypes.number,
-  borderRadius: PropTypes.string,
-  padding: PropTypes.string,
+  id: PropTypes.string,
+  label: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   maxWidth: PropTypes.string,
   onClick: PropTypes.func,
-  className: PropTypes.string,
-  id: PropTypes.string,
+  padding: PropTypes.string,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
 };
 
 Badge.defaultProps = {
-  label: 0,
   backgroundColor: '#ED7309',
+  borderRadius: '11px',
   color: '#FFFFFF',
   fontSize: "11px",
   fontWeight: 800,
-  borderRadius: '11px',
+  label: 0,
+  maxWidth: '50px',
   padding: '0 5px',
-  maxWidth: '50px'
 }
 
 export default Badge;
