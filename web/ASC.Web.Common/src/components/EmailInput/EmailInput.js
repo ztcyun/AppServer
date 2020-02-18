@@ -10,9 +10,9 @@ import {
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 const TextInputWrapper = ({
-  onValidateInput,
-  isValidEmail,
   emailSettings,
+  isValidEmail,
+  onValidateInput,
   ...props
 }) => <TextInput {...props}></TextInput>;
 /* eslint-enable react/prop-types */
@@ -27,9 +27,9 @@ class EmailInput extends React.Component {
     const isValidEmail = this.checkEmail(value, validatedSettings);
 
     this.state = {
-      isValidEmail,
       emailSettings: validatedSettings,
-      inputValue: value
+      inputValue: value,
+      isValidEmail,
     };
   }
 
@@ -96,8 +96,8 @@ class EmailInput extends React.Component {
     //console.log('EmailInput render()');
     // eslint-disable-next-line no-unused-vars
     const {
+      hasError,
       onValidateInput,
-      hasError
     } = this.props;
 
     const { isValidEmail, inputValue } = this.state;
@@ -110,10 +110,10 @@ class EmailInput extends React.Component {
       <TextInputWrapper
         {...this.props}
         hasError={isError}
-        value={inputValue}
         onChange={this.onChange}
-        type="text"
         onValidateInput={onValidateInput}
+        type="text"
+        value={inputValue}
       />
     );
   }
@@ -137,6 +137,7 @@ EmailInput.propTypes = {
 EmailInput.defaultProps = {
   autoComplete: "email",
   className: "",
+  emailSettings: new EmailSettings(),
   hasError: undefined,
   id: "",
   isDisabled: false,
@@ -149,8 +150,6 @@ EmailInput.defaultProps = {
   title: "",
   value: "",
   withBorder: true,
-
-  emailSettings: new EmailSettings()
 };
 
 export default EmailInput;
