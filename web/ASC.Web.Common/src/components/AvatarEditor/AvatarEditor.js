@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, ModalDialog }  from 'asc-web-components';
+import { Button, ModalDialog } from 'asc-web-components';
 import AvatarEditorBody from './sub-components/Body';
 import StyledAvatarEditor from './StyledAvatarEditor';
 
@@ -28,7 +28,7 @@ class AvatarEditor extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { visible, image} = this.props;
+        const { visible, image } = this.props;
         if (visible !== prevProps.visible) {
             this.setState({ visible });
         }
@@ -49,7 +49,7 @@ class AvatarEditor extends React.Component {
         })
         if (typeof this.props.onDeleteImage === 'function') this.props.onDeleteImage();
     }
-    onChangeSize(data){
+    onChangeSize(data) {
         this.setState(data);
     }
     onChangePosition(data) {
@@ -82,87 +82,87 @@ class AvatarEditor extends React.Component {
 
     render() {
 
-        const { visible} = this.state;
+        const { visible } = this.state;
         const { displayType, headerLabel, maxSize, accept, image,
-            chooseFileLabel,chooseMobileFileLabel,unknownTypeError,
+            chooseFileLabel, chooseMobileFileLabel, unknownTypeError,
             maxSizeFileError, unknownError, saveButtonLabel,
             className, id, style } = this.props;
         return (
             <ModalDialog
-                visible={visible}
+                className={className}
                 displayType={displayType}
-                scale
                 headerContent={headerLabel}
+                id={id}
+                onClose={this.onClose}
+                scale
+                style={style}
+                visible={visible}
                 bodyContent={
                     <StyledAvatarEditor>
-                    <AvatarEditorBody
-                        onImageChange={this.onChangeImage}
-                        visible={visible}
-                        onPositionChange={this.onChangePosition}
-                        onSizeChange={this.onChangeSize}
-                        onLoadFileError={this.onLoadFileError}
-                        onLoadFile={this.onLoadFile}
-                        deleteImage={this.onDeleteImage}
-                        maxSize={maxSize * 1000000} // megabytes to bytes
-                        accept={accept}
-                        image={image}
-                        chooseFileLabel={chooseFileLabel}
-                        chooseMobileFileLabel={chooseMobileFileLabel}
-                        unknownTypeError={unknownTypeError}
-                        maxSizeFileError={maxSizeFileError}
-                        unknownError={unknownError}
-                    />
+                        <AvatarEditorBody
+                            accept={accept}
+                            chooseFileLabel={chooseFileLabel}
+                            chooseMobileFileLabel={chooseMobileFileLabel}
+                            deleteImage={this.onDeleteImage}
+                            image={image}
+                            maxSize={maxSize * 1000000} // megabytes to bytes
+                            maxSizeFileError={maxSizeFileError}
+                            onImageChange={this.onChangeImage}
+                            onLoadFile={this.onLoadFile}
+                            onLoadFileError={this.onLoadFileError}
+                            onPositionChange={this.onChangePosition}
+                            onSizeChange={this.onChangeSize}
+                            unknownError={unknownError}
+                            unknownTypeError={unknownTypeError}
+                            visible={visible}
+                        />
                     </StyledAvatarEditor>
                 }
                 footerContent={[
                     <Button
                         key="SaveBtn"
                         label={saveButtonLabel}
+                        onClick={this.onClickSaveButton}
                         primary
                         size="medium"
-                        onClick={this.onClickSaveButton}
                     />
                 ]}
-                onClose={this.onClose}
-                className={className}
-                id={id}
-                style={style}
             />
         );
     }
 }
 
 AvatarEditor.propTypes = {
-    visible: PropTypes.bool,
-    headerLabel: PropTypes.string,
+    accept: PropTypes.arrayOf(PropTypes.string),
     chooseFileLabel: PropTypes.string,
     chooseMobileFileLabel: PropTypes.string,
-    saveButtonLabel: PropTypes.string,
-    maxSizeFileError: PropTypes.string,
+    className: PropTypes.string,
+    displayType: PropTypes.oneOf(['auto', 'modal', 'aside']),
+    headerLabel: PropTypes.string,
+    id: PropTypes.string,
     image: PropTypes.string,
     maxSize: PropTypes.number,
-    accept: PropTypes.arrayOf(PropTypes.string),
-    onSave: PropTypes.func,
+    maxSizeFileError: PropTypes.string,
     onClose: PropTypes.func,
     onDeleteImage: PropTypes.func,
-    onLoadFile: PropTypes.func,
     onImageChange: PropTypes.func,
+    onLoadFile: PropTypes.func,
     onLoadFileError: PropTypes.func,
-    unknownTypeError: PropTypes.string,
+    onSave: PropTypes.func,
+    saveButtonLabel: PropTypes.string,
+    style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
     unknownError: PropTypes.string,
-    displayType: PropTypes.oneOf(['auto', 'modal', 'aside']),
-    className: PropTypes.string,
-    id: PropTypes.string,
-    style: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
+    unknownTypeError: PropTypes.string,
+    visible: PropTypes.bool,
 };
 
 AvatarEditor.defaultProps = {
-    visible: false,
-    maxSize: 10, //10MB
-    headerLabel: 'Edit Photo',
-    saveButtonLabel: 'Save',
     accept: ['image/png', 'image/jpeg'],
-    displayType: 'auto'
+    displayType: 'auto',
+    headerLabel: 'Edit Photo',
+    maxSize: 10, //10MB
+    saveButtonLabel: 'Save',
+    visible: false,
 };
 
 export default AvatarEditor;
