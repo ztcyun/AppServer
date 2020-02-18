@@ -27,24 +27,6 @@ class AdvancedSelector extends React.Component {
     }
   }
 
-  resize = () => {
-    if (this.props.displayType !== "auto") 
-      return;
-
-    const type = this.getTypeByWidth();
-    
-    if (type === this.state.displayType) 
-      return;
-    
-    this.setState({ displayType: type });
-  };
-
-  onClose = (e) => {
-    //console.log("onClose");
-    //this.setState({ isOpen: false });
-    this.props.onCancel && this.props.onCancel(e);
-  };
-
   componentDidUpdate(prevProps) {
     if(this.props.isOpen !== prevProps.isOpen) {
       //console.log(`ADSelector componentDidUpdate isOpen=${this.props.isOpen}`);
@@ -71,6 +53,24 @@ class AdvancedSelector extends React.Component {
       window.removeEventListener("resize", this.throttledResize);
     }
   }
+
+  resize = () => {
+    if (this.props.displayType !== "auto") 
+      return;
+
+    const type = this.getTypeByWidth();
+    
+    if (type === this.state.displayType) 
+      return;
+    
+    this.setState({ displayType: type });
+  };
+
+  onClose = (e) => {
+    //console.log("onClose");
+    //this.setState({ isOpen: false });
+    this.props.onCancel && this.props.onCancel(e);
+  };
 
   getTypeByWidth = () => {
     const displayType = this.props.displayType !== "auto" 
