@@ -5,7 +5,7 @@ Email entry field with advanced capabilities for validation based on settings
 ### Usage
 
 ```js
-import { EmailInput, utils } from "asc-web-components";
+import { EmailInput, utils } from "asc-web-common";
 
 const { EmailSettings } = utils.email;
 

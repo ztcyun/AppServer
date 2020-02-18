@@ -11,7 +11,6 @@ export { default as CustomScrollbarsVirtualList } from './components/scrollbar/c
 export { default as DatePicker } from './components/date-picker'
 export { default as DropDown } from './components/drop-down'
 export { default as DropDownItem } from './components/drop-down-item'
-export { default as EmailInput } from './components/email-input'
 export { default as EmptyScreenContainer} from './components/empty-screen-container'
 export { default as FieldContainer } from './components/field-container'
 export { default as FilterInput } from './components/filter-input'

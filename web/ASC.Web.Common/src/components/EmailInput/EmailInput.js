@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import isEqual from "lodash/isEqual";
-import TextInput from "../text-input";
+import { TextInput } from "asc-web-components";
 import {
   EmailSettings,
   parseAddress

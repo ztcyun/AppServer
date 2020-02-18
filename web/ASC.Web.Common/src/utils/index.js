@@ -1,4 +1,6 @@
 import { LANGUAGE } from '../constants';
+import * as email from './email'
+export { email };
 
 export const toUrlParams = (obj, skipNull) => {
   let str = "";

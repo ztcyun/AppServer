@@ -1,6 +1,6 @@
 import emailAddresses from "email-addresses";
 import punycode from "punycode";
-import { parseErrorTypes, errorKeys } from "./../constants";
+import { parseErrorTypes, errorKeys } from "../../constants";
 import { EmailSettings } from './emailSettings';
 
 const getParts = string => {

@@ -5,13 +5,12 @@ import {
   ModalDialog,
   Button,
   Text,
-  EmailInput,
   FieldContainer
 } from "asc-web-components";
 import { withTranslation } from "react-i18next";
 import i18n from "./i18n";
 import ModalDialogContainer from '../ModalDialogContainer';
-import { api, utils } from "asc-web-common";
+import { api, utils, EmailInput } from "asc-web-common";
 const { sendInstructionsToChangeEmail } = api.people;
 const { changeLanguage } = utils;
 
