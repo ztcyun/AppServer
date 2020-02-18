@@ -1,105 +1,10 @@
-import React from 'react'
-import styled from 'styled-components'
-import Dropzone from 'react-dropzone'
-import ReactAvatarEditor from 'react-avatar-editor'
-import PropTypes from 'prop-types'
-import { default as ASCAvatar } from '../../avatar/index'
-import accepts from 'attr-accept'
-import Text from '../../text'
-import IconButton from '../../icon-button'
-import { tablet } from '../../../utils/device';
-import resizeImage from 'resize-image'
-const StyledErrorContainer = styled.div`
-    p{
-        text-align: center
-    }
-`;
-
-const CloseButton = styled.a`
-    cursor: pointer;
-    position: absolute;
-    right: 33px;
-    top: 4px;
-    width: 16px;
-    height: 16px;
-
-    &:before, &:after {
-        position: absolute;
-        left: 8px;
-        content: ' ';
-        height: 16px;
-        width: 1px;
-        background-color: #D8D8D8;
-    }
-    &:before {
-        transform: rotate(45deg);
-    }
-    &:after {
-        transform: rotate(-45deg);
-    }
-    @media ${tablet} {
-        right: calc(50% - 147px);
-    }
-`;
-
-const DropZoneContainer = styled.div`
-    box-sizing: border-box;
-    display: block;
-    width: 100%;
-    height: 300px;
-    border: 1px dashed #ccc;
-    text-align: center;
-    padding: 10em 0;
-    margin: 0 auto;
-    p{
-        margin: 0;
-        cursor: default
-    }
-    .desktop {
-        display: block;
-    };
-    .mobile {
-        display: none;
-    };
-    @media ${tablet} {
-        .desktop {
-            display: none;
-        };
-        .mobile {
-            display: block;
-        };
-    }
-`;
-const StyledAvatarContainer = styled.div`
-    text-align: center;
-
-    .custom-range{
-        width: 100%;
-        display: block
-    }
-    .avatar-container{
-        display: inline-block;
-        vertical-align: top;
-        @media ${tablet} {
-            display: none;
-        }
-    }
-    .editor-container{
-        display: inline-block;
-        width: auto;
-        padding: 0 30px;
-        position: relative;
-        @media ${tablet} {
-            padding: 0;
-        }
-    }
-`;
-const StyledASCAvatar = styled(ASCAvatar)`
-    display: block;
-    @media ${tablet} {
-        display: none
-    }
-`;
+import React from 'react';
+import Dropzone from 'react-dropzone';
+import ReactAvatarEditor from 'react-avatar-editor';
+import PropTypes from 'prop-types';
+import { Avatar as ASCAvatar, Text, IconButton } from 'asc-web-components';
+import accepts from 'attr-accept';
+import resizeImage from 'resize-image';
 
 class AvatarEditorBody extends React.Component {
     constructor(props) {
@@ -326,16 +231,16 @@ class AvatarEditorBody extends React.Component {
                         maxSize={this.props.maxSize}
                         accept={this.props.accept}>
                         {({ getRootProps, getInputProps }) => (
-                            <DropZoneContainer
+                            <div className='drop-zone-container'
                                 {...getRootProps()}
                             >
                                 <input {...getInputProps()} />
                                 <p className="desktop">{this.props.chooseFileLabel}</p>
                                 <p className="mobile">{this.props.chooseMobileFileLabel}</p>
-                            </DropZoneContainer>
+                            </div>
                         )}
                     </Dropzone> :
-                    <StyledAvatarContainer>
+                    <div className='avatars-container'>
                         <div className='editor-container'>
                             <ReactAvatarEditor
                                 ref={this.setEditorRef}
@@ -370,34 +275,35 @@ class AvatarEditorBody extends React.Component {
                                 onClick={this.rotateLeft}
                                 className="arrow-button"
                             />
-                            <CloseButton onClick={this.deleteImage}></CloseButton>
+                            <a className='close-button' onClick={this.deleteImage}></a>
                         </div>
                         <div className='avatar-container'>
-                            <StyledASCAvatar
+                            <ASCAvatar
+                                className='asc-avatar'
                                 size='max'
                                 role='user'
                                 source={this.state.croppedImage}
                                 editing={false}
                             />
-                            <StyledASCAvatar
+                            <ASCAvatar
                                 size='big'
                                 role='user'
                                 source={this.state.croppedImage}
                                 editing={false}
                             />
                         </div>
-
-                    </StyledAvatarContainer>
+                    </div>
                 }
-                <StyledErrorContainer key="errorMsg">
+                <div key="errorMsg">
                     {this.state.errorText !== null &&
                         <Text
+                            className='error-message'
                             as="p"
                             color="#C96C27"
                             isBold={true}
                         >{this.state.errorText}</Text>
                     }
-                </StyledErrorContainer>
+                </div>
             </div>
         );
     }

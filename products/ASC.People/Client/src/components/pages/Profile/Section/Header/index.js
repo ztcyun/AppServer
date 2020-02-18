@@ -4,9 +4,8 @@ import {
   IconButton,
   ContextMenuButton,
   toastr,
-  AvatarEditor,
 } from "asc-web-components";
-import { Headline } from 'asc-web-common';
+import { Headline, AvatarEditor } from 'asc-web-common';
 import { withRouter } from "react-router";
 import {
   getUserStatus,

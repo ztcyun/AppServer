@@ -25,15 +25,19 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "attr-accept": "^2.0.0",
     "axios": "^0.19.1",
     "faker": "^4.1.0",
     "history": "4.10.1",
     "lodash": "4.17.15",
     "lodash-es": "4.17.15",
     "moment": "^2.24.0",
+    "react-avatar-editor": "^12.0.0-beta.0",
+    "react-dropzone": "^10.2.1",
     "react-onclickoutside": "^6.9.0",
     "react-svg": "^11.0.9",
-    "react-window-infinite-loader": "^1.0.5"
+    "react-window-infinite-loader": "^1.0.5",
+    "resize-image": "^0.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.3",

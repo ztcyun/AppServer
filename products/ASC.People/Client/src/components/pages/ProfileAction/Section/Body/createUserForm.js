@@ -1,7 +1,7 @@
 import React from 'react'
 import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
-import { Avatar, Button, Textarea, toastr, AvatarEditor, Text } from 'asc-web-components'
+import { Avatar, Button, Textarea, toastr, Text } from 'asc-web-components'
 import { withTranslation, Trans } from 'react-i18next';
 import { toEmployeeWrapper, getUserRole, getUserContactsPattern, getUserContacts, mapGroupsToGroupSelectorOptions, mapGroupSelectorOptionsToGroups, filterGroupSelectorOptions } from "../../../../../store/people/selectors";
 import { createProfile } from '../../../../../store/profile/actions';
@@ -14,7 +14,7 @@ import RadioField from './FormFields/RadioField'
 import DepartmentField from './FormFields/DepartmentField'
 import ContactsField from './FormFields/ContactsField'
 import InfoFieldContainer from './FormFields/InfoFieldContainer'
-import { api } from "asc-web-common";
+import { api, AvatarEditor } from "asc-web-common";
 const {
   createThumbnailsAvatar,
   loadAvatar

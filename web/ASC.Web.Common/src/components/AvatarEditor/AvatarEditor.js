@@ -1,9 +1,9 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import ModalDialog from '../modal-dialog'
-import Button from '../button'
-import AvatarEditorBody from './sub-components/avatar-editor-body'
-
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Button }  from 'asc-web-components';
+import AvatarEditorBody from './sub-components/Body';
+import StyledAvatarEditor from './StyledAvatarEditor';
+import { ModalDialog }  from 'asc-web-components';
 
 class AvatarEditor extends React.Component {
     constructor(props) {
@@ -88,6 +88,7 @@ class AvatarEditor extends React.Component {
                 scale={true}
                 headerContent={this.props.headerLabel}
                 bodyContent={
+                    <StyledAvatarEditor>
                     <AvatarEditorBody
                         onImageChange={this.onImageChange}
                         visible={this.state.visible}
@@ -105,6 +106,7 @@ class AvatarEditor extends React.Component {
                         maxSizeFileError={this.props.maxSizeFileError}
                         unknownError={this.props.unknownError}
                     />
+                    </StyledAvatarEditor>
                 }
                 footerContent={[
                     <Button

@@ -4043,11 +4043,6 @@ atob@^2.1.1:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-attr-accept@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/attr-accept/-/attr-accept-2.0.0.tgz#8422fef5ee4a511c207796c888227ab5de03306f"
-  integrity sha512-I9SDP4Wvh2ItYYoafEg8hFpsBe96pfQ+eabceShXt3sw2fbIP96+Aoj9zZE0vkZNAkXXzHJATVRuWz+h9FxJxQ==
-
 autoprefixer@^9.7.2:
   version "9.7.3"
   resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-9.7.3.tgz#fd42ed03f53de9beb4ca0d61fb4f7268a9bb50b4"
@@ -6998,13 +6993,6 @@ file-loader@^4.2.0:
   dependencies:
     loader-utils "^1.2.3"
     schema-utils "^2.5.0"
-
-file-selector@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/file-selector/-/file-selector-0.1.12.tgz#fe726547be219a787a9dcc640575a04a032b1fd0"
-  integrity sha512-Kx7RTzxyQipHuiqyZGf+Nz4vY9R1XGxuQl/hLoJwq+J4avk/9wxxgZyHKtbyIPJmbD4A66DWGYfyykWNpcYutQ==
-  dependencies:
-    tslib "^1.9.0"
 
 file-system-cache@^1.0.5:
   version "1.0.5"
@@ -11616,13 +11604,6 @@ react-avatar-edit@^0.8.3:
   dependencies:
     konva "2.5.1"
 
-react-avatar-editor@^11.0.7:
-  version "11.0.7"
-  resolved "https://registry.yarnpkg.com/react-avatar-editor/-/react-avatar-editor-11.0.7.tgz#021053cfeaa138407b79279ee5a0384f273f0c54"
-  integrity sha512-GbNYBd1/L1QyuU9VRvOW0hSkW1R0XSneOWZFgqI5phQf6dX+dF/G3/AjiJ0hv3JWh2irMQ7DL0oYDKzwtTnNBQ==
-  dependencies:
-    prop-types "^15.5.8"
-
 react-clientside-effect@^1.2.0, react-clientside-effect@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/react-clientside-effect/-/react-clientside-effect-1.2.2.tgz#6212fb0e07b204e714581dd51992603d1accc837"
@@ -11723,15 +11704,6 @@ react-draggable@^4.0.3:
   dependencies:
     classnames "^2.2.5"
     prop-types "^15.6.0"
-
-react-dropzone@^10.2.1:
-  version "10.2.1"
-  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-10.2.1.tgz#b7520124c4a3b66f96d49f7879027c7a475eaa20"
-  integrity sha512-Me5nOu8hK9/Xyg5easpdfJ6SajwUquqYR/2YTdMotsCUgJ1pHIIwNsv0n+qcIno0tWR2V2rVQtj2r/hXYs2TnQ==
-  dependencies:
-    attr-accept "^2.0.0"
-    file-selector "^0.1.12"
-    prop-types "^15.7.2"
 
 react-element-to-jsx-string@^14.0.2:
   version "14.1.0"
@@ -12347,11 +12319,6 @@ reserved-words@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/reserved-words/-/reserved-words-0.1.2.tgz#00a0940f98cd501aeaaac316411d9adc52b31ab1"
   integrity sha1-AKCUD5jNUBrqqsMWQR2a3FKzGrE=
-
-resize-image@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/resize-image/-/resize-image-0.1.0.tgz#033d5f499cb7095def7827d48b8046f7e1c5776c"
-  integrity sha512-78cWCEX/IupMCwKi5Gg5gxjOZKoN6UXinL2eVOB4xzyG2QNjq64z6pJBnyBKg5/BsjEosLz1co5e3DHr99TgFg==
 
 resize-observer-polyfill@^1.5.1:
   version "1.5.1"
