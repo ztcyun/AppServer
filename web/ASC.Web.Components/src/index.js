@@ -1,7 +1,6 @@
 export { default as Avatar } from './components/avatar'
 export { default as Aside } from './components/aside'
 export { default as Backdrop } from './components/backdrop'
-export { default as Badge } from './components/badge'
 export { default as Button } from './components/button'
 export { default as Calendar } from './components/calendar'
 export { default as Checkbox } from './components/checkbox'

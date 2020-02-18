@@ -2,7 +2,8 @@ import React from "react";
 import { ReactSVG } from 'react-svg'
 import PropTypes from "prop-types";
 import styled, { css } from "styled-components";
-import { Badge, Icons, Link, Text } from "asc-web-components";
+import { Icons, Link, Text } from "asc-web-components";
+import Badge from '../../Badge';
 
 const baseColor = "#7A95B0",
   activeColor = "#FFFFFF",

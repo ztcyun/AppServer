@@ -1,32 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components';
-import Text from "../text";
-
-const StyledBadge = styled.div`
-  display: ${props => (props.label.length > 0 || props.label != '0') ? 'inline-block' : 'none'};
-  border: 1px solid transparent;
-  border-radius: ${props => props.borderRadius};
-  width: fit-content;
-  padding: 2px;
-  line-height: 0.8;
-  cursor: pointer;
-  overflow: hidden;
-
-  :hover {
-    border-color: ${props => props.backgroundColor};
-  }
-`;
-
-const StyledInner = styled.div`
-  background-color: ${props => props.backgroundColor};
-  border-radius: ${props => props.borderRadius};
-  padding: ${props => props.padding};
-  max-width: ${props => props.maxWidth};
-  text-align: center;
-  user-select: none;
-  line-height: 1.5;
-`;
+import { Text } from "asc-web-components";
+import StyledBadge, { StyledInner } from './StyledBadge';
 
 const Badge = props => {
   //console.log("Badge render");
