@@ -104,7 +104,7 @@ const Selector = props => {
     [hasNextPage, options]
   );
 
-  const onOptionChange = useCallback(
+  const onChangeOption = useCallback(
     e => {
       const option = options[+e.target.value];
       const newSelected = e.target.checked
@@ -183,17 +183,17 @@ const Selector = props => {
     [options, selectedOptionList, groups, selectedGroupList]
   );
 
-  const onGroupChange = useCallback(
+  const onChangeGroup = useCallback(
     e => {
       const group = convertGroup(groups[+e.target.value]);
       group.selected = e.target.checked ? group.total : 0;
       const newSelectedGroups = e.target.checked
         ? [group, ...selectedGroupList]
         : selectedGroupList.filter(el => el.key !== group.key);
-      //console.log("onGroupChange", item);
+      //console.log("onChangeGroup", item);
       setSelectedGroupList(newSelectedGroups);
 
-      onGroupSelect(group);
+      onSelectGroup(group);
 
       if (e.target.checked) {
         //const newSelectedOptions = [];
@@ -211,7 +211,7 @@ const Selector = props => {
     }
   }, [listOptionsRef]);
 
-  const onGroupSelect = useCallback(
+  const onSelectGroup = useCallback(
     group => {
       if (!currentGroup || !group || currentGroup.key === group.key) {
         return;
@@ -227,9 +227,9 @@ const Selector = props => {
     [displayType, isMultiSelect, currentGroup]
   );
 
-  const onSelectAllChange = useCallback(() => {
+  const onChangeSelectAll = useCallback(() => {
     const checked = !selectedAll;
-    //console.log("onSelectAllChange", checked);
+    //console.log("onChangeSelectAll", checked);
     setSelectedAll(checked);
 
     if (!currentGroup) return;
@@ -246,13 +246,13 @@ const Selector = props => {
     setSelectedGroupList(newSelectedGroups);
   }, [selectedAll, currentGroup, selectedGroupList]);
 
-  const onSearchChange = useCallback(value => {
+  const onChangeSearch = useCallback(value => {
     setSearchValue(value);
     onSearchChanged && onSearchChanged(value);
   });
 
   const onSearchReset = useCallback(() => {
-    onSearchChanged && onSearchChange("");
+    onSearchChanged && onChangeSearch("");
   });
 
   const onSelectOptions = items => {
@@ -277,7 +277,7 @@ const Selector = props => {
     [selectedOptionList, selectedGroupList]
   );
 
-  const onLinkClick = useCallback(
+  const onClickLink = useCallback(
     e => {
       const index = e.target.dataset.index;
       if (!index) return;
@@ -291,7 +291,7 @@ const Selector = props => {
     [options]
   );
 
-  const onAddClick = useCallback(() => {
+  const onClickAdd = useCallback(() => {
     onSelectOptions(selectedOptionList);
   }, [selectedOptionList]);
 
@@ -307,7 +307,7 @@ const Selector = props => {
                   className="option_checkbox"
                   truncate={true}
                   title={option.label}
-                  onChange={onOptionChange}
+                  onChange={onChangeOption}
                 />
                 {displayType === "aside" && getOptionTooltipContent && (
                   <HelpButton
@@ -334,7 +334,7 @@ const Selector = props => {
                 style={style} 
                 className="row-option" 
                 {...tooltipProps}
-                onClick={onLinkClick}
+                onClick={onClickLink}
               >
                 {option.label}
                 {displayType === "aside" && getOptionTooltipContent && (
@@ -358,8 +358,8 @@ const Selector = props => {
     },
     [
       isMultiSelect,
-      onOptionChange,
-      onLinkClick,
+      onChangeOption,
+      onClickLink,
       displayType,
       getOptionTooltipContent
     ]
@@ -416,8 +416,8 @@ const Selector = props => {
       isOptionChecked,
       displayType,
       isMultiSelect,
-      onOptionChange,
-      onLinkClick,
+      onChangeOption,
+      onClickLink,
       getOptionTooltipContent
     ]
   );
@@ -476,7 +476,7 @@ const Selector = props => {
     [groups]
   );
 
-  const onLinkGroupClick = useCallback(
+  const onClickLinkGroup = useCallback(
     e => {
       const index = e.target.dataset.index;
       if (!index) return;
@@ -485,7 +485,7 @@ const Selector = props => {
 
       if (!group) return;
 
-      onGroupSelect(group);
+      onSelectGroup(group);
     },
     [groups, currentGroup]
   );
@@ -505,7 +505,7 @@ const Selector = props => {
           key={group.key}
           data-index={index}
           isTextOverflow={true}
-          onClick={onLinkGroupClick}
+          onClick={onClickLinkGroup}
           title={label}
           style={style}
           className={`row-group${isSelected ? " selected" : ""}`}
@@ -518,7 +518,7 @@ const Selector = props => {
               isIndeterminate={isIndeterminate}
               className="group_checkbox"
               truncate={true}
-              onChange={onGroupChange}
+              onChange={onChangeGroup}
             />
           )}
             {label}
@@ -581,7 +581,7 @@ const Selector = props => {
             isNeedFilter={false}
             placeholder={searchPlaceHolderLabel}
             value={searchValue}
-            onChange={onSearchChange}
+            onChange={onChangeSearch}
             onClearSearch={onSearchReset}
           />
           {displayType === "aside" && groups && groups.length > 0 && (
@@ -595,7 +595,7 @@ const Selector = props => {
                 scaled={true}
                 scaledOptions={true}
                 size="content"
-                onSelect={onGroupSelect}
+                onSelect={onSelectGroup}
               />
               {isMultiSelect &&
                 allowGroupSelection &&
@@ -607,7 +607,7 @@ const Selector = props => {
                     isChecked={selectedAll}
                     isIndeterminate={false}
                     truncate={true}
-                    onChange={onSelectAllChange}
+                    onChange={onChangeSelectAll}
                   />
                 )}
             </>
@@ -696,7 +696,7 @@ const Selector = props => {
         selectButtonLabel={selectButtonLabel}
         isDisabled={isDisabled}
         isVisible={isMultiSelect && hasSelected()}
-        onClick={onAddClick}
+        onClick={onClickAdd}
       />
     </StyledSelector>
   );
