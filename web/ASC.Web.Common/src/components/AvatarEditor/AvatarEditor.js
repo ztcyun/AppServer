@@ -27,6 +27,16 @@ class AvatarEditor extends React.Component {
         this.onDeleteImage = this.onDeleteImage.bind(this);
     }
 
+    componentDidUpdate(prevProps) {
+        const { visible, image} = this.props;
+        if (visible !== prevProps.visible) {
+            this.setState({ visible });
+        }
+        if (image !== prevProps.image) {
+            this.setState({ isContainsFile: !!image });
+        }
+    }
+
     onChangeImage(file) {
         this.setState({
             croppedImage: file
@@ -68,15 +78,6 @@ class AvatarEditor extends React.Component {
     onClose = () => {
         this.setState({ visible: false });
         this.props.onClose();
-    }
-    componentDidUpdate(prevProps) {
-        const { visible, image} = this.props;
-        if (visible !== prevProps.visible) {
-            this.setState({ visible });
-        }
-        if (image !== prevProps.image) {
-            this.setState({ isContainsFile: !!image });
-        }
     }
 
     render() {
