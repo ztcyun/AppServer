@@ -286,6 +286,7 @@ class AvatarEditorBody extends React.Component {
                                 editing={false}
                             />
                             <ASCAvatar
+                                className='asc-avatar'
                                 size='big'
                                 role='user'
                                 source={this.state.croppedImage}
