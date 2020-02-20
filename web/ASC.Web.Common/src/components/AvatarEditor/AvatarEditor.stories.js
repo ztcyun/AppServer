@@ -5,7 +5,7 @@ import { withKnobs, text, select } from '@storybook/addon-knobs/react';
 import withReadme from 'storybook-readme/with-readme';
 import Readme from './README.md';
 import AvatarEditor from '.';
-import Avatar from '../avatar';
+import { Avatar } from 'asc-web-components';
 import Section from '../../../.storybook/decorators/section';
 
 const displayType = ['auto', 'modal', 'aside'];
