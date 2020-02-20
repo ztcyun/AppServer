@@ -5,8 +5,7 @@ import Readme from "./README.md";
 import { withKnobs, text } from "@storybook/addon-knobs/react";
 import { action } from "@storybook/addon-actions";
 import EmptyScreenContainer from ".";
-import Link from "../link";
-import { Icons } from "../icons";
+import { Icons, Link } from "asc-web-components";
 
 storiesOf("Components| EmptyScreenContainer", module)
   .addDecorator(withKnobs)

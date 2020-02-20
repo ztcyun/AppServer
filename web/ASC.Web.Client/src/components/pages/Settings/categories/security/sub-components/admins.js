@@ -24,10 +24,9 @@ import {
   Button,
   RequestLoader,
   Loader,
-  EmptyScreenContainer,
   Icons
 } from "asc-web-components";
-import { PeopleSelector } from "asc-web-common";
+import { EmptyScreenContainer, PeopleSelector } from "asc-web-common";
 import { getUserRole } from "../../../../../../store/settings/selectors";
 import isEmpty from "lodash/isEmpty";
 

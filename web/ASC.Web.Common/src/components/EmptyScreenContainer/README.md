@@ -5,7 +5,7 @@ Used to display empty screen page
 ### Usage
 
 ```js
-import { EmptyScreenContainer } from "asc-web-components";
+import { EmptyScreenContainer } from "asc-web-common";
 ```
 
 ```jsx

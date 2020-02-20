@@ -6,7 +6,6 @@ import {
   Row,
   Avatar,
   toastr,
-  EmptyScreenContainer,
   Icons,
   Link,
   RowContainer,
@@ -30,7 +29,7 @@ import {
 } from "../../../../../store/people/selectors";
 import { isMobileOnly } from "react-device-detect";
 import isEqual from "lodash/isEqual";
-import { Loader } from "asc-web-components";
+import { EmptyScreenContainer, Loader } from "asc-web-components";
 import { store, api, constants } from 'asc-web-common';
 import i18n from '../../i18n';
 import { ChangeEmailDialog, ChangePasswordDialog, DeleteSelfProfileDialog, DeleteProfileEverDialog } from '../../../../dialogs';

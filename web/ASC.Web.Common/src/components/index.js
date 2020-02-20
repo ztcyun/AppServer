@@ -15,3 +15,4 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as AvatarEditor } from './AvatarEditor';
 export { default as Badge } from './Badge';
 export { default as EmailInput } from './EmailInput';
+export { default as EmptyScreenContainer} from './EmptyScreenContainer';
