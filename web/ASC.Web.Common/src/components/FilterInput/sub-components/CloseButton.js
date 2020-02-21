@@ -1,16 +1,11 @@
 import React from "react";
 import { IconButton } from 'asc-web-components';
-import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
-const StyledCloseButton = styled.div`
-    margin-left: 7px;
-    margin-top: -1px;
-`;
 const CloseButton = props => {
   //console.log("CloseButton render");
   return (
-    <StyledCloseButton className={props.className}>
+    <div className={`styled-close-button ${props.className}`}>
       <IconButton
         color={"#A3A9AE"}
         hoverColor={"#A3A9AE"}
@@ -21,7 +16,7 @@ const CloseButton = props => {
         isDisabled={props.isDisabled}
         onClick={!props.isDisabled ? props.onClick : undefined}
       />
-    </StyledCloseButton>
+    </div>
   );
 };
 CloseButton.propTypes = {

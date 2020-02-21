@@ -1,105 +1,12 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
-import FilterButton from './filter-button';
-import HideFilter from './hide-filter';
+import FilterButton from './FilterButton';
+import HideFilter from './HideFilter';
 import throttle from 'lodash/throttle';
 import { ComboBox } from 'asc-web-components';
-import CloseButton from './close-button';
+import CloseButton from './CloseButton';
 import isEqual from 'lodash/isEqual';
 import PropTypes from 'prop-types';
-
-const StyledFilterBlock = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const StyledFilterItem = styled.div`
-  display:  ${props => props.block ? 'flex' : 'inline-block'};
-  margin-bottom: ${props => props.block ? '8px' : '0'};
-  position: relative;
-  height: 100%;
-  margin-right: 2px;
-  border: 1px solid #ECEEF1;
-  border-radius: 3px;
-  background-color: #F8F9F9;
-  padding-right: 22px;
-  
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 15px;
-  box-sizing: border-box;
-  color: #555F65;
-
-  &:last-child{
-    margin-bottom: 0;
-  }
-`;
-
-const StyledFilterItemContent = styled.div`
-  display: flex;
-  padding: 5px 4px 2px 7px;
-  width: 100%;
-  user-select: none;
-  color: #333;
-  ${props =>
-    props.isOpen && !props.isDisabled &&
-    css`
-      background: #ECEEF1;
-  `}
-  ${props =>
-    !props.isDisabled &&
-    css`
-      &:active{
-        background: #ECEEF1;
-      }
-  `}
-`;
-
-const StyledCloseButtonBlock = styled.div`
-  display: flex;
-  cursor: ${props =>
-    props.isDisabled || !props.isClickable ? "default" : "pointer"};
-  align-items: center;
-  position: absolute;
-  height: 100%;
-  width: 25px;
-  border-left: 1px solid #ECEEF1;
-  right: 0;
-  top: 0;
-  background-color: #F8F9F9;
-  ${props =>
-    !props.isDisabled &&
-    css`
-      &:active{
-        background: #ECEEF1;
-        svg path:first-child { 
-          fill: #A3A9AE; 
-        }
-      }
-  `}
-`;
-const StyledComboBox = styled(ComboBox)`
-  display: inline-block;
-  background: transparent;
-  max-width: 185px;
-  cursor: pointer;
-  vertical-align: middle;
-  margin-top: -2px;
-  > div:first-child{
-    width: auto;
-    padding-left: 4px;
-  }
-  > div:last-child{
-    max-width: 220px;
-  }
-  .combo-button-label {
-    color: #333;
-  }
-`;
-const StyledFilterName = styled.span`
-  line-height: 18px;
-  margin-left: 5px;
-`;
+import { StyledFilterItem, StyledFilterItemContent, StyledCloseButtonBlock } from '../StyledFilterInput';
 
 class FilterItem extends React.Component {
   constructor(props) {
@@ -129,7 +36,8 @@ class FilterItem extends React.Component {
         <StyledFilterItemContent isDisabled={this.props.isDisabled} isOpen={this.state.isOpen}>
           {this.props.groupLabel}:
               {this.props.groupItems.length > 1 ?
-            <StyledComboBox
+            <ComboBox
+              className='styled-combobox'
               options={this.props.groupItems}
               isDisabled={this.props.isDisabled}
               onSelect={this.onSelect}
@@ -148,8 +56,8 @@ class FilterItem extends React.Component {
                 })
               }}
               dropDownMaxHeight={200}
-            ></StyledComboBox>
-            : <StyledFilterName>{this.props.label}</StyledFilterName>
+            ></ComboBox>
+            : <span className='styled-filter-name'>{this.props.label}</span>
           }
         </StyledFilterItemContent>
 
@@ -289,9 +197,9 @@ class FilterBlock extends React.Component {
     const filterData = this.props.getFilterData();
     return (
       <>
-        <StyledFilterBlock ref={this.filterWrapper} id='filter-items-container'>
+        <div className='styled-filter-block' ref={this.filterWrapper} id='filter-items-container'>
           {filterItems}
-        </StyledFilterBlock>
+        </div>
         {filterData.length > 0 && <FilterButton id='filter-button' iconSize={this.props.iconSize} getData={_this.getData} isDisabled={this.props.isDisabled} />}
       </>
     );

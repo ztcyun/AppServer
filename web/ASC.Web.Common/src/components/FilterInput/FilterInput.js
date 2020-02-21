@@ -1,67 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { SearchInput, utils } from 'asc-web-components';
+import { SearchInput } from 'asc-web-components';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
-import FilterBlock from './sub-components/filter-block';
-import SortComboBox from './sub-components/sort-combobox';
+import FilterBlock from './sub-components/FilterBlock';
+import SortComboBox from './sub-components/SortComboBox';
 import map from 'lodash/map';
 import clone from 'lodash/clone';
+import StyledFilterInput from './StyledFilterInput';
 
-const { mobile } = utils.device;
-
-const StyledFilterInput = styled.div`
-    width: 100%;
-    min-width: 255px;
-    &:after {
-        content: " ";
-        display: block;
-        height: 0;
-        clear: both;
-        visibility: hidden;
-    }
-`;
-const StyledSearchInput = styled.div`
-    display: block;
-    float: left;
-    width: calc(100% - 140px);
-    @media ${mobile} {
-        width: calc(100% - 58px);
-    }
-
-    .search-input-block {
-        & > input { 
-            height: 30px; 
-        }
-  }
-`;
-const StyledFilterBlock = styled.div`
-    display: flex;
-
-    .filter-button {
-
-        svg {
-            path:not(:first-child) {
-                stroke: #A3A9AE;
-            }
-        }
-
-        stroke: #A3A9AE;
-        div:active {
-            svg path:first-child { 
-                fill: #ECEEF1; 
-                stroke: #A3A9AE;
-            }
-        }
-        div:first-child:hover {
-            svg path:not(:first-child) { 
-                stroke: #A3A9AE; 
-            }
-        }
-    }
-
-`;
 const cloneObjectsArray = function (props) {
     return map(props, clone);
 }
@@ -476,7 +423,7 @@ class FilterInput extends React.Component {
         }
         return (
             <StyledFilterInput className={this.props.className} id={this.props.id} style={this.props.style}>
-                <StyledSearchInput ref={this.searchWrapper}>
+                <div className='styled-search-input' ref={this.searchWrapper}>
                     <SearchInput
                         id={this.props.id}
                         isDisabled={this.props.isDisabled}
@@ -493,7 +440,7 @@ class FilterInput extends React.Component {
                         onClearSearch={this.clearFilter}
                         onChange={this.onSearchChanged}
                     >
-                        <StyledFilterBlock ref={this.filterWrapper}>
+                        <div className='styled-filter-block' ref={this.filterWrapper}>
                             <FilterBlock
                                 openFilterItems={this.state.openFilterItems}
                                 hideFilterItems={this.state.hideFilterItems}
@@ -505,10 +452,10 @@ class FilterInput extends React.Component {
                                 onRender={this.onFilterRender}
                                 isDisabled={this.props.isDisabled}
                             />
-                        </StyledFilterBlock>
+                        </div>
 
                     </SearchInput>
-                </StyledSearchInput>
+                </div>
 
                 <SortComboBox
                     options={this.props.getSortData()}

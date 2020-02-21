@@ -1,32 +1,8 @@
 import React from 'react';
 import isEqual from 'lodash/isEqual';
-import { ComboBox, IconButton, DropDownItem, RadioButtonGroup, utils } from 'asc-web-components';
-import styled from 'styled-components';
+import { ComboBox, IconButton, DropDownItem, RadioButtonGroup } from 'asc-web-components';
 import PropTypes from 'prop-types';
-
-const { mobile } = utils.device;
-
-const StyledIconButton = styled.div`
-    transform: ${state => !state.sortDirection ? 'scale(1, -1)' : 'scale(1)'};
-`;
-const StyledComboBox = styled(ComboBox)`
-    display: block;
-    float: left;
-    width: 132px;
-    margin-left: 8px;
-
-    @media ${mobile} {
-        width: 50px;
-        .optionalBlock ~ div:first-child{
-            opacity: 0
-        }
-    }
-
-    .combo-button-label {
-        color: #333;
-    }
-
-`;
+import { StyledIconButton } from '../StyledFilterInput';
 
 class SortComboBox extends React.Component {
     constructor(props) {
@@ -117,7 +93,8 @@ class SortComboBox extends React.Component {
             </>
         );
         return (
-            <StyledComboBox
+            <ComboBox
+                className='styled-sort-combobox'
                 ref={this.combobox}
                 options={[]}
                 advancedOptions={advancedOptions}
@@ -140,7 +117,7 @@ class SortComboBox extends React.Component {
                         onClick={this.onButtonClick}
                     />
                 </StyledIconButton>
-            </StyledComboBox>
+            </ComboBox>
         );
     }
 }

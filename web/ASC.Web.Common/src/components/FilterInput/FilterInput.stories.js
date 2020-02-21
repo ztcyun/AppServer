@@ -102,7 +102,7 @@ class FilterStory extends React.Component  {
   }
 }
 
-storiesOf('Components|Filter', module)
+storiesOf('Components|FilterInput', module)
   .addDecorator(withKnobs)
   .addDecorator(withReadme(Readme))
   .add('base', () => (

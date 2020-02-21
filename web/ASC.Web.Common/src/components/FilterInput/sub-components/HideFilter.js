@@ -1,52 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { Icons, DropDown, utils } from "asc-web-components";
 import PropTypes from 'prop-types';
+import { Caret, StyledHideFilterButton } from '../StyledFilterInput';
 
 const { handleAnyClick } = utils.event;
-
-const Caret = styled.div`
-  width: 7px;
-  position: absolute;
-  right: 6px;
-  transform: ${props => (props.isOpen ? "rotate(180deg)" : "rotate(0)")};
-  top: ${props => (props.isOpen ? "2px" : "0")};
-`;
-
-const StyledHideFilterButton = styled.div`
-  box-sizing: border-box;
-  display: flex;
-  position: relative;
-  align-items: center;
-  font-weight: 600;
-  font-size: 16px;
-  height: 100%;
-  border: 1px solid #eceef1;
-  border-radius: 3px;
-  background-color: #f8f9f9;
-  padding: 0 20px 0 9px;
-  margin-right: 2px;
-  cursor: ${props => (props.isDisabled ? "default" : "pointer")};
-  font-family: Open Sans;
-  font-style: normal;
-
-  :hover {
-    border-color: ${props => (props.isDisabled ? "#ECEEF1" : "#A3A9AE")};
-  }
-  :active {
-    background-color: ${props => (props.isDisabled ? "#F8F9F9" : "#ECEEF1")};
-  }
-`;
-const StyledHideFilter = styled.div`
-  display: inline-block;
-  height: 100%;
-`;
-const DropDownStyle = styled.div`
-  .drop-down {
-    padding: 16px;
-  }
-  position: relative;
-`;
 
 class HideFilter extends React.Component {
   constructor(props) {
@@ -89,7 +46,8 @@ class HideFilter extends React.Component {
   render() {
     //console.log("HideFilter render");
     return (
-      <StyledHideFilter
+      <div
+        className='styled-hide-filter'
         onClick={this.onClick.bind(this, !this.state.popoverOpen)}
         ref={this.ref}
       >
@@ -107,7 +65,7 @@ class HideFilter extends React.Component {
           </Caret>
         </StyledHideFilterButton>
 
-        <DropDownStyle ref={this.dropDownRef}>
+        <div className='dropdown-style' ref={this.dropDownRef}>
           <DropDown
             className="drop-down"
             manualY="8px"
@@ -116,8 +74,8 @@ class HideFilter extends React.Component {
           >
             {this.props.children}
           </DropDown>
-        </DropDownStyle>
-      </StyledHideFilter>
+        </div>
+      </div>
     );
   }
 }
