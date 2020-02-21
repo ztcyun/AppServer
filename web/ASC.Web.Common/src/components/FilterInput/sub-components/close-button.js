@@ -1,5 +1,5 @@
 import React from "react";
-import IconButton from '../icon-button';
+import { IconButton } from 'asc-web-components';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 

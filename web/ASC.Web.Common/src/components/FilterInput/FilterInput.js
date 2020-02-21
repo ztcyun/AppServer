@@ -1,14 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import SearchInput from '../search-input';
+import { SearchInput, utils } from 'asc-web-components';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
-import FilterBlock from './filter-block';
-import SortComboBox from './sort-combobox';
-import { mobile } from '../../utils/device';
+import FilterBlock from './sub-components/filter-block';
+import SortComboBox from './sub-components/sort-combobox';
 import map from 'lodash/map';
 import clone from 'lodash/clone';
+
+const { mobile } = utils.device;
 
 const StyledFilterInput = styled.div`
     width: 100%;

@@ -1,12 +1,10 @@
 import React from 'react';
 import isEqual from 'lodash/isEqual';
-import ComboBox from '../combobox'
-import IconButton from '../icon-button';
-import DropDownItem from '../drop-down-item';
-import RadioButtonGroup from '../radio-button-group'
+import { ComboBox, IconButton, DropDownItem, RadioButtonGroup, utils } from 'asc-web-components';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { mobile } from '../../utils/device'
+
+const { mobile } = utils.device;
 
 const StyledIconButton = styled.div`
     transform: ${state => !state.sortDirection ? 'scale(1, -1)' : 'scale(1)'};

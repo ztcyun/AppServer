@@ -3,7 +3,7 @@ import styled, { css } from 'styled-components';
 import FilterButton from './filter-button';
 import HideFilter from './hide-filter';
 import throttle from 'lodash/throttle';
-import ComboBox from '../combobox';
+import { ComboBox } from 'asc-web-components';
 import CloseButton from './close-button';
 import isEqual from 'lodash/isEqual';
 import PropTypes from 'prop-types';

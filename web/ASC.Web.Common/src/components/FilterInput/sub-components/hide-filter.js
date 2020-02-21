@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { Icons } from "../icons";
-import DropDown from "../drop-down";
-import { handleAnyClick } from "../../utils/event";
+import { Icons, DropDown, utils } from "asc-web-components";
 import PropTypes from 'prop-types';
+
+const { handleAnyClick } = utils.event;
 
 const Caret = styled.div`
   width: 7px;

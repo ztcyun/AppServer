@@ -1,5 +1,5 @@
 import React from "react";
-import ContextMenuButton from '../context-menu-button';
+import { ContextMenuButton } from 'asc-web-components';
 import PropTypes from 'prop-types';
 
 class FilterButton extends React.PureComponent {
