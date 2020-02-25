@@ -4,27 +4,28 @@ import PropTypes from 'prop-types';
 
 class FilterButton extends React.PureComponent {
   render() {
+    const { getData, id, isDisabled, iconSize } = this.props;
     //console.log('render FilterButton)
     return (
       <ContextMenuButton
-        id={this.props.id}
-        title='Actions'
+        className='filter-button'
+        color='#A3A9AE'
+        directionY='bottom'
+        getData={getData}
         iconName='RectangleFilterIcon'
         iconOpenName='RectangleFilterClickIcon'
-        color='#A3A9AE'
-        size={this.props.iconSize}
-        isDisabled={this.props.isDisabled}
-        getData={this.props.getData}
-        directionY='bottom'
-        className='filter-button'
+        id={id}
+        isDisabled={isDisabled}
+        size={iconSize}
+        title='Actions'
       ></ContextMenuButton>
     )
   }
 }
 FilterButton.propTypes = {
-  id: PropTypes.string,
+  getData: PropTypes.func,
   iconSize: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  id: PropTypes.string,
   isDisabled: PropTypes.bool,
-  getData: PropTypes.func
 }
 export default FilterButton
