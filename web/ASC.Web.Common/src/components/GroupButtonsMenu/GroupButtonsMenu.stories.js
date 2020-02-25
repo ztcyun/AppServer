@@ -1,4 +1,4 @@
-import React from 'react'
+/* import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { withKnobs, text, boolean } from '@storybook/addon-knobs/react';
 import { BooleanValue } from 'react-values'
@@ -6,8 +6,7 @@ import withReadme from 'storybook-readme/with-readme'
 import styled from '@emotion/styled';
 import Readme from './README.md';
 import GroupButtonsMenu from '.';
-import DropDownItem from '../drop-down-item';
-import Button from '../button';
+import { DropDownItem, Button }  from 'asc-web-components';
 
 const GroupButtonsMenuContainer = styled.div`
   height: 2000px;
@@ -156,4 +155,4 @@ storiesOf('Components|GroupButtonsMenu', module)
         )}
       </BooleanValue>
     );
-  });
+  }); */

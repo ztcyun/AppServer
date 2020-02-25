@@ -2,12 +2,11 @@ import React, { useCallback, useState } from "react";
 import styled, { css } from "styled-components";
 import { withRouter } from "react-router";
 import {
-  GroupButtonsMenu,
   DropDownItem,
   toastr,
   ContextMenuButton
 } from "asc-web-components";
-import { Headline } from 'asc-web-common';
+import { GroupButtonsMenu, Headline } from 'asc-web-common';
 import { connect } from "react-redux";
 import {
   getSelectedGroup,

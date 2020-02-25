@@ -17,3 +17,4 @@ export { default as Badge } from './Badge';
 export { default as EmailInput } from './EmailInput';
 export { default as EmptyScreenContainer} from './EmptyScreenContainer';
 export { default as FilterInput } from './FilterInput';
+export { default as GroupButtonsMenu } from './GroupButtonsMenu';

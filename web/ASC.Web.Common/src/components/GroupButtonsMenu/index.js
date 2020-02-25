@@ -1,11 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import GroupButton from '../group-button';
-import DropDownItem from '../drop-down-item';
+import { GroupButton, DropDownItem, utils }  from 'asc-web-components';
 import throttle from 'lodash/throttle';
-import { isArrayEqual } from '../../utils/array';
-import { tablet } from '../../utils/device'
+
+const isArrayEqual = utils.array;
+const tablet = utils.device;
 
 const StyledGroupButtonsMenu = styled.div`
     box-sizing: border-box;

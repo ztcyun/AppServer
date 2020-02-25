@@ -1,7 +1,7 @@
 import React from 'react';
 import { mount, shallow } from 'enzyme';
 import GroupButtonsMenu from '.';
-import DropDownItem from '../drop-down-item';
+import { DropDownItem } from 'asc-web-components';
 
 beforeEach(() => {
   const div = document.createElement('div');
