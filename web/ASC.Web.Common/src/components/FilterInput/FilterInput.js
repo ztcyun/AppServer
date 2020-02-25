@@ -123,6 +123,53 @@ class FilterInput extends React.Component {
         this.throttledResize = throttle(this.resize, 300);
 
     }
+
+    componentDidMount() {
+        window.addEventListener('resize', this.throttledResize);
+        if (this.state.filterValues.length > 0) this.updateFilter();
+    }
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.throttledResize);
+    }
+    componentDidUpdate(prevProps){
+        if(this.props.needForUpdate && this.props.needForUpdate(prevProps, this.props)){
+            let internalFilterData = convertToInternalData(this.props.getFilterData(), cloneObjectsArray(this.props.selectedFilterData.filterValues));
+            this.updateFilter(internalFilterData);
+        }
+    }
+    shouldComponentUpdate(nextProps, nextState) {
+
+        const { selectedFilterData, getFilterData, getSortData, value, id,
+                isDisabled, size, placeholder } = this.props;
+        if (!isEqual(selectedFilterData, nextProps.selectedFilterData)) {
+            let internalFilterData = cloneObjectsArray(this.state.filterValues);
+            if (nextProps.selectedFilterData.filterValues) {
+                internalFilterData = convertToInternalData(getFilterData(), cloneObjectsArray(nextProps.selectedFilterData.filterValues));
+                this.updateFilter(internalFilterData);
+            }
+            this.setState(
+                {
+                    sortDirection: nextProps.selectedFilterData.sortDirection === "desc" ? true : false,
+                    sortId: getSortData().findIndex(x => x.key === nextProps.selectedFilterData.sortId) != -1 ? nextProps.selectedFilterData.sortId : "",
+                    filterValues: internalFilterData,
+                    searchText: nextProps.selectedFilterData.inputValue || value
+                }
+            );
+            return true;
+        }
+        if (id != nextProps.id ||
+            isDisabled != nextProps.isDisabled ||
+            size != nextProps.size ||
+            placeholder != nextProps.placeholder ||
+            value != nextProps.value)
+
+            return true;
+        if (this.isResizeUpdate) {
+            return true;
+        }
+        return !isEqual(this.state, nextState);
+    }
+
     resize = () => {
         this.isResizeUpdate = true;
         this.setState({
@@ -364,52 +411,19 @@ class FilterInput extends React.Component {
 
     }
 
-    componentDidMount() {
-        window.addEventListener('resize', this.throttledResize);
-        if (this.state.filterValues.length > 0) this.updateFilter();
-    }
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.throttledResize);
-    }
-    componentDidUpdate(prevProps){
-        if(this.props.needForUpdate && this.props.needForUpdate(prevProps, this.props)){
-            let internalFilterData = convertToInternalData(this.props.getFilterData(), cloneObjectsArray(this.props.selectedFilterData.filterValues));
-            this.updateFilter(internalFilterData);
-        }
-    }
-    shouldComponentUpdate(nextProps, nextState) {
-        if (!isEqual(this.props.selectedFilterData, nextProps.selectedFilterData)) {
-            let internalFilterData = cloneObjectsArray(this.state.filterValues);
-            if (nextProps.selectedFilterData.filterValues) {
-                internalFilterData = convertToInternalData(this.props.getFilterData(), cloneObjectsArray(nextProps.selectedFilterData.filterValues));
-                this.updateFilter(internalFilterData);
-            }
-            this.setState(
-                {
-                    sortDirection: nextProps.selectedFilterData.sortDirection === "desc" ? true : false,
-                    sortId: this.props.getSortData().findIndex(x => x.key === nextProps.selectedFilterData.sortId) != -1 ? nextProps.selectedFilterData.sortId : "",
-                    filterValues: internalFilterData,
-                    searchText: nextProps.selectedFilterData.inputValue || this.props.value
-                }
-            );
-            return true;
-        }
-        if (this.props.id != nextProps.id ||
-            this.props.isDisabled != nextProps.isDisabled ||
-            this.props.size != nextProps.size ||
-            this.props.placeholder != nextProps.placeholder ||
-            this.props.value != nextProps.value)
-
-            return true;
-        if (this.isResizeUpdate) {
-            return true;
-        }
-        return !isEqual(this.state, nextState);
-    }
     render() {
+        /* eslint-disable react/prop-types */
+        const { className, id, style, size,
+            isDisabled, scale, getFilterData, placeholder, 
+            getSortData, directionAscLabel, directionDescLabel } = this.props;
+        /* eslint-enable react/prop-types */
+
+        const { searchText, filterValues, openFilterItems,
+                hideFilterItems, sortId, sortDirection} = this.state;
+
         //console.log("FilterInput render");
         let iconSize = 33;
-        switch (this.props.size) {
+        switch (size) {
             case 'base':
                 iconSize = 33;
                 break;
@@ -422,35 +436,35 @@ class FilterInput extends React.Component {
                 break;
         }
         return (
-            <StyledFilterInput className={this.props.className} id={this.props.id} style={this.props.style}>
+            <StyledFilterInput className={className} id={id} style={style}>
                 <div className='styled-search-input' ref={this.searchWrapper}>
                     <SearchInput
-                        id={this.props.id}
-                        isDisabled={this.props.isDisabled}
-                        size={this.props.size}
-                        scale={this.props.scale}
+                        id={id}
+                        isDisabled={isDisabled}
+                        size={size}
+                        scale={scale}
                         isNeedFilter={true}
-                        getFilterData={this.props.getFilterData}
-                        placeholder={this.props.placeholder}
+                        getFilterData={getFilterData}
+                        placeholder={placeholder}
                         onSearchClick={this.onSearch}
                         onChangeFilter={this.onChangeFilter}
-                        value={this.state.searchText}
-                        selectedFilterData={this.state.filterValues}
-                        showClearButton={this.state.filterValues.length > 0}
+                        value={searchText}
+                        selectedFilterData={filterValues}
+                        showClearButton={filterValues.length > 0}
                         onClearSearch={this.clearFilter}
                         onChange={this.onSearchChanged}
                     >
                         <div className='styled-filter-block' ref={this.filterWrapper}>
                             <FilterBlock
-                                openFilterItems={this.state.openFilterItems}
-                                hideFilterItems={this.state.hideFilterItems}
+                                openFilterItems={openFilterItems}
+                                hideFilterItems={hideFilterItems}
                                 iconSize={iconSize}
-                                getFilterData={this.props.getFilterData}
+                                getFilterData={getFilterData}
                                 onClickFilterItem={this.onClickFilterItem}
                                 onDeleteFilterItem={this.onDeleteFilterItem}
                                 isResizeUpdate={this.isResizeUpdate}
                                 onRender={this.onFilterRender}
-                                isDisabled={this.props.isDisabled}
+                                isDisabled={isDisabled}
                             />
                         </div>
 
@@ -458,15 +472,15 @@ class FilterInput extends React.Component {
                 </div>
 
                 <SortComboBox
-                    options={this.props.getSortData()}
-                    isDisabled={this.props.isDisabled}
+                    options={getSortData()}
+                    isDisabled={isDisabled}
                     onChangeSortId={this.onClickSortItem}
                     onChangeSortDirection={this.onChangeSortDirection}
-                    selectedOption={this.props.getSortData().length > 0 ? this.props.getSortData().find(x => x.key === this.state.sortId) : {}}
+                    selectedOption={getSortData().length > 0 ? getSortData().find(x => x.key === sortId) : {}}
                     onButtonClick={this.onSortDirectionClick}
-                    sortDirection={+this.state.sortDirection}
-                    directionAscLabel={this.props.directionAscLabel}
-                    directionDescLabel={this.props.directionDescLabel}
+                    sortDirection={+sortDirection}
+                    directionAscLabel={directionAscLabel}
+                    directionDescLabel={directionDescLabel}
                 />
             </StyledFilterInput>
 
