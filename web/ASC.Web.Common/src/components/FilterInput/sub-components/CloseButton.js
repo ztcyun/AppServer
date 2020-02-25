@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 
 const CloseButton = props => {
   //console.log("CloseButton render");
+  const { className, isDisabled, onClick } = props;
   return (
-    <div className={`styled-close-button ${props.className}`}>
+    <div className={`styled-close-button ${className}`}>
       <IconButton
         color={"#A3A9AE"}
         hoverColor={"#A3A9AE"}
@@ -13,8 +14,8 @@ const CloseButton = props => {
         size={10}
         iconName={'CrossIcon'}
         isFill={true}
-        isDisabled={props.isDisabled}
-        onClick={!props.isDisabled ? props.onClick : undefined}
+        isDisabled={isDisabled}
+        onClick={!isDisabled ? onClick : undefined}
       />
     </div>
   );
