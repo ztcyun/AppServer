@@ -12,59 +12,64 @@ class FilterItem extends React.Component {
   constructor(props) {
     super(props);
 
+    const { id } = props;
+
     this.state = {
-      id: this.props.id,
+      id,
       isOpen: false
     };
   }
 
   onSelect = (option) => {
+    const { group, key, label, inSubgroup } = option;
     this.props.onSelectFilterItem(null, {
-      key: option.group + "_" + option.key,
-      label: option.label,
-      group: option.group,
-      inSubgroup: !!option.inSubgroup
+      key: group + "_" + key,
+      label,
+      group,
+      inSubgroup: !!inSubgroup
     });
   }
   onClick = () => {
-    !this.props.isDisabled && this.props.onClose(this.props.id);
+    const { isDisabled, id, onClose } = this.props;
+    !isDisabled && onClose(id);
   }
 
+  toggleCombobox= (e, isOpen) => this.setState({ isOpen });
+
   render() {
+    const { id, isOpen } = this.state;
+    const { block, opened, isDisabled, groupLabel,
+      groupItems, label } = this.props;
     return (
-      <StyledFilterItem key={this.state.id} id={this.state.id} block={this.props.block} opened={this.props.opened} >
-        <StyledFilterItemContent isDisabled={this.props.isDisabled} isOpen={this.state.isOpen}>
-          {this.props.groupLabel}:
-              {this.props.groupItems.length > 1 ?
+      <StyledFilterItem key={id} id={id} block={block} opened={opened} >
+        <StyledFilterItemContent isDisabled={isDisabled} isOpen={isOpen}>
+          {groupLabel}:
+              {groupItems.length > 1 ?
             <ComboBox
               className='styled-combobox'
-              options={this.props.groupItems}
-              isDisabled={this.props.isDisabled}
+              options={groupItems}
+              isDisabled={isDisabled}
               onSelect={this.onSelect}
               selectedOption={{
-                key: this.state.id,
-                label: this.props.label
+                key: id,
+                label
               }}
               size='content'
               scaled={false}
               noBorder={true}
-              opened={this.props.opened}
+              opened={opened}
               directionX='left'
-              toggleAction={(e, isOpen) => {
-                this.setState({
-                  isOpen: isOpen
-                })
-              }}
+              toggleAction={this.toggleCombobox}
               dropDownMaxHeight={200}
             ></ComboBox>
-            : <span className='styled-filter-name'>{this.props.label}</span>
+            : <span className='styled-filter-name'>{label}</span>
           }
         </StyledFilterItemContent>
 
 
-        <StyledCloseButtonBlock onClick={this.onClick} isDisabled={this.props.isDisabled} isClickable={true}>
+        <StyledCloseButtonBlock onClick={this.onClick} isDisabled={isDisabled} isClickable={true}>
           <CloseButton
-            isDisabled={this.props.isDisabled}
+            isDisabled={isDisabled}
             onClick={this.onClick}
           />
         </StyledCloseButtonBlock>
@@ -88,61 +93,91 @@ class FilterBlock extends React.Component {
   constructor(props) {
     super(props);
 
+    const { hideFilterItems, openFilterItems } = props;
+
     this.state = {
-      hideFilterItems: this.props.hideFilterItems || [],
-      openFilterItems: this.props.openFilterItems || []
+      hideFilterItems: hideFilterItems || [],
+      openFilterItems: openFilterItems || []
     };
 
     this.throttledRender = throttle(this.onRender, 100);
 
   }
+
+  componentDidUpdate() {
+    this.throttledRender();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+
+    const { hideFilterItems, openFilterItems } = nextProps;
+
+    if (!isEqual(this.props, nextProps)) {
+      if (!isEqual(this.props.hideFilterItems, hideFilterItems) || !isEqual(this.props.openFilterItems, openFilterItems)) {
+        this.setState({
+          hideFilterItems,
+          openFilterItems
+        });
+        return false;
+      }
+      return true;
+    }
+    if (this.props.isResizeUpdate) {
+      return true;
+    }
+    return !isEqual(this.state, nextState);
+  }
+
   onDeleteFilterItem = (key) => {
     this.props.onDeleteFilterItem(key);
   }
   getFilterItems = () => {
+    const { openFilterItems, hideFilterItems } = this.state;
     const _this = this;
     let result = [];
     let openItems = [];
     let hideItems = [];
-    if (this.state.openFilterItems.length > 0) {
-      openItems = this.state.openFilterItems.map(function (item) {
+    if (openFilterItems.length > 0) {
+      openItems = openFilterItems.map(function (item) {
+        const { key, group, groupLabel, label } = item;
         return <FilterItem
           block={false}
           isDisabled={_this.props.isDisabled}
-          key={item.key}
+          key={key}
           groupItems={_this.props.getFilterData().filter(function (t) {
-            return (t.group == item.group && t.group != t.key);
+            return (t.group == group && t.group != t.key);
           })}
           onSelectFilterItem={_this.props.onClickFilterItem}
-          id={item.key}
-          groupLabel={item.groupLabel}
-          label={item.label}
-          opened={item.key.indexOf('_-1') == -1 ? false : true}
+          id={key}
+          groupLabel={groupLabel}
+          label={label}
+          opened={key.indexOf('_-1') == -1 ? false : true}
           onClose={_this.onDeleteFilterItem}>
         </FilterItem>
       });
     }
-    if (this.state.hideFilterItems.length > 0) {
-      var open = false;
-      var hideFilterItemsList = this.state.hideFilterItems.map(function (item) {
-        open = item.key.indexOf('_-1') == -1 ? false : true
+    if (hideFilterItems.length > 0) {
+      let open = false;
+      let hideFilterItemsList = hideFilterItems.map(function (item) {
+        const { key, group, groupLabel, label } = item;
+        open = key.indexOf('_-1') == -1 ? false : true
         return <FilterItem
           block={true}
           isDisabled={_this.props.isDisabled}
-          key={item.key}
+          key={key}
           groupItems={_this.props.getFilterData().filter(function (t) {
-            return (t.group == item.group && t.group != t.key);
+            return (t.group == group && t.group != t.key);
           })}
           onSelectFilterItem={_this.props.onClickFilterItem}
-          id={item.key}
-          groupLabel={item.groupLabel}
-          opened={item.key.indexOf('_-1') == -1 ? false : true}
-          label={item.label}
+          id={key}
+          groupLabel={groupLabel}
+          opened={key.indexOf('_-1') == -1 ? false : true}
+          label={label}
           onClose={_this.onDeleteFilterItem}>
         </FilterItem>
       })
       hideItems.push(
-        <HideFilter key="hide-filter" count={this.state.hideFilterItems.length} isDisabled={this.props.isDisabled} open={open}>
+        <HideFilter key="hide-filter" count={hideFilterItems.length} isDisabled={this.props.isDisabled} open={open}>
           {
             hideFilterItemsList
           }
@@ -168,52 +203,34 @@ class FilterBlock extends React.Component {
     });
     return result;
   }
-  componentDidUpdate() {
-    this.throttledRender();
-  }
+
   onRender = () => {
     this.props.onRender();
-  }
-  shouldComponentUpdate(nextProps, nextState) {
-
-    if (!isEqual(this.props, nextProps)) {
-      if (!isEqual(this.props.hideFilterItems, nextProps.hideFilterItems) || !isEqual(this.props.openFilterItems, nextProps.openFilterItems)) {
-        this.setState({
-          hideFilterItems: nextProps.hideFilterItems,
-          openFilterItems: nextProps.openFilterItems
-        });
-        return false;
-      }
-      return true;
-    }
-    if (this.props.isResizeUpdate) {
-      return true;
-    }
-    return !isEqual(this.state, nextState);
   }
   render() {
     const _this = this;
     const filterItems = this.getFilterItems();
     const filterData = this.props.getFilterData();
+    const { iconSize, isDisabled } = this.props;
     return (
       <>
         <div className='styled-filter-block' ref={this.filterWrapper} id='filter-items-container'>
           {filterItems}
         </div>
-        {filterData.length > 0 && <FilterButton id='filter-button' iconSize={this.props.iconSize} getData={_this.getData} isDisabled={this.props.isDisabled} />}
+        {filterData.length > 0 && <FilterButton id='filter-button' iconSize={iconSize} getData={_this.getData} isDisabled={isDisabled} />}
       </>
     );
   }
 }
 FilterBlock.propTypes = {
+  getFilterData: PropTypes.func,
+  hideFilterItems: PropTypes.array,
   iconSize: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   isDisabled: PropTypes.bool,
   isResizeUpdate: PropTypes.bool,
-  hideFilterItems: PropTypes.array,
-  openFilterItems: PropTypes.array,
-  onRender: PropTypes.func,
   onDeleteFilterItem: PropTypes.func,
-  getFilterData: PropTypes.func
+  onRender: PropTypes.func,
+  openFilterItems: PropTypes.array,
 }
 
 export default FilterBlock;
