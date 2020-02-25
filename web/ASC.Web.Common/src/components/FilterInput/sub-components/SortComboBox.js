@@ -8,32 +8,32 @@ class SortComboBox extends React.Component {
     constructor(props) {
         super(props);
 
+        const { sortDirection } = props;
+
         this.state = {
-            sortDirection: this.props.sortDirection
+            sortDirection
         }
 
         this.combobox = React.createRef();
-
-        this.onChangeSortId = this.onChangeSortId.bind(this);
-        this.onChangeSortDirection = this.onChangeSortDirection.bind(this);
-        this.onButtonClick = this.onButtonClick.bind(this);
-
     }
-    onButtonClick() {
-        typeof this.props.onChangeSortDirection === 'function' && this.props.onChangeSortDirection(+(this.state.sortDirection === 0 ? 1 : 0));
+    onButtonClick = () => {
+        const { onChangeSortDirection } = this.props;
+        const { sortDirection } = this.state;
+        typeof onChangeSortDirection === 'function' && onChangeSortDirection(+(sortDirection === 0 ? 1 : 0));
         this.setState({
-            sortDirection: this.state.sortDirection === 0 ? 1 : 0
+            sortDirection: sortDirection === 0 ? 1 : 0
         });
     }
 
-    onChangeSortId(e) {
-        typeof this.props.onChangeSortId === 'function' && this.props.onChangeSortId(e.target.value);
+    onChangeSortId = (e) => {
+        const { onChangeSortId } = this.props;
+        typeof onChangeSortId === 'function' && onChangeSortId(e.target.value);
     }
-    onChangeSortDirection(e) {
-        this.setState({
-            sortDirection: +e.target.value
-        });
-        typeof this.props.onChangeSortDirection === 'function' && this.props.onChangeSortDirection(+e.target.value);
+    onChangeSortDirection = (e) => {
+        const sortDirection = +e.target.value;
+        const { onChangeSortDirection } = this.props;
+        this.setState({ sortDirection });
+        typeof onChangeSortDirection === 'function' && onChangeSortDirection(sortDirection);
     }
     shouldComponentUpdate(nextProps, nextState) {
         //TODO 
@@ -43,22 +43,26 @@ class SortComboBox extends React.Component {
         }else{
             comboboxText.style.opacity = "1";
         }*/
-        if (this.props.sortDirection !== nextProps.sortDirection) {
+        const { sortDirection } = nextProps;
+        if (this.props.sortDirection !== sortDirection) {
             this.setState({
-                sortDirection: nextProps.sortDirection
+                sortDirection
             });
             return true;
         }
         return (!isEqual(this.props, nextProps) || !isEqual(this.state, nextState));
     }
     render() {
-        let sortArray = this.props.options.map(function (item) {
+        const { options, directionAscLabel, directionDescLabel, isDisabled,
+            selectedOption } = this.props;
+            const { sortDirection } = this.state;
+        let sortArray = options.map(function (item) {
             item.value = item.key
             return item;
         });
         let sortDirectionArray = [
-            { value: '0', label: this.props.directionAscLabel },
-            { value: '1', label: this.props.directionDescLabel }
+            { value: '0', label: directionAscLabel },
+            { value: '1', label: directionDescLabel }
         ];
 
         const isMobile = window.innerWidth > 375; //TODO: Make some better
@@ -67,54 +71,54 @@ class SortComboBox extends React.Component {
             <>
                 <DropDownItem noHover >
                     <RadioButtonGroup
-                        orientation='vertical'
-                        onClick={this.onChangeSortDirection}
-                        isDisabled={this.props.isDisabled}
-                        selected={this.state.sortDirection.toString()}
-                        spacing='0px'
+                        fontWeight={600}
+                        isDisabled={isDisabled}
                         name={'direction'}
+                        onClick={this.onChangeSortDirection}
                         options={sortDirectionArray}
-                        fontWeight ={600}
+                        orientation='vertical'
+                        selected={sortDirection.toString()}
+                        spacing='0px'
                     />
                 </DropDownItem>
                 <DropDownItem isSeparator />
                 <DropDownItem noHover >
                     <RadioButtonGroup
-                        orientation='vertical'
-                        onClick={this.onChangeSortId}
-                        isDisabled={this.props.isDisabled}
-                        selected={this.props.selectedOption.key}
-                        spacing='0px'
+                        fontWeight={600}
+                        isDisabled={isDisabled}
                         name={'sort'}
+                        onClick={this.onChangeSortId}
                         options={sortArray}
-                        fontWeight ={600}
+                        orientation='vertical'
+                        selected={selectedOption.key}
+                        spacing='0px'
                     />
                 </DropDownItem>
             </>
         );
         return (
             <ComboBox
-                className='styled-sort-combobox'
-                ref={this.combobox}
-                options={[]}
                 advancedOptions={advancedOptions}
-                isDisabled={this.props.isDisabled}
-                selectedOption={this.props.selectedOption}
+                className='styled-sort-combobox'
+                directionX="right"
+                isDisabled={isDisabled}
+                options={[]}
+                ref={this.combobox}
                 scaled={true}
                 scaledOptions={isMobile}
+                selectedOption={selectedOption}
                 size="content"
-                directionX="right"
             >
-                <StyledIconButton sortDirection={!!this.state.sortDirection}>
+                <StyledIconButton sortDirection={!!sortDirection}>
                     <IconButton
+                        clickColor={"#333"}
                         color={"#A3A9AE"}
                         hoverColor={"#333"}
-                        clickColor={"#333"}
-                        size={10}
                         iconName={'ZASortingIcon'}
+                        isDisabled={isDisabled}
                         isFill={true}
-                        isDisabled={this.props.isDisabled}
                         onClick={this.onButtonClick}
+                        size={10}
                     />
                 </StyledIconButton>
             </ComboBox>
@@ -123,13 +127,13 @@ class SortComboBox extends React.Component {
 }
 
 SortComboBox.propTypes = {
-    isDisabled: PropTypes.bool,
-    sortDirection: PropTypes.number,
-    onChangeSortId: PropTypes.func,
-    onChangeSortDirection: PropTypes.func,
-    onButtonClick: PropTypes.func,
     directionAscLabel: PropTypes.string,
-    directionDescLabel: PropTypes.string
+    directionDescLabel: PropTypes.string,
+    isDisabled: PropTypes.bool,
+    onButtonClick: PropTypes.func,
+    onChangeSortDirection: PropTypes.func,
+    onChangeSortId: PropTypes.func,
+    sortDirection: PropTypes.number,
 }
 
 SortComboBox.defaultProps = {
