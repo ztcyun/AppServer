@@ -1,4 +1,4 @@
-/* import React from 'react'
+import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { withKnobs, text } from '@storybook/addon-knobs/react';
 import { BooleanValue } from 'react-values'
@@ -85,4 +85,4 @@ storiesOf('EXAMPLES|GroupButtonsMenu', module)
         </>
       )}
     </BooleanValue>
-  )); */
+  ));
