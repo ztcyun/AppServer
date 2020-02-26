@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Text from '../text';
+import { Text } from 'asc-web-components';
 
 const Label = (props) => {
     const { isRequired, error, title, truncate, isInline, htmlFor, text, display, className, id, style } = props;

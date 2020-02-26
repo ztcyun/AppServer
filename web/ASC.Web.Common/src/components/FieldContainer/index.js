@@ -1,8 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled, { css } from "styled-components";
-import { Label, Text, utils } from "asc-web-components";
+import { Text, utils } from "asc-web-components";
 import HelpButton from '../HelpButton';
+import Label from '../Label';
 
 const { tablet } = utils.device;
 
