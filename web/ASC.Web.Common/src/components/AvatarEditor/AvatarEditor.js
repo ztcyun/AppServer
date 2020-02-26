@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, ModalDialog } from 'asc-web-components';
+import { Button } from 'asc-web-components';
 import AvatarEditorBody from './sub-components/Body';
 import StyledAvatarEditor from './StyledAvatarEditor';
+import ModalDialog from '../ModalDialog';
 
 class AvatarEditor extends React.Component {
     constructor(props) {

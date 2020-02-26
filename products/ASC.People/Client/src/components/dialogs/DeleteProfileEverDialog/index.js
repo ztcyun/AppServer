@@ -4,13 +4,12 @@ import { withRouter } from "react-router";
 import PropTypes from "prop-types";
 import {
   toastr,
-  ModalDialog,
   Button,
   Text
 } from "asc-web-components";
 import { withTranslation, Trans } from "react-i18next";
 import i18n from "./i18n";
-import { api, utils } from "asc-web-common";
+import { ModalDialog, api, utils } from "asc-web-common";
 import { fetchPeople } from '../../../store/people/actions';
 import ModalDialogContainer from '../ModalDialogContainer';
 const { deleteUser } = api.people;

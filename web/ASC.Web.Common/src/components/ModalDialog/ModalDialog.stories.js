@@ -7,7 +7,7 @@ import withReadme from 'storybook-readme/with-readme';
 import Readme from './README.md';
 import Section from '../../../.storybook/decorators/section';
 import ModalDialog from '.';
-import Button from '../button';
+import { Button } from 'asc-web-components';
 
 
 storiesOf('Components|ModalDialog', module)

@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import {
   toastr,
-  ModalDialog,
   Button,
   Link,
   Text
@@ -10,7 +9,7 @@ import {
 import { withTranslation } from "react-i18next";
 import i18n from "./i18n";
 import ModalDialogContainer from '../ModalDialogContainer';
-import { api, utils } from "asc-web-common";
+import { ModalDialog, api, utils } from "asc-web-common";
 const { sendInstructionsToDelete } = api.people;
 const { changeLanguage } = utils;
 

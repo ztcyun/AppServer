@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import {
   toastr,
-  ModalDialog,
   Link,
   Checkbox,
   Button,
@@ -14,7 +13,7 @@ import { withTranslation } from "react-i18next";
 import i18n from "./i18n";
 import ModalDialogContainer from '../ModalDialogContainer';
 import copy from "copy-to-clipboard";
-import { api, utils } from "asc-web-common";
+import { ModalDialog, api, utils } from "asc-web-common";
 const { getShortenedLink } = api.portal;
 const { changeLanguage } = utils;
 const textAreaName = "link-textarea";

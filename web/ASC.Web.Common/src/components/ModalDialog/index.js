@@ -1,12 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
-import Backdrop from "../backdrop";
-import Aside from "../aside";
-import Heading from "../heading";
-import { desktop } from "../../utils/device";
 import throttle from "lodash/throttle";
-import { Icons } from "../icons";
+import { Icons, Heading, Aside, Backdrop, utils } from "asc-web-components";
+
+const { desktop } = utils.device;
 
 const Dialog = styled.div`
   position: relative;

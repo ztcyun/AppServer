@@ -2,14 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import {
   toastr,
-  ModalDialog,
   Button,
   Text
 } from "asc-web-components";
 import { withTranslation } from "react-i18next";
 import i18n from "./i18n";
 import ModalDialogContainer from '../ModalDialogContainer';
-import { FieldContainer, api, utils, EmailInput } from "asc-web-common";
+import { ModalDialog, FieldContainer, api, utils, EmailInput } from "asc-web-common";
 const { sendInstructionsToChangeEmail } = api.people;
 const { changeLanguage } = utils;
 

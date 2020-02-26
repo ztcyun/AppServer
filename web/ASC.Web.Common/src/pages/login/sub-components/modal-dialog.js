@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Button, TextInput, Text, ModalDialog } from "asc-web-components";
+import { Button, TextInput, Text } from "asc-web-components";
+import ModalDialog from '../../../components/ModalDialog';
 
 class SubModalDialog extends React.Component {
   render() {
