@@ -5,7 +5,7 @@ import { withKnobs, boolean } from '@storybook/addon-knobs/react';
 import withReadme from 'storybook-readme/with-readme';
 import Readme from './README.md';
 import PasswordInput from '.';
-import TextInput from '../text-input';
+import { TextInput } from 'asc-web-components';
 import Section from '../../../.storybook/decorators/section';
 
 storiesOf('Components|Input', module)

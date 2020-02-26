@@ -25,3 +25,4 @@ export { default as LinkWithDropdown } from './LinkWithDropdown';
 export { default as MainButton } from './MainButton';
 export { default as ModalDialog } from './ModalDialog';
 export { default as Paging } from './Paging';
+export { default as PasswordInput } from './PasswordInput';

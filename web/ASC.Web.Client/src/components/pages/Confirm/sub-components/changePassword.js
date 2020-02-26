@@ -7,13 +7,11 @@ import styled from "styled-components";
 import {
   Button,
   Text,
-  PasswordInput,
   Loader,
   toastr,
   Heading
 } from "asc-web-components";
-import { PageLayout } from "asc-web-common";
-import { store } from "asc-web-common";
+import { PasswordInput, PageLayout, store } from "asc-web-common";
 import { getConfirmationInfo, changePassword } from '../../../../store/confirm/actions';
 const { logout } = store.auth.actions;
 

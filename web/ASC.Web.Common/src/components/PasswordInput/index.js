@@ -3,12 +3,9 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import isEqual from "lodash/isEqual";
 
-import { tablet } from '../../utils/device';
-import InputBlock from '../input-block'
-import { Icons } from '../icons'
-import Link from '../link'
-import Text from '../text'
-import Tooltip from "../tooltip";
+import { InputBlock, Icons, Link, Text, Tooltip, utils } from 'asc-web-components'
+
+const { tablet } = utils.device;
 
 // eslint-disable-next-line no-unused-vars
 const SimpleInput = ({ onValidateInput, onCopyToClipboard, ...props }) => <div {...props}></div>;
