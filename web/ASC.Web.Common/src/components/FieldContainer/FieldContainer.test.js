@@ -1,7 +1,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import FieldContainer from '.';
-import TextInput from '../text-input';
+import { TextInput } from 'asc-web-components';
 
 describe('<FieldContainer />', () => {
   it('renders without error', () => {

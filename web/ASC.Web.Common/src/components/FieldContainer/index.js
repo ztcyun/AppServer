@@ -1,10 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled, { css } from "styled-components";
-import { tablet } from "../../utils/device";
-import Label from "../label";
-import HelpButton from "../help-button";
-import Text from "../text";
+import { Label, HelpButton, Text, utils } from "asc-web-components";
+
+const { tablet } = utils.device;
 
 function getHorizontalCss(labelWidth) {
   return css`

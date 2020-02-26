@@ -16,7 +16,7 @@ import TextInput from "../text-input";
 import Textarea from "../textarea";
 import ContextMenuButton from "../context-menu-button";
 import DatePicker from "../date-picker";
-import FieldContainer from "../field-container";
+// import FieldContainer from "../field-container";
 import Heading from "../heading";
 import Link from "../link";
 import Loader from "../loader";
@@ -372,7 +372,7 @@ storiesOf("Components|All", module)
               )}
             </StringValue>
           </div>
-          <div style={{ padding: "8px 0" }}>
+{/*           <div style={{ padding: "8px 0" }}>
             <StringValue>
               {({ value, set }) => (
                 <FieldContainer
@@ -388,7 +388,7 @@ storiesOf("Components|All", module)
                 </FieldContainer>
               )}
             </StringValue>
-          </div>
+          </div> */}
           <div style={{ padding: "8px 0" }}>
             <RadioButtonGroup
               name="fruits"

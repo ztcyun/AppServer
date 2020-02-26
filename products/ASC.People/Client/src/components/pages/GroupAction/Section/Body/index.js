@@ -1,7 +1,6 @@
 import {
   Button,
   ComboBox,
-  FieldContainer,
   Icons,
   SearchInput,
   SelectedItem,
@@ -9,7 +8,7 @@ import {
   toastr,
   utils
 } from "asc-web-components";
-import { PeopleSelector } from "asc-web-common";
+import { FieldContainer, PeopleSelector } from "asc-web-common";
 import {
   createGroup,
   resetGroup,

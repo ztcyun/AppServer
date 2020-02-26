@@ -1,10 +1,10 @@
 import React from "react";
 import { connect } from "react-redux";
 import { withTranslation } from 'react-i18next';
-import { FieldContainer, Text, ComboBox, Loader, Button, toastr, Link, TextInput } from "asc-web-components";
+import { Text, ComboBox, Loader, Button, toastr, Link, TextInput } from "asc-web-components";
 import styled from 'styled-components';
 import { Trans } from 'react-i18next';
-import { store, utils } from 'asc-web-common';
+import { FieldContainer, store, utils } from 'asc-web-common';
 import { setLanguageAndTime, getPortalTimezones, setGreetingTitle, restoreGreetingTitle } from '../../../../../store/settings/actions';
 import { default as clientStore } from '../../../../../store/store';
 

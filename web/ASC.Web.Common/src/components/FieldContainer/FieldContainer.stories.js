@@ -4,7 +4,7 @@ import { action } from "@storybook/addon-actions";
 import { StringValue } from "react-values";
 import { text, boolean, withKnobs, color } from "@storybook/addon-knobs/react";
 import FieldContainer from ".";
-import TextInput from "../text-input";
+import { TextInput } from "asc-web-components";
 import Section from "../../../.storybook/decorators/section";
 import withReadme from "storybook-readme/with-readme";
 import Readme from "./README.md";

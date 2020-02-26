@@ -5,7 +5,7 @@ Responsive form field container
 ### Usage
 
 ```js
-import { FieldContainer } from "asc-web-components";
+import { FieldContainer } from "asc-web-common";
 ```
 
 ```jsx

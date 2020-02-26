@@ -1,11 +1,10 @@
 import React from "react";
 import isEqual from "lodash/isEqual";
 import {
-  FieldContainer,
   SelectorAddButton,
   SelectedItem
 } from "asc-web-components";
-import { GroupSelector } from "asc-web-common";
+import { FieldContainer, GroupSelector } from "asc-web-common";
 
 class DepartmentField extends React.Component {
   shouldComponentUpdate(nextProps) {

@@ -1,7 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
 import { withTranslation, Trans } from 'react-i18next';
-import { FieldContainer, Text, Loader, Button, toastr, Link, TextInput } from "asc-web-components";
+import { Text, Loader, Button, toastr, Link, TextInput } from "asc-web-components";
+import { FieldContainer } from "asc-web-common";
 import { getWhiteLabelLogoText, getWhiteLabelLogoSizes, getWhiteLabelLogoUrls } from '../../../../../store/settings/actions';
 import styled from 'styled-components';
 
