@@ -11,7 +11,7 @@ import Calendar from "../calendar";
 import Checkbox from "../checkbox";
 import ComboBox from "../combobox";
 import InputBlock from "../input-block";
-import RadioButtonGroup from "../radio-button-group";
+// import RadioButtonGroup from "../radio-button-group";
 import TextInput from "../text-input";
 import Textarea from "../textarea";
 import ContextMenuButton from "../context-menu-button";
@@ -390,7 +390,7 @@ storiesOf("Components|All", module)
             </StringValue>
           </div> */}
           <div style={{ padding: "8px 0" }}>
-            <RadioButtonGroup
+            {/* <RadioButtonGroup
               name="fruits"
               selected="banana"
               options={[
@@ -398,7 +398,7 @@ storiesOf("Components|All", module)
                 { value: "banana", label: "Banana" },
                 { value: "Mandarin" }
               ]}
-            />
+            /> */}
           </div>
           <div style={{ padding: "8px 0" }}>
             <BooleanValue>
