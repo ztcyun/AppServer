@@ -27,3 +27,4 @@ export { default as ModalDialog } from './ModalDialog';
 export { default as Paging } from './Paging';
 export { default as PasswordInput } from './PasswordInput';
 export { default as RadioButtonGroup } from './RadioButtonGroup';
+export { default as RadioButton } from './RadioButton';

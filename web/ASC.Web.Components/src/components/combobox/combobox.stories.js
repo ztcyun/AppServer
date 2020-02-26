@@ -8,7 +8,7 @@ import Readme from './README.md';
 import ComboBox from '.';
 import { Icons } from '../icons';
 import Button from '../button';
-import RadioButton from '../radio-button';
+// import RadioButton from '../radio-button';
 import DropDownItem from '../drop-down-item'
 import Section from '../../../.storybook/decorators/section';
 
@@ -83,22 +83,22 @@ storiesOf('Components|Input', module)
       }
     });
 
-    const advancedOptions =
-      <>
-        <DropDownItem key='1' noHover>
-          <RadioButton value='asc' name='first' label='A-Z' isChecked={true} />
-        </DropDownItem>
-        <DropDownItem key='2' noHover>
-          <RadioButton value='desc' name='first' label='Z-A' />
-        </DropDownItem>
-        <DropDownItem key='3' isSeparator />
-        <DropDownItem key='4' noHover>
-          <RadioButton value='first' name='second' label='First name' />
-        </DropDownItem>
-        <DropDownItem key='5' noHover>
-          <RadioButton value='last' name='second' label='Last name' isChecked={true} />
-        </DropDownItem>
-      </>;
+    // const advancedOptions =
+    //   <>
+    //     <DropDownItem key='1' noHover>
+    //       <RadioButton value='asc' name='first' label='A-Z' isChecked={true} />
+    //     </DropDownItem>
+    //     <DropDownItem key='2' noHover>
+    //       <RadioButton value='desc' name='first' label='Z-A' />
+    //     </DropDownItem>
+    //     <DropDownItem key='3' isSeparator />
+    //     <DropDownItem key='4' noHover>
+    //       <RadioButton value='first' name='second' label='First name' />
+    //     </DropDownItem>
+    //     <DropDownItem key='5' noHover>
+    //       <RadioButton value='last' name='second' label='Last name' isChecked={true} />
+    //     </DropDownItem>
+    //   </>;
 
     const childrenItems = children.length > 0 ? children : null;
 
@@ -135,7 +135,7 @@ storiesOf('Components|Input', module)
               <td style={{ paddingBottom: 20 }}>
                 <ComboBox
                   options={[]}
-                  advancedOptions={advancedOptions}
+                  // advancedOptions={advancedOptions}
                   onSelect={option => action("Selected option")(option)}
                   selectedOption={{
                     key: 0,
