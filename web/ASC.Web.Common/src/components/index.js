@@ -22,3 +22,4 @@ export { default as FieldContainer } from './FieldContainer';
 export { default as HelpButton } from './HelpButton';
 export { default as Label } from './Label';
 export { default as LinkWithDropdown } from './LinkWithDropdown';
+export { default as MainButton } from './MainButton';

@@ -1,10 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled, { css } from "styled-components";
-import DropDown from "../drop-down";
-import { Icons } from "../icons";
-import { handleAnyClick } from "../../utils/event";
-import Text from "../text";
+import { Icons, DropDown, Text, utils } from "asc-web-components";
+
+const { handleAnyClick } = utils.event;
 
 const backgroundColor = "#ED7309",
   disableBackgroundColor = "#FFCCA6",
