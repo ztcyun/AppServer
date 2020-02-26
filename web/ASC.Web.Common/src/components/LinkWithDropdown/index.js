@@ -1,10 +1,7 @@
 import React from "react";
 import styled, { css } from "styled-components";
 import PropTypes from "prop-types";
-import { Icons } from "../icons";
-import DropDown from "../drop-down";
-import DropDownItem from "../drop-down-item";
-import Text from "../text";
+import { Icons, DropDown, DropDownItem, Text } from "asc-web-components";
 import isEqual from "lodash/isEqual";
 
 // eslint-disable-next-line no-unused-vars

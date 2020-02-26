@@ -21,3 +21,4 @@ export { default as GroupButtonsMenu } from './GroupButtonsMenu';
 export { default as FieldContainer } from './FieldContainer';
 export { default as HelpButton } from './HelpButton';
 export { default as Label } from './Label';
+export { default as LinkWithDropdown } from './LinkWithDropdown';

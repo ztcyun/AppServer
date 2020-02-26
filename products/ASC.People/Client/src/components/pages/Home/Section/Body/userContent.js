@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { withRouter } from "react-router";
-import { RowContent, Link, LinkWithDropdown, Icons, Text } from "asc-web-components";
+import { RowContent, Link, Icons, Text } from "asc-web-components";
+import { LinkWithDropdown } from 'asc-web-common';
 import { connect } from "react-redux";
 import { getUserStatus } from "../../../../../store/people/selectors";
 
