@@ -1,7 +1,6 @@
 import React from "react";
 import isEqual from "lodash/isEqual";
-import { RadioButtonGroup } from "asc-web-components";
-import { FieldContainer } from "asc-web-common";
+import { RadioButtonGroup, FieldContainer } from "asc-web-common";
 
 class RadioField extends React.Component {
   shouldComponentUpdate(nextProps) {

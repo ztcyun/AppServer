@@ -1,6 +1,7 @@
 import React from 'react';
 import isEqual from 'lodash/isEqual';
-import { ComboBox, IconButton, DropDownItem, RadioButtonGroup } from 'asc-web-components';
+import { ComboBox, IconButton, DropDownItem } from 'asc-web-components';
+import RadioButtonGroup from '../../RadioButtonGroup';
 import PropTypes from 'prop-types';
 import { StyledIconButton } from '../StyledFilterInput';
 

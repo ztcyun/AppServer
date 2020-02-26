@@ -1,9 +1,6 @@
 import React from "react";
 import isEqual from "lodash/isEqual";
-import {
-  RadioButtonGroup
-} from "asc-web-components";
-import { PasswordInput, FieldContainer } from 'asc-web-common';
+import { RadioButtonGroup, PasswordInput, FieldContainer } from 'asc-web-common';
 
 class PasswordField extends React.Component {
   shouldComponentUpdate(nextProps) {

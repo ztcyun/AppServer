@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import RadioButton from '../radio-button';
+import { RadioButton } from 'asc-web-components';
 import styled, { css } from 'styled-components';
 
 // eslint-disable-next-line react/prop-types, no-unused-vars

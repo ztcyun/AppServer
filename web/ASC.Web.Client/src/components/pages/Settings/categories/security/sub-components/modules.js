@@ -4,10 +4,8 @@ import { withRouter } from "react-router";
 import i18n from "../../../i18n";
 import { I18nextProvider, withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { Text, ToggleContent, RadioButtonGroup } from "asc-web-components";
-import { utils } from 'asc-web-common';
-
-const { changeLanguage } = utils;
+import { Text, ToggleContent } from "asc-web-components";
+import { RadioButtonGroup } from 'asc-web-common';
 
 const ProjectsContainer = styled.div`
   display: flex;
