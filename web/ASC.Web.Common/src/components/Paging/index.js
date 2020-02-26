@@ -2,8 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 
-import Button from '../button'
-import ComboBox from '../combobox'
+import { Button, ComboBox } from 'asc-web-components';
 
 const StyledPaging = styled.div`
   display: flex;
@@ -43,7 +42,6 @@ const StyledPage = styled.div`
         width: 120%;
       }
     }
-  }
 `;
 
 const Paging = props => {

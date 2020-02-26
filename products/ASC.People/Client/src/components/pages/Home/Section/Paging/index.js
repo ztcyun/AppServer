@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { connect } from "react-redux";
 import { fetchPeople } from "../../../../../store/people/actions";
-import { Paging } from "asc-web-components";
+import { Paging } from "asc-web-common";
 import { useTranslation } from 'react-i18next';
 
 const SectionPagingContent = ({

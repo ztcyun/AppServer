@@ -5,7 +5,7 @@ Paging is used to navigate med content pages
 ### Usage
 
 ```js
-import { Paging } from "asc-web-components";
+import { Paging } from "asc-web-common";
 ```
 
 ```jsx

@@ -17,7 +17,6 @@ import {
   RowContent,
   RowContainer,
   Link,
-  Paging,
   IconButton,
   toastr,
   Button,
@@ -25,7 +24,7 @@ import {
   Loader,
   Icons
 } from "asc-web-components";
-import { FilterInput, EmptyScreenContainer, PeopleSelector } from "asc-web-common";
+import { Paging, FilterInput, EmptyScreenContainer, PeopleSelector } from "asc-web-common";
 import { getUserRole } from "../../../../../../store/settings/selectors";
 import isEmpty from "lodash/isEmpty";
 

@@ -5,7 +5,8 @@ import styled from '@emotion/styled';
 import Layout from '.';
 import PageLayout from "../PageLayout";
 import Headline from '../Headline';
-import {IconButton, ContextMenuButton, MainButton, SearchInput, Paging} from "asc-web-components"
+import {IconButton, ContextMenuButton, MainButton, SearchInput } from "asc-web-components"
+import Paging from '../Paging';
 import withReadme from 'storybook-readme/with-readme';
 import { boolean, withKnobs } from '@storybook/addon-knobs/react';
 import Readme from './README.md';
