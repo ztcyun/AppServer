@@ -19,3 +19,4 @@ export { default as EmptyScreenContainer} from './EmptyScreenContainer';
 export { default as FilterInput } from './FilterInput';
 export { default as GroupButtonsMenu } from './GroupButtonsMenu';
 export { default as FieldContainer } from './FieldContainer';
+export { default as HelpButton } from './HelpButton';

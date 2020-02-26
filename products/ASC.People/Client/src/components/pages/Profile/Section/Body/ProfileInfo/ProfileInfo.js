@@ -5,11 +5,10 @@ import {
   IconButton,
   Link,
   toastr,
-  ComboBox,
-  HelpButton
+  ComboBox
 } from "asc-web-components";
 import styled from 'styled-components';
-import { history, api, store as commonStore } from "asc-web-common";
+import { HelpButton, history, api, store as commonStore } from "asc-web-common";
 import { connect } from "react-redux";
 import store from "../../../../../../store/store";
 const { resendUserInvites } = api.people;

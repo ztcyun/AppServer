@@ -1,15 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import IconButton from "../icon-button";
-import Tooltip from "../tooltip";
-import { handleAnyClick } from "../../utils/event";
+import { Tooltip, IconButton, utils, Aside, Backdrop, Heading } from "asc-web-components";
 import uniqueId from "lodash/uniqueId";
-import Aside from "../aside";
-import { desktop } from "../../utils/device";
-import Backdrop from "../backdrop";
-import Heading from "../heading";
 import throttle from "lodash/throttle";
 import styled from "styled-components";
+
+const { desktop } = utils.device;
+const { handleAnyClick } = utils.event;
 
 const Content = styled.div`
   box-sizing: border-box;

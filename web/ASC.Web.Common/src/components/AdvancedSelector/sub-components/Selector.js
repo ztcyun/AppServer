@@ -16,10 +16,10 @@ import {
   Loader,
   Text,
   Tooltip,
-  CustomScrollbarsVirtualList,
-  HelpButton
+  CustomScrollbarsVirtualList
 } from "asc-web-components";
 import StyledSelector from "./StyledSelector";
+import HelpButton from "../../HelpButton";
 
 const convertGroups = items => {
   if (!items) return [];

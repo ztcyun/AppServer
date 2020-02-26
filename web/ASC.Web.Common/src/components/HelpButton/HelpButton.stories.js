@@ -5,8 +5,7 @@ import withReadme from "storybook-readme/with-readme";
 import Readme from "./README.md";
 import HelpButton from ".";
 import Section from "../../../.storybook/decorators/section";
-import Text from "../text";
-import Link from "../link";
+import { Text, Link } from "asc-web-components";
 import styled from "styled-components";
 
 const IconButtons = styled.div`

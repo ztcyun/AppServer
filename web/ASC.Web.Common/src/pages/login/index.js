@@ -8,10 +8,10 @@ import {
   Heading,
   Link,
   toastr,
-  Checkbox,
-  HelpButton
+  Checkbox
 } from "asc-web-components";
 import PageLayout from "../../components/PageLayout";
+import HelpButton from "../../components/HelpButton";
 import { connect } from "react-redux";
 import styled from "styled-components";
 import { withTranslation } from "react-i18next";
