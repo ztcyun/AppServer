@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ASC.Files.Core.Data;
 using ASC.Files.Resources;
@@ -90,23 +91,23 @@ namespace ASC.Files.Core.Thirdparty
             return toFile;
         }
 
-        public Folder<TTo> PerformCrossDaoFolderCopy<TFrom, TTo>
+        public async Task<Folder<TTo>> PerformCrossDaoFolderCopy<TFrom, TTo>
             (TFrom fromFolderId, IFolderDao<TFrom> fromFolderDao, IFileDao<TFrom> fromFileDao, Func<TFrom, TFrom> fromConverter,
             TTo toRootFolderId, IFolderDao<TTo> toFolderDao, IFileDao<TTo> toFileDao, Func<TTo, TTo> toConverter,
             bool deleteSourceFolder, CancellationToken? cancellationToken)
         {
-            var fromFolder = fromFolderDao.GetFolder(fromConverter(fromFolderId));
+            var fromFolder = await fromFolderDao.GetFolder(fromConverter(fromFolderId));
 
             var toFolder1 = ServiceProvider.GetService<Folder<TTo>>();
             toFolder1.Title = fromFolder.Title;
             toFolder1.ParentFolderID = toConverter(toRootFolderId);
 
-            var toFolder = toFolderDao.GetFolder(fromFolder.Title, toConverter(toRootFolderId));
+            var toFolder = await toFolderDao.GetFolder(fromFolder.Title, toConverter(toRootFolderId));
             var toFolderId = toFolder != null
                                  ? toFolder.ID
-                                 : toFolderDao.SaveFolder(toFolder1);
+                                 : await toFolderDao.SaveFolder(toFolder1);
 
-            var foldersToCopy = fromFolderDao.GetFolders(fromConverter(fromFolderId));
+            var foldersToCopy = await fromFolderDao.GetFolders(fromConverter(fromFolderId));
             var fileIdsToCopy = fromFileDao.GetFiles(fromConverter(fromFolderId));
             Exception copyException = null;
             //Copy files first
@@ -129,7 +130,7 @@ namespace ASC.Files.Core.Thirdparty
                 if (cancellationToken.HasValue) cancellationToken.Value.ThrowIfCancellationRequested();
                 try
                 {
-                    PerformCrossDaoFolderCopy(folder.ID, fromFolderDao, fromFileDao, fromConverter,
+                    await PerformCrossDaoFolderCopy(folder.ID, fromFolderDao, fromFileDao, fromConverter,
                         toFolderId, toFolderDao, toFileDao, toConverter,
                         deleteSourceFolder, cancellationToken);
                 }
@@ -165,12 +166,12 @@ namespace ASC.Files.Core.Thirdparty
                 }
 
                 if (copyException == null)
-                    fromFolderDao.DeleteFolder(fromConverter(fromFolderId));
+                    await fromFolderDao.DeleteFolder(fromConverter(fromFolderId));
             }
 
             if (copyException != null) throw copyException;
 
-            return toFolderDao.GetFolder(toConverter(toFolderId));
+            return await toFolderDao.GetFolder(toConverter(toFolderId));
         }
     }
 }

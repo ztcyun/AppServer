@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using AppLimit.CloudComputing.SharpBox;
 using AppLimit.CloudComputing.SharpBox.Exceptions;
@@ -429,9 +430,9 @@ namespace ASC.Files.Thirdparty.Sharpbox
             return folder.Where(x => (x is ICloudDirectoryEntry));
         }
 
-        protected string GetAvailableTitle(string requestTitle, ICloudDirectoryEntry parentFolder, Func<string, ICloudDirectoryEntry, bool> isExist)
+        protected async Task<string> GetAvailableTitle(string requestTitle, ICloudDirectoryEntry parentFolder, Func<string, ICloudDirectoryEntry, Task<bool>> isExist)
         {
-            if (!isExist(requestTitle, parentFolder)) return requestTitle;
+            if (!await isExist(requestTitle, parentFolder)) return requestTitle;
 
             var re = new Regex(@"( \(((?<index>[0-9])+)\)(\.[^\.]*)?)$");
             var match = re.Match(requestTitle);
@@ -446,7 +447,7 @@ namespace ASC.Files.Thirdparty.Sharpbox
                 requestTitle = requestTitle.Insert(insertIndex, " (1)");
             }
 
-            while (isExist(requestTitle, parentFolder))
+            while (await isExist(requestTitle, parentFolder))
             {
                 requestTitle = re.Replace(requestTitle, MatchEvaluator);
             }

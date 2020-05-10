@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ASC.Files.Core
 {
@@ -37,7 +38,7 @@ namespace ASC.Files.Core
         /// </summary>
         /// <param name="folderId">folder id</param>
         /// <returns>folder</returns>
-        Folder<T> GetFolder(T folderId);
+        Task<Folder<T>> GetFolder(T folderId);
 
         /// <summary>
         ///     Returns the folder with the given name and id of the root
@@ -45,27 +46,27 @@ namespace ASC.Files.Core
         /// <param name="title"></param>
         /// <param name="parentId"></param>
         /// <returns></returns>
-        Folder<T> GetFolder(string title, T parentId);
+        Task<Folder<T>> GetFolder(string title, T parentId);
 
         /// <summary>
         ///    Gets the root folder
         /// </summary>
         /// <param name="folderId">folder id</param>
         /// <returns>root folder</returns>
-        Folder<T> GetRootFolder(T folderId);
+        Task<Folder<T>> GetRootFolder(T folderId);
 
         /// <summary>
         ///    Gets the root folder
         /// </summary>
         /// <param name="fileId">file id</param>
         /// <returns>root folder</returns>
-        Folder<T> GetRootFolderByFile(T fileId);
+        Task<Folder<T>> GetRootFolderByFile(T fileId);
 
         /// <summary>
         ///     Get a list of folders in current folder.
         /// </summary>
         /// <param name="parentId"></param>
-        List<Folder<T>> GetFolders(T parentId);
+        Task<List<Folder<T>>> GetFolders(T parentId);
 
         /// <summary>
         /// Get a list of folders.
@@ -78,7 +79,7 @@ namespace ASC.Files.Core
         /// <param name="searchText"></param>
         /// <param name="withSubfolders"></param>
         /// <returns></returns>
-        List<Folder<T>> GetFolders(T parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool withSubfolders = false);
+        Task<List<Folder<T>>> GetFolders(T parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool withSubfolders = false);
 
         /// <summary>
         /// Gets the folder (s) by ID (s)
@@ -91,27 +92,27 @@ namespace ASC.Files.Core
         /// <param name="searchSubfolders"></param>
         /// <param name="checkShare"></param>
         /// <returns></returns>
-        List<Folder<T>> GetFolders(T[] folderIds, FilterType filterType = FilterType.None, bool subjectGroup = false, Guid? subjectID = null, string searchText = "", bool searchSubfolders = false, bool checkShare = true);
+        Task<List<Folder<T>>> GetFolders(T[] folderIds, FilterType filterType = FilterType.None, bool subjectGroup = false, Guid? subjectID = null, string searchText = "", bool searchSubfolders = false, bool checkShare = true);
 
         /// <summary>
         ///     Get folder, contains folder with id
         /// </summary>
         /// <param name="folderId">folder id</param>
         /// <returns></returns>
-        List<Folder<T>> GetParentFolders(T folderId);
+        Task<List<Folder<T>>> GetParentFolders(T folderId);
 
         /// <summary>
         ///     save or update folder
         /// </summary>
         /// <param name="folder"></param>
         /// <returns></returns>
-        T SaveFolder(Folder<T> folder);
+        Task<T> SaveFolder(Folder<T> folder);
 
         /// <summary>
         ///     delete folder
         /// </summary>
         /// <param name="folderId">folder id</param>
-        void DeleteFolder(T folderId);
+        Task DeleteFolder(T folderId);
 
         /// <summary>
         ///  move folder
@@ -119,10 +120,10 @@ namespace ASC.Files.Core
         /// <param name="folderId">folder id</param>
         /// <param name="toFolderId">destination folder id</param>
         /// <param name="cancellationToken"></param>
-        T MoveFolder(T folderId, T toFolderId, CancellationToken? cancellationToken);
-        TTo MoveFolder<TTo>(T folderId, TTo toFolderId, CancellationToken? cancellationToken);
-        string MoveFolder(T folderId, string toFolderId, CancellationToken? cancellationToken);
-        int MoveFolder(T folderId, int toFolderId, CancellationToken? cancellationToken);
+        Task<T> MoveFolder(T folderId, T toFolderId, CancellationToken? cancellationToken);
+        Task<TTo> MoveFolder<TTo>(T folderId, TTo toFolderId, CancellationToken? cancellationToken);
+        Task<string> MoveFolder(T folderId, string toFolderId, CancellationToken? cancellationToken);
+        Task<int> MoveFolder(T folderId, int toFolderId, CancellationToken? cancellationToken);
 
         /// <summary>
         ///     copy folder
@@ -132,10 +133,10 @@ namespace ASC.Files.Core
         /// <param name="cancellationToken"></param>
         /// <returns> 
         /// </returns>
-        Folder<T> CopyFolder(T folderId, T toFolderId, CancellationToken? cancellationToken);
-        Folder<TTo> CopyFolder<TTo>(T folderId, TTo toFolderId, CancellationToken? cancellationToken);
-        Folder<string> CopyFolder(T folderId, string toFolderId, CancellationToken? cancellationToken);
-        Folder<int> CopyFolder(T folderId, int toFolderId, CancellationToken? cancellationToken);
+        Task<Folder<T>> CopyFolder(T folderId, T toFolderId, CancellationToken? cancellationToken);
+        Task<Folder<TTo>> CopyFolder<TTo>(T folderId, TTo toFolderId, CancellationToken? cancellationToken);
+        Task<Folder<string>> CopyFolder(T folderId, string toFolderId, CancellationToken? cancellationToken);
+        Task<Folder<int>> CopyFolder(T folderId, int toFolderId, CancellationToken? cancellationToken);
 
         /// <summary>
         /// Validate the transfer operation directory to another directory.
@@ -145,31 +146,31 @@ namespace ASC.Files.Core
         /// <returns>
         /// Returns pair of file ID, file name, in which the same name.
         /// </returns>
-        IDictionary<T, string> CanMoveOrCopy(T[] folderIds, T to);
-        IDictionary<T, string> CanMoveOrCopy<TTo>(T[] folderIds, TTo to);
-        IDictionary<T, string> CanMoveOrCopy(T[] folderIds, string to);
-        IDictionary<T, string> CanMoveOrCopy(T[] folderIds, int to);
+        Task<IDictionary<T, string>> CanMoveOrCopy(T[] folderIds, T to);
+        Task<IDictionary<T, string>> CanMoveOrCopy<TTo>(T[] folderIds, TTo to);
+        Task<IDictionary<T, string>> CanMoveOrCopy(T[] folderIds, string to);
+        Task<IDictionary<T, string>> CanMoveOrCopy(T[] folderIds, int to);
 
         /// <summary>
         ///     Rename folder
         /// </summary>
         /// <param name="folder"></param>
         /// <param name="newTitle">new name</param>
-        T RenameFolder(Folder<T> folder, string newTitle);
+        Task<T> RenameFolder(Folder<T> folder, string newTitle);
 
         /// <summary>
         ///    Gets the number of files and folders to the container in your
         /// </summary>
         /// <param name="folderId">folder id</param>
         /// <returns></returns>
-        int GetItemsCount(T folderId);
+        Task<int> GetItemsCount(T folderId);
 
         /// <summary>
         ///    Check folder on emptiness
         /// </summary>
         /// <param name="folderId">folder id</param>
         /// <returns></returns>
-        bool IsEmpty(T folderId);
+        Task<bool> IsEmpty(T folderId);
 
         /// <summary>
         /// Check the need to use the trash before removing
@@ -211,7 +212,7 @@ namespace ASC.Files.Core
         /// </summary>
         /// <param name="folderIds"></param>
         /// <param name="newOwnerId"></param>
-        void ReassignFolders(T[] folderIds, Guid newOwnerId);
+        Task ReassignFolders(T[] folderIds, Guid newOwnerId);
 
         /// <summary>
         /// Search the list of folders containing text in title
@@ -220,7 +221,7 @@ namespace ASC.Files.Core
         /// <param name="text"></param>
         /// <param name="bunch"></param>
         /// <returns></returns>
-        IEnumerable<Folder<T>> Search(string text, bool bunch = false);
+        Task<IEnumerable<Folder<T>>> Search(string text, bool bunch = false);
 
         /// <summary>
         /// Only in TMFolderDao
@@ -230,16 +231,16 @@ namespace ASC.Files.Core
         /// <param name="data"></param>
         /// <param name="createIfNotExists"></param>
         /// <returns></returns>
-        T GetFolderID(string module, string bunch, string data, bool createIfNotExists);
+        Task<T> GetFolderID(string module, string bunch, string data, bool createIfNotExists);
 
-        IEnumerable<T> GetFolderIDs(string module, string bunch, IEnumerable<string> data, bool createIfNotExists);
+        Task<IEnumerable<T>> GetFolderIDs(string module, string bunch, IEnumerable<string> data, bool createIfNotExists);
 
         /// <summary>
         ///  Returns id folder "Shared Documents"
         /// Only in TMFolderDao
         /// </summary>
         /// <returns></returns>
-        T GetFolderIDCommon(bool createIfNotExists);
+        Task<T> GetFolderIDCommon(bool createIfNotExists);
 
         /// <summary>
         ///  Returns id folder "My Documents"
@@ -248,7 +249,7 @@ namespace ASC.Files.Core
         /// <param name="createIfNotExists"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        T GetFolderIDUser(bool createIfNotExists, Guid? userId = null);
+        Task<T> GetFolderIDUser(bool createIfNotExists, Guid? userId = null);
 
         /// <summary>
         /// Returns id folder "Shared with me"
@@ -256,7 +257,7 @@ namespace ASC.Files.Core
         /// </summary>
         /// <param name="createIfNotExists"></param>
         /// <returns></returns>
-        T GetFolderIDShare(bool createIfNotExists);
+        Task<T> GetFolderIDShare(bool createIfNotExists);
 
         /// <summary>
         /// Returns id folder "Trash"
@@ -265,7 +266,7 @@ namespace ASC.Files.Core
         /// <param name="createIfNotExists"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        T GetFolderIDTrash(bool createIfNotExists, Guid? userId = null);
+        Task<T> GetFolderIDTrash(bool createIfNotExists, Guid? userId = null);
 
         /// <summary>
         /// Returns id folder "Projects"
@@ -273,7 +274,7 @@ namespace ASC.Files.Core
         /// </summary>
         /// <param name="createIfNotExists"></param>
         /// <returns></returns>
-        T GetFolderIDProjects(bool createIfNotExists);
+        Task<T> GetFolderIDProjects(bool createIfNotExists);
 
 
         /// <summary>
@@ -282,7 +283,7 @@ namespace ASC.Files.Core
         /// </summary>
         /// <param name="folderID"></param>
         /// <returns></returns>
-        string GetBunchObjectID(T folderID);
+        Task<string> GetBunchObjectID(T folderID);
 
         /// <summary>
         /// Return ids of related objects
@@ -290,7 +291,7 @@ namespace ASC.Files.Core
         /// </summary>
         /// <param name="folderIDs"></param>
         /// <returns></returns>
-        Dictionary<string, string> GetBunchObjectIDs(List<T> folderIDs);
+        Task<Dictionary<string, string>> GetBunchObjectIDs(List<T> folderIDs);
 
         #endregion
     }
