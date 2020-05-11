@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using ASC.Common.Logging;
 using ASC.Core;
@@ -184,9 +185,9 @@ namespace ASC.Files.Thirdparty.OneDrive
             return file;
         }
 
-        public Folder<string> GetRootFolder(string folderId)
+        public Task<Folder<string>> GetRootFolder(string folderId)
         {
-            return ToFolder(GetOneDriveItem(""));
+            return Task.FromResult(ToFolder(GetOneDriveItem("")));
         }
 
         protected Item GetOneDriveItem(string itemId)
@@ -242,10 +243,10 @@ namespace ASC.Files.Thirdparty.OneDrive
             }
         }
 
-        protected string GetAvailableTitle(string requestTitle, string parentFolderId, Func<string, string, bool> isExist)
+        protected async Task<string> GetAvailableTitle(string requestTitle, string parentFolderId, Func<string, string, Task<bool>> isExist)
         {
             requestTitle = new Regex("\\.$").Replace(requestTitle, "_");
-            if (!isExist(requestTitle, parentFolderId)) return requestTitle;
+            if (!await isExist(requestTitle, parentFolderId)) return requestTitle;
 
             var re = new Regex(@"( \(((?<index>[0-9])+)\)(\.[^\.]*)?)$");
             var match = re.Match(requestTitle);
@@ -260,7 +261,7 @@ namespace ASC.Files.Thirdparty.OneDrive
                 requestTitle = requestTitle.Insert(insertIndex, " (1)");
             }
 
-            while (isExist(requestTitle, parentFolderId))
+            while (await isExist(requestTitle, parentFolderId))
             {
                 requestTitle = re.Replace(requestTitle, MatchEvaluator);
             }

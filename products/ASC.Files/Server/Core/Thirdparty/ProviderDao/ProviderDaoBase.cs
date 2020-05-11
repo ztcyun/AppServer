@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Core;
@@ -137,23 +138,23 @@ namespace ASC.Files.Thirdparty.ProviderDao
                 deleteSourceFile);
         }
 
-        protected Folder<string> PerformCrossDaoFolderCopy(string fromFolderId, string toRootFolderId, bool deleteSourceFolder, CancellationToken? cancellationToken)
+        protected async Task<Folder<string>> PerformCrossDaoFolderCopy(string fromFolderId, string toRootFolderId, bool deleteSourceFolder, CancellationToken? cancellationToken)
         {
             var fromSelector = GetSelector(fromFolderId);
             var toSelector = GetSelector(toRootFolderId);
 
-            return CrossDao.PerformCrossDaoFolderCopy(
+            return await CrossDao.PerformCrossDaoFolderCopy(
                 fromFolderId, fromSelector.GetFolderDao(fromFolderId), fromSelector.GetFileDao(fromFolderId), fromSelector.ConvertId,
                 toRootFolderId, toSelector.GetFolderDao(toRootFolderId), toSelector.GetFileDao(toRootFolderId), toSelector.ConvertId,
                 deleteSourceFolder, cancellationToken);
         }
 
-        protected Folder<int> PerformCrossDaoFolderCopy(string fromFolderId, int toRootFolderId, bool deleteSourceFolder, CancellationToken? cancellationToken)
+        protected async Task<Folder<int>> PerformCrossDaoFolderCopy(string fromFolderId, int toRootFolderId, bool deleteSourceFolder, CancellationToken? cancellationToken)
         {
             var fromSelector = GetSelector(fromFolderId);
             using var scope = ServiceProvider.CreateScope();
 
-            return CrossDao.PerformCrossDaoFolderCopy(
+            return await CrossDao.PerformCrossDaoFolderCopy(
                 fromFolderId, fromSelector.GetFolderDao(fromFolderId), fromSelector.GetFileDao(fromFolderId), fromSelector.ConvertId,
                 toRootFolderId, scope.ServiceProvider.GetService<FolderDao>(), scope.ServiceProvider.GetService<IFileDao<int>>(), r => r,
                 deleteSourceFolder, cancellationToken);
