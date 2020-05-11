@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using ASC.Common.Logging;
 using ASC.Core;
@@ -187,9 +188,9 @@ namespace ASC.Files.Thirdparty.Dropbox
             return file;
         }
 
-        public Folder<string> GetRootFolder(string folderId)
+        public Task<Folder<string>> GetRootFolder(string folderId)
         {
-            return ToFolder(GetDropboxFolder(string.Empty));
+            return Task.FromResult(ToFolder(GetDropboxFolder(string.Empty)));
         }
 
         protected FolderMetadata GetDropboxFolder(string folderId)
@@ -277,9 +278,9 @@ namespace ASC.Files.Thirdparty.Dropbox
             }
         }
 
-        protected string GetAvailableTitle(string requestTitle, string parentFolderPath, Func<string, string, bool> isExist)
+        protected async Task<string> GetAvailableTitle(string requestTitle, string parentFolderPath, Func<string, string, Task<bool>> isExist)
         {
-            if (!isExist(requestTitle, parentFolderPath)) return requestTitle;
+            if (!await isExist(requestTitle, parentFolderPath)) return requestTitle;
 
             var re = new Regex(@"( \(((?<index>[0-9])+)\)(\.[^\.]*)?)$");
             var match = re.Match(requestTitle);
@@ -294,7 +295,7 @@ namespace ASC.Files.Thirdparty.Dropbox
                 requestTitle = requestTitle.Insert(insertIndex, " (1)");
             }
 
-            while (isExist(requestTitle, parentFolderPath))
+            while (await isExist(requestTitle, parentFolderPath))
             {
                 requestTitle = re.Replace(requestTitle, MatchEvaluator);
             }

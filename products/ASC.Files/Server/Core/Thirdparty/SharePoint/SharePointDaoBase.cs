@@ -27,6 +27,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using ASC.Common.Logging;
 using ASC.Core;
@@ -50,9 +51,9 @@ namespace ASC.Files.Thirdparty.SharePoint
         {
         }
 
-        protected string GetAvailableTitle(string requestTitle, Folder parentFolderID, Func<string, Folder, bool> isExist)
+        protected async Task<string> GetAvailableTitle(string requestTitle, Folder parentFolderID, Func<string, Folder, Task<bool>> isExist)
         {
-            if (!isExist(requestTitle, parentFolderID)) return requestTitle;
+            if (!await isExist(requestTitle, parentFolderID)) return requestTitle;
 
             var re = new Regex(@"( \(((?<index>[0-9])+)\)(\.[^\.]*)?)$");
             var match = re.Match(requestTitle);
@@ -67,7 +68,7 @@ namespace ASC.Files.Thirdparty.SharePoint
                 requestTitle = requestTitle.Insert(insertIndex, " (1)");
             }
 
-            while (isExist(requestTitle, parentFolderID))
+            while (await isExist(requestTitle, parentFolderID))
             {
                 requestTitle = re.Replace(requestTitle, MatchEvaluator);
             }

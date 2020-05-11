@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common.Logging;
 using ASC.Common.Web;
@@ -207,9 +208,9 @@ namespace ASC.Files.Thirdparty.GoogleDrive
             return file;
         }
 
-        public Folder<string> GetRootFolder(string folderId)
+        public Task<Folder<string>> GetRootFolder(string folderId)
         {
-            return ToFolder(GetDriveEntry(""));
+            return Task.FromResult(ToFolder(GetDriveEntry("")));
         }
 
         protected DriveFile GetDriveEntry(string entryId)
