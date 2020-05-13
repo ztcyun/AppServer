@@ -149,7 +149,7 @@ namespace ASC.Web.Files.HttpHandlers
 
         private const string XmlPrefix = "docusign";
 
-        private void Webhook(HttpContext context)
+        private async Task Webhook(HttpContext context)
         {
             Log.Info("DocuSign webhook: " + context.Request.QueryString);
             try
@@ -207,7 +207,7 @@ namespace ASC.Web.Files.HttpHandlers
                                     }
                                 }
 
-                                var file = DocuSignHelper.SaveDocument(envelopeId, documentId, documentName, folderId);
+                                var file = await DocuSignHelper.SaveDocument(envelopeId, documentId, documentName, folderId);
 
                                 NotifyClient.SendDocuSignComplete(file, sourceTitle ?? documentName);
                             }

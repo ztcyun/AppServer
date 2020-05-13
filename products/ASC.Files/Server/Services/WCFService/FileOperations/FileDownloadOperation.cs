@@ -30,6 +30,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ASC.Common.Security.Authentication;
 using ASC.Common.Threading;
@@ -135,11 +136,11 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
         }
 
 
-        protected override void Do(IServiceScope scope)
+        protected override async Task Do(IServiceScope scope)
         {
             if (!Compress && !Files.Any() && !Folders.Any()) return;
 
-            entriesPathId = GetEntriesPathId(scope);
+            entriesPathId = await GetEntriesPathId(scope);
             if (entriesPathId == null || entriesPathId.Count == 0)
             {
                 if (Files.Count > 0)
@@ -206,28 +207,30 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             return entriesPathId;
         }
 
-        private ItemNameValueCollection<T> GetEntriesPathId(IServiceScope scope)
+        private async Task<ItemNameValueCollection<T>> GetEntriesPathId(IServiceScope scope)
         {
             var fileMarker = scope.ServiceProvider.GetService<FileMarker>();
             var entriesPathId = new ItemNameValueCollection<T>();
             if (0 < Files.Count)
             {
                 var files = FileDao.GetFiles(Files.ToArray());
-                files = FilesSecurity.FilterRead(files).ToList();
+                files = (await FilesSecurity.FilterRead(files)).ToList();
                 files.ForEach(file => entriesPathId.Add(ExecPathFromFile(scope, file, string.Empty)));
             }
             if (0 < Folders.Count)
             {
-                FilesSecurity.FilterRead(FolderDao.GetFolders(Files.ToArray())).ToList().Cast<FileEntry<T>>().ToList()
-                             .ForEach(folder => fileMarker.RemoveMarkAsNew(folder));
+                (await FilesSecurity.FilterRead(await FolderDao.GetFolders(Files.ToArray())))
+                    .Cast<FileEntry<T>>()
+                    .ToList()
+                    .ForEach(folder => fileMarker.RemoveMarkAsNew(folder));
 
-                var filesInFolder = GetFilesInFolders(scope, Folders, string.Empty);
+                var filesInFolder = await GetFilesInFolders(scope, Folders, string.Empty);
                 entriesPathId.Add(filesInFolder);
             }
             return entriesPathId;
         }
 
-        private ItemNameValueCollection<T> GetFilesInFolders(IServiceScope scope, IEnumerable<T> folderIds, string path)
+        private async Task<ItemNameValueCollection<T>> GetFilesInFolders(IServiceScope scope, IEnumerable<T> folderIds, string path)
         {
             var fileMarker = scope.ServiceProvider.GetService<FileMarker>();
 
@@ -238,24 +241,24 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             {
                 CancellationToken.ThrowIfCancellationRequested();
 
-                var folder = FolderDao.GetFolder(folderId);
-                if (folder == null || !FilesSecurity.CanRead(folder)) continue;
+                var folder = await FolderDao.GetFolder(folderId);
+                if (folder == null || !await FilesSecurity.CanRead(folder)) continue;
                 var folderPath = path + folder.Title + "/";
 
                 var files = FileDao.GetFiles(folder.ID, null, FilterType.None, false, Guid.Empty, string.Empty, true);
-                files = FilesSecurity.FilterRead(files).ToList();
+                files = (await FilesSecurity.FilterRead(files)).ToList();
                 files.ForEach(file => entriesPathId.Add(ExecPathFromFile(scope, file, folderPath)));
 
                 fileMarker.RemoveMarkAsNew(folder);
 
-                var nestedFolders = FolderDao.GetFolders(folder.ID);
-                nestedFolders = FilesSecurity.FilterRead(nestedFolders).ToList();
+                var nestedFolders = await FolderDao.GetFolders(folder.ID);
+                nestedFolders = (await FilesSecurity.FilterRead(nestedFolders)).ToList();
                 if (files.Count == 0 && nestedFolders.Count == 0)
                 {
                     entriesPathId.Add(folderPath, default(T));
                 }
 
-                var filesInFolder = GetFilesInFolders(scope, nestedFolders.ConvertAll(f => f.ID), folderPath);
+                var filesInFolder = await GetFilesInFolders(scope, nestedFolders.ConvertAll(f => f.ID), folderPath);
                 entriesPathId.Add(filesInFolder);
             }
             return entriesPathId;

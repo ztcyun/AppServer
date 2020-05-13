@@ -24,6 +24,7 @@
 */
 
 
+using System.Threading.Tasks;
 using System.Web;
 
 using ASC.Common;
@@ -90,28 +91,27 @@ namespace ASC.Web.Files.Utils
             return Signature.Read<T>(doc ?? string.Empty, Global.GetDocDbKey());
         }
 
-        public bool Check<T>(string doc, bool checkRead, IFileDao<T> fileDao, out File<T> file)
+        public async Task<(bool, File<T>)> Check<T>(string doc, bool checkRead, IFileDao<T> fileDao)
         {
-            var fileShare = Check(doc, fileDao, out file);
-            return (!checkRead && (fileShare == FileShare.ReadWrite || fileShare == FileShare.Review || fileShare == FileShare.FillForms || fileShare == FileShare.Comment))
-                || (checkRead && fileShare != FileShare.Restrict);
+            var (fileShare, file) = await Check(doc, fileDao);
+            return ((!checkRead && (fileShare == FileShare.ReadWrite || fileShare == FileShare.Review || fileShare == FileShare.FillForms || fileShare == FileShare.Comment))
+                || (checkRead && fileShare != FileShare.Restrict), file);
         }
 
-        public FileShare Check<T>(string doc, IFileDao<T> fileDao, out File<T> file)
+        public async Task<(FileShare, File<T>)> Check<T>(string doc, IFileDao<T> fileDao)
         {
-            file = null;
-            if (string.IsNullOrEmpty(doc)) return FileShare.Restrict;
+            if (string.IsNullOrEmpty(doc)) return (FileShare.Restrict, null);
             var fileId = Parse<T>(doc);
-            file = fileDao.GetFile(fileId);
-            if (file == null) return FileShare.Restrict;
+            var file = fileDao.GetFile(fileId);
+            if (file == null) return (FileShare.Restrict, file);
 
             var filesSecurity = FileSecurity;
-            if (filesSecurity.CanEdit(file, FileConstant.ShareLinkId)) return FileShare.ReadWrite;
-            if (filesSecurity.CanReview(file, FileConstant.ShareLinkId)) return FileShare.Review;
-            if (filesSecurity.CanFillForms(file, FileConstant.ShareLinkId)) return FileShare.FillForms;
-            if (filesSecurity.CanComment(file, FileConstant.ShareLinkId)) return FileShare.Comment;
-            if (filesSecurity.CanRead(file, FileConstant.ShareLinkId)) return FileShare.Read;
-            return FileShare.Restrict;
+            if (await filesSecurity.CanEdit(file, FileConstant.ShareLinkId)) return (FileShare.ReadWrite, file);
+            if (await filesSecurity.CanReview(file, FileConstant.ShareLinkId)) return (FileShare.Review, file);
+            if (await filesSecurity.CanFillForms(file, FileConstant.ShareLinkId)) return (FileShare.FillForms, file);
+            if (await filesSecurity.CanComment(file, FileConstant.ShareLinkId)) return (FileShare.Comment, file);
+            if (await filesSecurity.CanRead(file, FileConstant.ShareLinkId)) return (FileShare.Read, file);
+            return (FileShare.Restrict, file);
         }
     }
     public static class FileShareLinkExtension

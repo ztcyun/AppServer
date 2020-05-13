@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Files.Core;
 using ASC.Files.Core.Security;
@@ -102,39 +103,39 @@ namespace ASC.Web.Files.Configuration
         {
             var security = FileSecurity;
             var fileDao = DaoFactory.GetFileDao<int>();
-            return fileDao.Search(text).Where(security.CanRead);
+            return fileDao.Search(text).Where(r => security.CanRead(r).Result); //TODO: Result
         }
 
-        public IEnumerable<Folder<int>> SearchFolders(string text)
+        public async Task<IEnumerable<Folder<int>>> SearchFolders(string text)
         {
             var security = FileSecurity;
             IEnumerable<Folder<int>> result;
             var folderDao = DaoFactory.GetFolderDao<int>();
-            result = folderDao.Search(text).Where(security.CanRead);
+            result = (await folderDao.Search(text)).Where(r => security.CanRead(r).Result); //TODO: Result
 
             if (ThirdpartyConfiguration.SupportInclusion
                 && (Global.IsAdministrator || FilesSettingsHelper.EnableThirdParty))
             {
-                var id = GlobalFolderHelper.FolderMy;
+                var id = await GlobalFolderHelper.FolderMy;
                 if (!Equals(id, 0))
                 {
-                    var folderMy = folderDao.GetFolder(id);
+                    var folderMy = await folderDao.GetFolder(id);
                     //result = result.Concat(EntryManager.GetThirpartyFolders(folderMy, text));
                 }
 
-                id = GlobalFolderHelper.FolderCommon;
-                var folderCommon = folderDao.GetFolder(id);
+                id = await GlobalFolderHelper.FolderCommon;
+                var folderCommon = await folderDao.GetFolder(id);
                 //result = result.Concat(EntryManager.GetThirpartyFolders(folderCommon, text));
             }
 
             return result;
         }
 
-        public SearchResultItem[] Search(string text)
+        public async Task<SearchResultItem[]> Search(string text)
         {
             var folderDao = DaoFactory.GetFolderDao<int>();
-            var result = SearchFiles(text)
-                            .Select(r => new SearchResultItem
+            var result = await Task.WhenAll(SearchFiles(text)
+                            .Select(async r => new SearchResultItem
                             {
                                 Name = r.Title ?? string.Empty,
                                 Description = string.Empty,
@@ -143,14 +144,14 @@ namespace ASC.Web.Files.Configuration
                                 Additional = new Dictionary<string, object>
                                 {
                                     { "Author", r.CreateByString.HtmlEncode() },
-                                    { "Path", FolderPathBuilder(EntryManager.GetBreadCrumbs(r.FolderID, folderDao)) },
+                                    { "Path", FolderPathBuilder(await EntryManager.GetBreadCrumbs(r.FolderID, folderDao)) },
                                     { "Size", FileSizeComment.FilesSizeToString(r.ContentLength) }
                                 }
                             }
-            );
+            ));
 
-            var resultFolder = SearchFolders(text)
-                .Select(f =>
+            var resultFolder = await Task.WhenAll((await SearchFolders(text))
+                .Select(async f =>
                         new SearchResultItem
                         {
                             Name = f.Title ?? string.Empty,
@@ -160,10 +161,10 @@ namespace ASC.Web.Files.Configuration
                             Additional = new Dictionary<string, object>
                                     {
                                             { "Author", f.CreateByString.HtmlEncode() },
-                                            { "Path", FolderPathBuilder(EntryManager.GetBreadCrumbs(f.ID, folderDao)) },
+                                            { "Path", FolderPathBuilder(await EntryManager.GetBreadCrumbs(f.ID, folderDao)) },
                                             { "IsFolder", true }
                                     }
-                        });
+                        }));
 
             return result.Concat(resultFolder).ToArray();
         }

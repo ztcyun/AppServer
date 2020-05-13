@@ -33,6 +33,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Security;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 
 using ASC.Common;
@@ -113,12 +114,12 @@ namespace ASC.Web.Files.Utils
             }
         }
 
-        public ConvertFileOperationResult GetStatus(KeyValuePair<File<T>, bool> pair, FileSecurity fileSecurity)
+        public async Task<ConvertFileOperationResult> GetStatus(KeyValuePair<File<T>, bool> pair, FileSecurity fileSecurity)
         {
             var file = pair.Key;
             var key = GetKey(file);
             var operation = cache.Get<ConvertFileOperationResult>(key);
-            if (operation != null && (pair.Value || fileSecurity.CanRead(file)))
+            if (operation != null && (pair.Value || await fileSecurity.CanRead(file)))
             {
                 lock (locker)
                 {
@@ -231,7 +232,7 @@ namespace ASC.Web.Files.Utils
                             Thread.CurrentThread.CurrentCulture = culture;
                             Thread.CurrentThread.CurrentUICulture = culture;
 
-                            if (!fileSecurity.CanRead(file) && file.RootFolderType != FolderType.BUNCH)
+                            if (!fileSecurity.CanRead(file).Result && file.RootFolderType != FolderType.BUNCH) //todo:
                             {
                                 //No rights in CRM after upload before attach
                                 throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException_ReadFile);
@@ -313,7 +314,7 @@ namespace ASC.Web.Files.Utils
 
                         try
                         {
-                            newFile = FileConverter.SaveConvertedFile(file, convertedFileUrl);
+                            newFile = FileConverter.SaveConvertedFile(file, convertedFileUrl).Result; //todo: rseult
                         }
                         catch (Exception e)
                         {
@@ -339,8 +340,8 @@ namespace ASC.Web.Files.Utils
                                         if (newFile != null)
                                         {
                                             var folderDao = daoFactory.GetFolderDao<T>();
-                                            var folder = folderDao.GetFolder(newFile.FolderID);
-                                            var folderTitle = fileSecurity.CanRead(folder) ? folder.Title : null;
+                                            var folder = folderDao.GetFolder(newFile.FolderID).Result;//TODO:Result
+                                            var folderTitle = fileSecurity.CanRead(folder).Result ? folder.Title : null; //TODO:Result
                                             operationResult.Result = FileJsonSerializer(EntryManager, newFile, folderTitle);
                                         }
 
@@ -563,13 +564,14 @@ namespace ASC.Web.Files.Utils
             return new ResponseStream(((HttpWebRequest)WebRequest.Create(convertUri)).GetResponse());
         }
 
-        public File<T> ExecSync<T>(File<T> file, string doc)
+        public async Task<File<T>> ExecSync<T>(File<T> file, string doc)
         {
             var fileDao = DaoFactory.GetFileDao<T>();
             var fileSecurity = FileSecurity;
-            if (!fileSecurity.CanRead(file))
+            if (!await fileSecurity.CanRead(file))
             {
-                var readLink = FileShareLink.Check(doc, true, fileDao, out file);
+                var (readLink, tmpFile) = await FileShareLink.Check(doc, true, fileDao);
+                file = tmpFile;
                 if (file == null)
                 {
                     throw new ArgumentNullException("file", FilesCommonResource.ErrorMassage_FileNotFound);
@@ -588,7 +590,7 @@ namespace ASC.Web.Files.Utils
             fileUri = DocumentServiceConnector.ReplaceCommunityAdress(fileUri);
             DocumentServiceConnector.GetConvertedUri(fileUri, fileExtension, toExtension, docKey, null, false, out var convertUri);
 
-            return SaveConvertedFile(file, convertUri);
+            return await SaveConvertedFile(file, convertUri);
         }
 
         public void ExecAsync<T>(File<T> file, bool deleteAfter, string password = null)
@@ -616,12 +618,12 @@ namespace ASC.Web.Files.Utils
             return GetFileConverter<T>().IsConverting(file);
         }
 
-        public IEnumerable<FileOperationResult> GetStatus<T>(IEnumerable<KeyValuePair<File<T>, bool>> filesPair)
+        public async Task<IEnumerable<FileOperationResult>> GetStatus<T>(IEnumerable<KeyValuePair<File<T>, bool>> filesPair)
         {
             var result = new List<FileOperationResult>();
             foreach (var pair in filesPair)
             {
-                var r = GetFileConverter<T>().GetStatus(pair, FileSecurity);
+                var r = await GetFileConverter<T>().GetStatus(pair, FileSecurity);
 
                 if (r != null)
                 {
@@ -631,7 +633,7 @@ namespace ASC.Web.Files.Utils
             return result;
         }
 
-        public File<T> SaveConvertedFile<T>(File<T> file, string convertedFileUrl)
+        public async Task<File<T>> SaveConvertedFile<T>(File<T> file, string convertedFileUrl)
         {
             var fileSecurity = FileSecurity;
             var fileDao = DaoFactory.GetFileDao<T>();
@@ -639,18 +641,18 @@ namespace ASC.Web.Files.Utils
             File<T> newFile = null;
             var newFileTitle = FileUtility.ReplaceFileExtension(file.Title, FileUtility.GetInternalExtension(file.Title));
 
-            if (!FilesSettingsHelper.StoreOriginalFiles && fileSecurity.CanEdit(file))
+            if (!FilesSettingsHelper.StoreOriginalFiles && await fileSecurity.CanEdit(file))
             {
                 newFile = (File<T>)file.Clone();
                 newFile.Version++;
             }
             else
             {
-                var folderId = GlobalFolderHelper.GetFolderMy<T>();
+                var folderId = await GlobalFolderHelper.GetFolderMy<T>();
 
-                var parent = folderDao.GetFolder(file.FolderID);
+                var parent = await folderDao.GetFolder(file.FolderID);
                 if (parent != null
-                    && fileSecurity.CanCreate(parent))
+                    && await fileSecurity.CanCreate(parent))
                 {
                     folderId = parent.ID;
                 }
@@ -660,7 +662,7 @@ namespace ASC.Web.Files.Utils
                 if (FilesSettingsHelper.UpdateIfExist && (parent != null && !folderId.Equals(parent.ID) || !file.ProviderEntry))
                 {
                     newFile = fileDao.GetFile(folderId, newFileTitle);
-                    if (newFile != null && fileSecurity.CanEdit(newFile) && !EntryManager.FileLockedForMe(newFile.ID) && !FileTracker.IsEditing(newFile.ID))
+                    if (newFile != null && await fileSecurity.CanEdit(newFile) && !EntryManager.FileLockedForMe(newFile.ID) && !FileTracker.IsEditing(newFile.ID))
                     {
                         newFile.Version++;
                     }
@@ -693,7 +695,7 @@ namespace ASC.Web.Files.Utils
                 using (var convertedFileStream = new ResponseStream(req.GetResponse()))
                 {
                     newFile.ContentLength = convertedFileStream.Length;
-                    newFile = fileDao.SaveFile(newFile, convertedFileStream);
+                    newFile = await fileDao.SaveFile(newFile, convertedFileStream);
                 }
             }
             catch (WebException e)

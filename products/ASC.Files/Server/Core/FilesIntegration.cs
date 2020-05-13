@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Files.Core;
@@ -51,13 +52,13 @@ namespace ASC.Web.Files.Api
             GlobalStore = globalStore;
         }
 
-        public T RegisterBunch<T>(string module, string bunch, string data)
+        public async Task<T> RegisterBunch<T>(string module, string bunch, string data)
         {
             var folderDao = DaoFactory.GetFolderDao<T>();
-            return folderDao.GetFolderID(module, bunch, data, true);
+            return await folderDao.GetFolderID(module, bunch, data, true);
         }
 
-        public IEnumerable<T> RegisterBunchFolders<T>(string module, string bunch, IEnumerable<string> data)
+        public async Task<IEnumerable<T>> RegisterBunchFolders<T>(string module, string bunch, IEnumerable<string> data)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
@@ -69,7 +70,7 @@ namespace ASC.Web.Files.Api
             }
 
             var folderDao = DaoFactory.GetFolderDao<T>();
-            return folderDao.GetFolderIDs(module, bunch, data, true);
+            return await folderDao.GetFolderIDs(module, bunch, data, true);
         }
 
         public bool IsRegisteredFileSecurityProvider(string module, string bunch)

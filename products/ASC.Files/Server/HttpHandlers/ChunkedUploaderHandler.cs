@@ -153,12 +153,12 @@ namespace ASC.Web.Files.HttpHandlers
                         return;
 
                     case ChunkedRequestType.Initiate:
-                        var createdSession = FileUploader.InitiateUpload(request.FolderId, request.FileId, request.FileName, request.FileSize, request.Encrypted);
-                        await WriteSuccess(context, ChunkedUploadSessionHelper.ToResponseObject(createdSession, true));
+                        var createdSession = await FileUploader.InitiateUpload(request.FolderId, request.FileId, request.FileName, request.FileSize, request.Encrypted);
+                        await WriteSuccess(context, await ChunkedUploadSessionHelper.ToResponseObject(createdSession, true));
                         return;
 
                     case ChunkedRequestType.Upload:
-                        var resumedSession = FileUploader.UploadChunk<T>(request.UploadId, request.ChunkStream, request.ChunkSize);
+                        var resumedSession = await FileUploader.UploadChunk<T>(request.UploadId, request.ChunkStream, request.ChunkSize);
 
                         if (resumedSession.BytesUploaded == resumedSession.BytesTotal)
                         {
@@ -167,7 +167,7 @@ namespace ASC.Web.Files.HttpHandlers
                         }
                         else
                         {
-                            await WriteSuccess(context, ChunkedUploadSessionHelper.ToResponseObject(resumedSession));
+                            await WriteSuccess(context, await ChunkedUploadSessionHelper.ToResponseObject(resumedSession));
                         }
                         return;
 

@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Common.Logging;
@@ -263,7 +264,7 @@ namespace ASC.Files.Thirdparty.SharePoint
             return false;
         }
 
-        public File<string> SaveFile(File<string> file, Stream fileStream)
+        public async Task<File<string>> SaveFile(File<string> file, Stream fileStream)
         {
             if (fileStream == null) throw new ArgumentNullException("fileStream");
 
@@ -275,7 +276,7 @@ namespace ASC.Files.Thirdparty.SharePoint
                 if (!sharePointFile.Name.Equals(file.Title))
                 {
                     var folder = ProviderInfo.GetFolderById(file.FolderID);
-                    file.Title = GetAvailableTitle(file.Title, folder, IsExist);
+                    file.Title = await GetAvailableTitle(file.Title, folder, IsExist);
 
                     var id = ProviderInfo.RenameFile(DaoSelector.ConvertId(resultFile.ID).ToString(), file.Title);
                     return GetFile(DaoSelector.ConvertId(id));
@@ -286,16 +287,16 @@ namespace ASC.Files.Thirdparty.SharePoint
             if (file.FolderID != null)
             {
                 var folder = ProviderInfo.GetFolderById(file.FolderID);
-                file.Title = GetAvailableTitle(file.Title, folder, IsExist);
+                file.Title = await GetAvailableTitle(file.Title, folder, IsExist);
                 return ProviderInfo.ToFile(ProviderInfo.CreateFile(folder.ServerRelativeUrl + "/" + file.Title, fileStream));
             }
 
             return null;
         }
 
-        public File<string> ReplaceFileVersion(File<string> file, Stream fileStream)
+        public async Task<File<string>> ReplaceFileVersion(File<string> file, Stream fileStream)
         {
-            return SaveFile(file, fileStream);
+            return await SaveFile(file, fileStream);
         }
 
         public void DeleteFile(string fileId)
@@ -303,10 +304,10 @@ namespace ASC.Files.Thirdparty.SharePoint
             ProviderInfo.DeleteFile(fileId);
         }
 
-        public bool IsExist(string title, object folderId)
+        public Task<bool> IsExist(string title, object folderId)
         {
-            return ProviderInfo.GetFolderFiles(folderId)
-                .Any(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase));
+            return Task.FromResult(ProviderInfo.GetFolderFiles(folderId)
+                .Any(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         public bool IsExist(string title, Microsoft.SharePoint.Client.Folder folder)
@@ -315,24 +316,24 @@ namespace ASC.Files.Thirdparty.SharePoint
                 .Any(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public TTo MoveFile<TTo>(string fileId, TTo toFolderId)
+        public async Task<TTo> MoveFile<TTo>(string fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tId), typeof(TTo));
             }
 
             if (toFolderId is string tsId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tsId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tsId), typeof(TTo));
             }
 
             throw new NotImplementedException();
         }
 
-        public int MoveFile(string fileId, int toFolderId)
+        public async Task<int> MoveFile(string fileId, int toFolderId)
         {
-            var moved = CrossDao.PerformCrossDaoFileCopy(
+            var moved = await CrossDao.PerformCrossDaoFileCopy(
                 fileId, this, SharePointDaoSelector.ConvertId,
                 toFolderId, FileDao, r => r,
                 true);
@@ -340,31 +341,31 @@ namespace ASC.Files.Thirdparty.SharePoint
             return moved.ID;
         }
 
-        public string MoveFile(string fileId, string toFolderId)
+        public Task<string> MoveFile(string fileId, string toFolderId)
         {
             var newFileId = ProviderInfo.MoveFile(fileId, toFolderId);
             UpdatePathInDB(ProviderInfo.MakeId(fileId), newFileId);
-            return newFileId;
+            return Task.FromResult(newFileId);
         }
 
-        public File<TTo> CopyFile<TTo>(string fileId, TTo toFolderId)
+        public async Task<File<TTo>> CopyFile<TTo>(string fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return CopyFile(fileId, tId) as File<TTo>;
+                return await CopyFile(fileId, tId) as File<TTo>;
             }
 
             if (toFolderId is string tsId)
             {
-                return CopyFile(fileId, tsId) as File<TTo>;
+                return await CopyFile(fileId, tsId) as File<TTo>;
             }
 
             throw new NotImplementedException();
         }
 
-        public File<int> CopyFile(string fileId, int toFolderId)
+        public async Task<File<int>> CopyFile(string fileId, int toFolderId)
         {
-            var moved = CrossDao.PerformCrossDaoFileCopy(
+            var moved = await CrossDao.PerformCrossDaoFileCopy(
                 fileId, this, SharePointDaoSelector.ConvertId,
                 toFolderId, FileDao, r => r,
                 false);
@@ -372,16 +373,16 @@ namespace ASC.Files.Thirdparty.SharePoint
             return moved;
         }
 
-        public File<string> CopyFile(string fileId, string toFolderId)
+        public Task<File<string>> CopyFile(string fileId, string toFolderId)
         {
-            return ProviderInfo.ToFile(ProviderInfo.CopyFile(fileId, toFolderId));
+            return Task.FromResult(ProviderInfo.ToFile(ProviderInfo.CopyFile(fileId, toFolderId)));
         }
 
-        public string FileRename(File<string> file, string newTitle)
+        public Task<string> FileRename(File<string> file, string newTitle)
         {
             var newFileId = ProviderInfo.RenameFile(file.ID, newTitle);
             UpdatePathInDB(ProviderInfo.MakeId(file.ID), newFileId);
-            return newFileId;
+            return Task.FromResult(newFileId);
         }
 
         public string UpdateComment(string fileId, int fileVersion, string comment)
@@ -402,19 +403,19 @@ namespace ASC.Files.Thirdparty.SharePoint
             return false;
         }
 
-        public ChunkedUploadSession<string> CreateUploadSession(File<string> file, long contentLength)
+        public Task<ChunkedUploadSession<string>> CreateUploadSession(File<string> file, long contentLength)
         {
-            return new ChunkedUploadSession<string>(FixId(file), contentLength) { UseChunks = false };
+            return Task.FromResult(new ChunkedUploadSession<string>(FixId(file), contentLength) { UseChunks = false });
         }
 
-        public void UploadChunk(ChunkedUploadSession<string> uploadSession, Stream chunkStream, long chunkLength)
+        public async Task UploadChunk(ChunkedUploadSession<string> uploadSession, Stream chunkStream, long chunkLength)
         {
             if (!uploadSession.UseChunks)
             {
                 if (uploadSession.BytesTotal == 0)
                     uploadSession.BytesTotal = chunkLength;
 
-                uploadSession.File = SaveFile(uploadSession.File, chunkStream);
+                uploadSession.File = await SaveFile(uploadSession.File, chunkStream);
                 uploadSession.BytesUploaded = chunkLength;
                 return;
             }

@@ -27,6 +27,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Files.Core;
@@ -119,33 +120,33 @@ namespace ASC.Api.Documents
             FolderWrapperHelper = folderWrapperHelper;
         }
 
-        public FolderContentWrapper<T> Get<T>(DataWrapper<T> folderItems, int startIndex)
+        public async Task<FolderContentWrapper<T>> Get<T>(DataWrapper<T> folderItems, int startIndex)
         {
             var result = new FolderContentWrapper<T>
             {
-                Files = folderItems.Entries.OfType<File<T>>().Select(FileWrapperHelper.Get).ToList(),
-                Folders = folderItems.Entries
+                Files = (await Task.WhenAll(folderItems.Entries.OfType<File<T>>().Select(FileWrapperHelper.Get))).ToList(),
+                Folders = (await Task.WhenAll(folderItems.Entries
                 .Where(r => r.FileEntryType == FileEntryType.Folder)
-                .Select(r =>
+                .Select(async r =>
                 {
                     FileEntryWrapper wrapper = null;
                     if (r is Folder<int> fol1)
                     {
-                        wrapper = FolderWrapperHelper.Get(fol1);
+                        wrapper = await FolderWrapperHelper.Get(fol1);
                     }
                     if (r is Folder<string> fol2)
                     {
-                        wrapper = FolderWrapperHelper.Get(fol2);
+                        wrapper = await FolderWrapperHelper.Get(fol2);
                     }
 
                     return wrapper;
                 }
-                ).ToList(),
+                ))).ToList(),
                 PathParts = folderItems.FolderPathParts,
                 StartIndex = startIndex
             };
 
-            result.Current = FolderWrapperHelper.Get(folderItems.FolderInfo);
+            result.Current = await FolderWrapperHelper.Get(folderItems.FolderInfo);
             result.Count = result.Files.Count + result.Folders.Count;
             result.Total = folderItems.Total;
 

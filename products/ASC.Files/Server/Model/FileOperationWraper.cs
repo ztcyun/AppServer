@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Files.Core;
@@ -132,7 +133,7 @@ namespace ASC.Api.Documents
             CommonLinkUtility = commonLinkUtility;
         }
 
-        public FileOperationWraper Get(FileOperationResult o)
+        public async Task<FileOperationWraper> Get(FileOperationResult o)
         {
             var result = new FileOperationWraper
             {
@@ -168,8 +169,8 @@ namespace ASC.Api.Documents
                         }
                     }
 
-                    result.Folders = GetFolders(folders).ToList();
-                    result.Folders.AddRange(GetFolders(fInt));
+                    result.Folders = (await GetFolders(folders)).ToList();
+                    result.Folders.AddRange(await GetFolders(fInt));
                 }
                 var files = arr
                     .Where(s => s.StartsWith("file_"))
@@ -204,11 +205,13 @@ namespace ASC.Api.Documents
 
             return result;
 
-            IEnumerable<FileEntryWrapper> GetFolders<T>(IEnumerable<T> folders)
+            async Task<IEnumerable<FileEntryWrapper>> GetFolders<T>(IEnumerable<T> folders)
             {
                 var folderDao = DaoFactory.GetFolderDao<T>();
-                return folderDao.GetFolders(folders.ToArray())
-                    .Select(FolderWrapperHelper.Get)
+                return (
+                      await Task.WhenAll(
+                     (await folderDao.GetFolders(folders.ToArray()))
+                    .Select(FolderWrapperHelper.Get)))
                     .Cast<FileEntryWrapper>();
             }
 

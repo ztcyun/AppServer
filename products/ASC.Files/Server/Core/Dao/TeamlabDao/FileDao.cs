@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Core;
@@ -49,6 +50,7 @@ using ASC.Web.Studio.Core;
 using ASC.Web.Studio.UserControls.Statistics;
 using ASC.Web.Studio.Utility;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ASC.Files.Core.Data
@@ -344,7 +346,7 @@ namespace ASC.Files.Core.Data
             return GetFileStream(file, 0);
         }
 
-        public File<int> SaveFile(File<int> file, Stream fileStream)
+        public Task<File<int>> SaveFile(File<int> file, Stream fileStream)
         {
             if (file == null)
             {
@@ -478,10 +480,10 @@ namespace ASC.Files.Core.Data
 
             FactoryIndexer.IndexAsync(FilesWrapper.GetFilesWrapper(ServiceProvider, file, parentFoldersIds));
 
-            return GetFile(file.ID);
+            return Task.FromResult(GetFile(file.ID));
         }
 
-        public File<int> ReplaceFileVersion(File<int> file, Stream fileStream)
+        public Task<File<int>> ReplaceFileVersion(File<int> file, Stream fileStream)
         {
             if (file == null) throw new ArgumentNullException("file");
             if (file.ID == default) throw new ArgumentException("No file id or folder id toFolderId determine provider");
@@ -581,7 +583,7 @@ namespace ASC.Files.Core.Data
 
             FactoryIndexer.IndexAsync(FilesWrapper.GetFilesWrapper(ServiceProvider, file, parentFoldersIds));
 
-            return GetFile(file.ID);
+            return Task.FromResult(GetFile(file.ID));
         }
 
         private void DeleteVersion(File<int> file)
@@ -666,75 +668,75 @@ namespace ASC.Files.Core.Data
             FactoryIndexer.DeleteAsync(wrapper);
         }
 
-        public bool IsExist(string title, object folderId)
+        public Task<bool> IsExist(string title, object folderId)
         {
             throw new NotImplementedException();
         }
 
-        public bool IsExist(string title, int folderId)
+        public async Task<bool> IsExist(string title, int folderId)
         {
-            return Query(FilesDbContext.Files)
+            return await Query(FilesDbContext.Files)
                 .Where(r => r.Title == title)
                 .Where(r => r.FolderId == folderId)
                 .Where(r => r.CurrentVersion)
-                .Any();
+                .AnyAsync();
         }
 
-        public TTo MoveFile<TTo>(int fileId, TTo toFolderId)
+        public async Task<TTo> MoveFile<TTo>(int fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tId), typeof(TTo));
             }
 
             if (toFolderId is string tsId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tsId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tsId), typeof(TTo));
             }
 
             throw new NotImplementedException();
         }
 
-        public int MoveFile(int fileId, int toFolderId)
+        public async Task<int> MoveFile(int fileId, int toFolderId)
         {
             if (fileId == default) return default;
 
             using (var tx = FilesDbContext.Database.BeginTransaction())
             {
-                var fromFolders = Query(FilesDbContext.Files)
+                var fromFolders = await Query(FilesDbContext.Files)
                     .Where(r => r.Id == fileId)
                     .Select(a => a.FolderId)
                     .Distinct()
-                    .ToList();
+                    .ToListAsync();
 
-                var toUpdate = Query(FilesDbContext.Files)
+                var toUpdate = await Query(FilesDbContext.Files)
                     .Where(r => r.Id == fileId)
-                    .ToList();
+                    .ToListAsync();
 
                 foreach (var f in toUpdate)
                 {
                     f.FolderId = toFolderId;
 
-                    if (GlobalFolder.GetFolderTrash<int>(DaoFactory).Equals(toFolderId))
+                    if ((await GlobalFolder.GetFolderTrash<int>(DaoFactory)).Equals(toFolderId))
                     {
                         f.ModifiedBy = AuthContext.CurrentAccount.ID;
                         f.ModifiedOn = DateTime.UtcNow;
                     }
                 }
 
-                FilesDbContext.SaveChanges();
-                tx.Commit();
+                await FilesDbContext.SaveChangesAsync();
+                await tx.CommitAsync();
 
                 fromFolders.ForEach(folderId => RecalculateFilesCount(folderId));
                 RecalculateFilesCount(toFolderId);
             }
 
             var parentFoldersIds =
-                FilesDbContext.Tree
+                await FilesDbContext.Tree
                 .Where(r => r.FolderId == toFolderId)
                 .OrderByDescending(r => r.Level)
                 .Select(r => r.ParentId)
-                .ToList();
+                .ToListAsync();
 
             var wrapper = ServiceProvider.GetService<FilesWrapper>();
             wrapper.Id = fileId;
@@ -747,11 +749,11 @@ namespace ASC.Files.Core.Data
             return fileId;
         }
 
-        public string MoveFile(int fileId, string toFolderId)
+        public async Task<string> MoveFile(int fileId, string toFolderId)
         {
             var toSelector = ProviderFolderDao.GetSelector(toFolderId);
 
-            var moved = CrossDao.PerformCrossDaoFileCopy(
+            var moved = await CrossDao.PerformCrossDaoFileCopy(
                 fileId, this, r => r,
                 toFolderId, toSelector.GetFileDao(toFolderId), toSelector.ConvertId,
                 true);
@@ -759,22 +761,22 @@ namespace ASC.Files.Core.Data
             return moved.ID;
         }
 
-        public File<TTo> CopyFile<TTo>(int fileId, TTo toFolderId)
+        public async Task<File<TTo>> CopyFile<TTo>(int fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return CopyFile(fileId, tId) as File<TTo>;
+                return await CopyFile(fileId, tId) as File<TTo>;
             }
 
             if (toFolderId is string tsId)
             {
-                return CopyFile(fileId, tsId) as File<TTo>;
+                return await CopyFile(fileId, tsId) as File<TTo>;
             }
 
             throw new NotImplementedException();
         }
 
-        public File<int> CopyFile(int fileId, int toFolderId)
+        public async Task<File<int>> CopyFile(int fileId, int toFolderId)
         {
             var file = GetFile(fileId);
             if (file != null)
@@ -790,7 +792,7 @@ namespace ASC.Files.Core.Data
                 using (var stream = GetFileStream(file))
                 {
                     copy.ContentLength = stream.CanSeek ? stream.Length : file.ContentLength;
-                    copy = SaveFile(copy, stream);
+                    copy = await SaveFile(copy, stream);
                 }
 
                 return copy;
@@ -798,11 +800,11 @@ namespace ASC.Files.Core.Data
             return null;
         }
 
-        public File<string> CopyFile(int fileId, string toFolderId)
+        public async Task<File<string>> CopyFile(int fileId, string toFolderId)
         {
             var toSelector = ProviderFolderDao.GetSelector(toFolderId);
 
-            var moved = CrossDao.PerformCrossDaoFileCopy(
+            var moved = await CrossDao.PerformCrossDaoFileCopy(
                 fileId, this, r => r,
                 toFolderId, toSelector.GetFileDao(toFolderId), toSelector.ConvertId,
                 false);
@@ -810,20 +812,19 @@ namespace ASC.Files.Core.Data
             return moved;
         }
 
-        public int FileRename(File<int> file, string newTitle)
+        public async Task<int> FileRename(File<int> file, string newTitle)
         {
-            var fileIdString = file.ID.ToString();
             newTitle = Global.ReplaceInvalidCharsAndTruncate(newTitle);
-            var toUpdate = Query(FilesDbContext.Files)
+            var toUpdate = await Query(FilesDbContext.Files)
                 .Where(r => r.Id == file.ID)
                 .Where(r => r.CurrentVersion)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             toUpdate.Title = newTitle;
             toUpdate.ModifiedOn = DateTime.UtcNow;
             toUpdate.ModifiedBy = AuthContext.CurrentAccount.ID;
 
-            FilesDbContext.SaveChanges();
+            await FilesDbContext.SaveChangesAsync();
 
             return file.ID;
         }
@@ -923,12 +924,12 @@ namespace ASC.Files.Core.Data
 
         #region chunking
 
-        public ChunkedUploadSession<int> CreateUploadSession(File<int> file, long contentLength)
+        public Task<ChunkedUploadSession<int>> CreateUploadSession(File<int> file, long contentLength)
         {
-            return ChunkedUploadSessionHolder.CreateUploadSession(file, contentLength);
+            return Task.FromResult(ChunkedUploadSessionHolder.CreateUploadSession(file, contentLength));
         }
 
-        public void UploadChunk(ChunkedUploadSession<int> uploadSession, Stream stream, long chunkLength)
+        public async Task UploadChunk(ChunkedUploadSession<int> uploadSession, Stream stream, long chunkLength)
         {
             if (!uploadSession.UseChunks)
             {
@@ -936,7 +937,7 @@ namespace ASC.Files.Core.Data
                 {
                     if (streamToSave != Stream.Null)
                     {
-                        uploadSession.File = SaveFile(GetFileForCommit(uploadSession), streamToSave);
+                        uploadSession.File = await SaveFile(GetFileForCommit(uploadSession), streamToSave);
                     }
                 }
 
@@ -947,16 +948,16 @@ namespace ASC.Files.Core.Data
 
             if (uploadSession.BytesUploaded == uploadSession.BytesTotal)
             {
-                uploadSession.File = FinalizeUploadSession(uploadSession);
+                uploadSession.File = await FinalizeUploadSession(uploadSession);
             }
         }
 
-        private File<int> FinalizeUploadSession(ChunkedUploadSession<int> uploadSession)
+        private async Task<File<int>> FinalizeUploadSession(ChunkedUploadSession<int> uploadSession)
         {
             ChunkedUploadSessionHolder.FinalizeUploadSession(uploadSession);
 
             var file = GetFileForCommit(uploadSession);
-            SaveFile(file, null);
+            await SaveFile(file, null);
             ChunkedUploadSessionHolder.Move(uploadSession, GetUniqFilePath(file));
 
             return file;

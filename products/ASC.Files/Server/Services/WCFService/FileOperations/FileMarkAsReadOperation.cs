@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ASC.Common.Security.Authentication;
 using ASC.Core.Tenants;
@@ -81,23 +82,23 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             return Files.Count + Folders.Count;
         }
 
-        protected override void Do(IServiceScope scope)
+        protected override async Task Do(IServiceScope scope)
         {
             var fileMarker = scope.ServiceProvider.GetService<FileMarker>();
             var entries = new List<FileEntry<T>>();
             if (Folders.Any())
             {
-                entries.AddRange(FolderDao.GetFolders(Folders.ToArray()));
+                entries.AddRange(await FolderDao.GetFolders(Folders.ToArray()));
             }
             if (Files.Any())
             {
                 entries.AddRange(FileDao.GetFiles(Files.ToArray()));
             }
-            entries.ForEach(x =>
+            entries.ForEach(async x =>
             {
                 CancellationToken.ThrowIfCancellationRequested();
 
-                fileMarker.RemoveMarkAsNew(x, ((IAccount)Thread.CurrentPrincipal.Identity).ID);
+                await fileMarker.RemoveMarkAsNew(x, ((IAccount)Thread.CurrentPrincipal.Identity).ID);
 
                 if (x.FileEntryType == FileEntryType.File)
                 {
@@ -110,8 +111,8 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                 ProgressStep();
             });
 
-            var newrootfolder = fileMarker
-                .GetRootFoldersIdMarkedAsNew<T>()
+            var newrootfolder = (await fileMarker
+                .GetRootFoldersIdMarkedAsNew<T>())
                 .Select(item => string.Format("new_{{\"key\"? \"{0}\", \"value\"? \"{1}\"}}", item.Key, item.Value));
 
             Status += string.Join(SPLIT_CHAR, newrootfolder.ToArray());

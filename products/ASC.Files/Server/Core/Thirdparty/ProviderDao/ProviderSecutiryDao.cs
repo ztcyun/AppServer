@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Core;
@@ -68,7 +69,7 @@ namespace ASC.Files.Thirdparty.ProviderDao
                 var folderIds = files.Select(x => ((File<string>)x).FolderID).Distinct();
                 foreach (var folderId in folderIds)
                 {
-                    GetFoldersForShare(folderId, folders);
+                    GetFoldersForShare(folderId, folders).Wait();
                 }
 
                 var pureShareRecords = SecurityDao.GetPureShareRecords(files);
@@ -83,7 +84,7 @@ namespace ASC.Files.Thirdparty.ProviderDao
                 }
             }
 
-            result.AddRange(GetShareForFolders(folders));
+            result.AddRange(GetShareForFolders(folders).Result);
 
             return result;
         }
@@ -103,7 +104,7 @@ namespace ASC.Files.Thirdparty.ProviderDao
 
             if (entry is File<string> file)
             {
-                GetFoldersForShare(file.FolderID, folders);
+                GetFoldersForShare(file.FolderID, folders).Wait();
 
                 var pureShareRecords = SecurityDao.GetPureShareRecords(entry);
                 if (pureShareRecords != null)
@@ -117,22 +118,22 @@ namespace ASC.Files.Thirdparty.ProviderDao
                 }
             }
 
-            result.AddRange(GetShareForFolders(folders));
+            result.AddRange(GetShareForFolders(folders).Result);
 
             return result;
         }
 
-        private void GetFoldersForShare(string folderId, ICollection<FileEntry<string>> folders)
+        private async Task GetFoldersForShare(string folderId, ICollection<FileEntry<string>> folders)
         {
             var selector = GetSelector(folderId);
             var folderDao = selector.GetFolderDao(folderId);
             if (folderDao == null) return;
 
-            var folder = folderDao.GetFolder(selector.ConvertId(folderId));
+            var folder = await folderDao.GetFolder(selector.ConvertId(folderId));
             if (folder != null) folders.Add(folder);
         }
 
-        private List<FileShareRecord> GetShareForFolders(IReadOnlyCollection<FileEntry<string>> folders)
+        private async Task<List<FileShareRecord>> GetShareForFolders(IReadOnlyCollection<FileEntry<string>> folders)
         {
             if (!folders.Any()) return new List<FileShareRecord>();
 
@@ -144,7 +145,7 @@ namespace ASC.Files.Thirdparty.ProviderDao
                 var folderDao = selector.GetFolderDao(folder.ID);
                 if (folderDao == null) continue;
 
-                var parentFolders = folderDao.GetParentFolders(selector.ConvertId(folder.ID));
+                var parentFolders = await folderDao.GetParentFolders(selector.ConvertId(folder.ID));
                 if (parentFolders == null || !parentFolders.Any()) continue;
 
                 parentFolders.Reverse();

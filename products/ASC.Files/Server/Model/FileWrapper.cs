@@ -27,6 +27,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 using ASC.Api.Core;
 using ASC.Common;
@@ -175,7 +176,7 @@ namespace ASC.Api.Documents
             FileUtility = fileUtility;
         }
 
-        public FileWrapper<T> Get<T>(File<T> file)
+        public async Task<FileWrapper<T>> Get<T>(File<T> file)
         {
             var result = Get<FileWrapper<T>, T>(file);
             result.FolderId = file.FolderID;
@@ -184,10 +185,10 @@ namespace ASC.Api.Documents
             {
                 result.RootFolderType = FolderType.SHARE;
                 var folderDao = DaoFactory.GetFolderDao<T>();
-                var parentFolder = folderDao.GetFolder(file.FolderID);
-                if (!FileSecurity.CanRead(parentFolder))
+                var parentFolder = await folderDao.GetFolder(file.FolderID);
+                if (!await FileSecurity.CanRead(parentFolder))
                 {
-                    result.FolderId = GlobalFolderHelper.GetFolderShare<T>();
+                    result.FolderId = await GlobalFolderHelper.GetFolderShare<T>();
                 }
             }
 

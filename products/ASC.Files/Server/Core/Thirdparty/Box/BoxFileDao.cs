@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Common.Logging;
@@ -274,7 +275,7 @@ namespace ASC.Files.Thirdparty.Box
             return false;
         }
 
-        public File<string> SaveFile(File<string> file, Stream fileStream)
+        public async Task<File<string>> SaveFile(File<string> file, Stream fileStream)
         {
             if (file == null) throw new ArgumentNullException("file");
             if (fileStream == null) throw new ArgumentNullException("fileStream");
@@ -289,14 +290,14 @@ namespace ASC.Files.Thirdparty.Box
                 if (!newBoxFile.Name.Equals(file.Title))
                 {
                     var folderId = GetParentFolderId(GetBoxFile(fileId));
-                    file.Title = GetAvailableTitle(file.Title, folderId, IsExist);
+                    file.Title = await GetAvailableTitle(file.Title, folderId, IsExist);
                     newBoxFile = ProviderInfo.Storage.RenameFile(fileId, file.Title);
                 }
             }
             else if (file.FolderID != null)
             {
                 var folderId = MakeBoxId(file.FolderID);
-                file.Title = GetAvailableTitle(file.Title, folderId, IsExist);
+                file.Title = await GetAvailableTitle(file.Title, folderId, IsExist);
                 newBoxFile = ProviderInfo.Storage.CreateFile(fileStream, file.Title, folderId);
             }
 
@@ -307,9 +308,9 @@ namespace ASC.Files.Thirdparty.Box
             return ToFile(newBoxFile);
         }
 
-        public File<string> ReplaceFileVersion(File<string> file, Stream fileStream)
+        public async Task<File<string>> ReplaceFileVersion(File<string> file, Stream fileStream)
         {
-            return SaveFile(file, fileStream);
+            return await SaveFile(file, fileStream);
         }
 
         public void DeleteFile(string fileId)
@@ -362,30 +363,30 @@ namespace ASC.Files.Thirdparty.Box
             if (parentFolderId != null) ProviderInfo.CacheReset(parentFolderId);
         }
 
-        public bool IsExist(string title, object folderId)
+        public Task<bool> IsExist(string title, object folderId)
         {
-            return GetBoxItems(folderId.ToString(), false)
-                .Any(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase));
+            return Task.FromResult(GetBoxItems(folderId.ToString(), false)
+                .Any(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        public TTo MoveFile<TTo>(string fileId, TTo toFolderId)
+        public async Task<TTo> MoveFile<TTo>(string fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tId), typeof(TTo));
             }
 
             if (toFolderId is string tsId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tsId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tsId), typeof(TTo));
             }
 
             throw new NotImplementedException();
         }
 
-        public int MoveFile(string fileId, int toFolderId)
+        public async Task<int> MoveFile(string fileId, int toFolderId)
         {
-            var moved = CrossDao.PerformCrossDaoFileCopy(
+            var moved = await CrossDao.PerformCrossDaoFileCopy(
                 fileId, this, BoxDaoSelector.ConvertId,
                 toFolderId, FileDao, r => r,
                 true);
@@ -393,7 +394,7 @@ namespace ASC.Files.Thirdparty.Box
             return moved.ID;
         }
 
-        public string MoveFile(string fileId, string toFolderId)
+        public async Task<string> MoveFile(string fileId, string toFolderId)
         {
             var boxFile = GetBoxFile(fileId);
             if (boxFile is ErrorFile) throw new Exception(((ErrorFile)boxFile).Error);
@@ -403,7 +404,7 @@ namespace ASC.Files.Thirdparty.Box
 
             var fromFolderId = GetParentFolderId(boxFile);
 
-            var newTitle = GetAvailableTitle(boxFile.Name, toBoxFolder.Id, IsExist);
+            var newTitle = await GetAvailableTitle(boxFile.Name, toBoxFolder.Id, IsExist);
             boxFile = ProviderInfo.Storage.MoveFile(boxFile.Id, newTitle, toBoxFolder.Id);
 
             ProviderInfo.CacheReset(boxFile.Id, true);
@@ -413,22 +414,22 @@ namespace ASC.Files.Thirdparty.Box
             return MakeId(boxFile.Id);
         }
 
-        public File<TTo> CopyFile<TTo>(string fileId, TTo toFolderId)
+        public async Task<File<TTo>> CopyFile<TTo>(string fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return CopyFile(fileId, tId) as File<TTo>;
+                return await CopyFile(fileId, tId) as File<TTo>;
             }
 
             if (toFolderId is string tsId)
             {
-                return CopyFile(fileId, tsId) as File<TTo>;
+                return await CopyFile(fileId, tsId) as File<TTo>;
             }
 
             throw new NotImplementedException();
         }
 
-        public File<string> CopyFile(string fileId, string toFolderId)
+        public async Task<File<string>> CopyFile(string fileId, string toFolderId)
         {
             var boxFile = GetBoxFile(fileId);
             if (boxFile is ErrorFile) throw new Exception(((ErrorFile)boxFile).Error);
@@ -436,7 +437,7 @@ namespace ASC.Files.Thirdparty.Box
             var toBoxFolder = GetBoxFolder(toFolderId);
             if (toBoxFolder is ErrorFolder) throw new Exception(((ErrorFolder)toBoxFolder).Error);
 
-            var newTitle = GetAvailableTitle(boxFile.Name, toBoxFolder.Id, IsExist);
+            var newTitle = await GetAvailableTitle(boxFile.Name, toBoxFolder.Id, IsExist);
             var newBoxFile = ProviderInfo.Storage.CopyFile(boxFile.Id, newTitle, toBoxFolder.Id);
 
             ProviderInfo.CacheReset(newBoxFile);
@@ -445,9 +446,9 @@ namespace ASC.Files.Thirdparty.Box
             return ToFile(newBoxFile);
         }
 
-        public File<int> CopyFile(string fileId, int toFolderId)
+        public async Task<File<int>> CopyFile(string fileId, int toFolderId)
         {
-            var moved = CrossDao.PerformCrossDaoFileCopy(
+            var moved = await CrossDao.PerformCrossDaoFileCopy(
                 fileId, this, BoxDaoSelector.ConvertId,
                 toFolderId, FileDao, r => r,
                 false);
@@ -455,10 +456,10 @@ namespace ASC.Files.Thirdparty.Box
             return moved;
         }
 
-        public string FileRename(File<string> file, string newTitle)
+        public async Task<string> FileRename(File<string> file, string newTitle)
         {
             var boxFile = GetBoxFile(file.ID);
-            newTitle = GetAvailableTitle(newTitle, GetParentFolderId(boxFile), IsExist);
+            newTitle = await GetAvailableTitle(newTitle, GetParentFolderId(boxFile), IsExist);
 
             boxFile = ProviderInfo.Storage.RenameFile(boxFile.Id, newTitle);
 
@@ -502,27 +503,27 @@ namespace ASC.Files.Thirdparty.Box
             return file;
         }
 
-        public ChunkedUploadSession<string> CreateUploadSession(File<string> file, long contentLength)
+        public Task<ChunkedUploadSession<string>> CreateUploadSession(File<string> file, long contentLength)
         {
             if (SetupInfo.ChunkUploadSize > contentLength)
-                return new ChunkedUploadSession<string>(RestoreIds(file), contentLength) { UseChunks = false };
+                return Task.FromResult(new ChunkedUploadSession<string>(RestoreIds(file), contentLength) { UseChunks = false });
 
             var uploadSession = new ChunkedUploadSession<string>(file, contentLength);
 
             uploadSession.Items["TempPath"] = Path.GetTempFileName();
 
             uploadSession.File = RestoreIds(uploadSession.File);
-            return uploadSession;
+            return Task.FromResult(uploadSession);
         }
 
-        public void UploadChunk(ChunkedUploadSession<string> uploadSession, Stream stream, long chunkLength)
+        public async Task UploadChunk(ChunkedUploadSession<string> uploadSession, Stream stream, long chunkLength)
         {
             if (!uploadSession.UseChunks)
             {
                 if (uploadSession.BytesTotal == 0)
                     uploadSession.BytesTotal = chunkLength;
 
-                uploadSession.File = SaveFile(uploadSession.File, stream);
+                uploadSession.File = await SaveFile(uploadSession.File, stream);
                 uploadSession.BytesUploaded = chunkLength;
                 return;
             }
@@ -540,7 +541,7 @@ namespace ASC.Files.Thirdparty.Box
                 using (var fs = new FileStream(uploadSession.GetItemOrDefault<string>("TempPath"),
                                                FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.DeleteOnClose))
                 {
-                    uploadSession.File = SaveFile(uploadSession.File, fs);
+                    uploadSession.File = await SaveFile(uploadSession.File, fs);
                 }
             }
             else

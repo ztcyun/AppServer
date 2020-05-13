@@ -26,25 +26,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ASC.Files.Core.Security
 {
     public interface IFileSecurity
     {
-        bool CanRead<T>(FileEntry<T> entry, Guid userId);
+        Task<bool> CanRead<T>(FileEntry<T> entry, Guid userId);
 
-        bool CanComment<T>(FileEntry<T> entry, Guid userId);
+        Task<bool> CanComment<T>(FileEntry<T> entry, Guid userId);
 
-        bool CanReview<T>(FileEntry<T> entry, Guid userId);
+        Task<bool> CanReview<T>(FileEntry<T> entry, Guid userId);
 
-        bool CanFillForms<T>(FileEntry<T> entry, Guid userId);
+        Task<bool> CanFillForms<T>(FileEntry<T> entry, Guid userId);
 
-        bool CanCreate<T>(FileEntry<T> entry, Guid userId);
+        Task<bool> CanCreate<T>(FileEntry<T> entry, Guid userId);
 
-        bool CanEdit<T>(FileEntry<T> entry, Guid userId);
+        Task<bool> CanEdit<T>(FileEntry<T> entry, Guid userId);
 
-        bool CanDelete<T>(FileEntry<T> entry, Guid userId);
+        Task<bool> CanDelete<T>(FileEntry<T> entry, Guid userId);
 
-        IEnumerable<Guid> WhoCanRead<T>(FileEntry<T> entry);
+        Task<IEnumerable<Guid>> WhoCanRead<T>(FileEntry<T> entry);
     }
 }

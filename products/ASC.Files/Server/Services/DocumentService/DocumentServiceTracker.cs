@@ -35,6 +35,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 
 using ASC.Common;
@@ -252,7 +253,7 @@ namespace ASC.Web.Files.Services.DocumentService
             return DocumentServiceConnector.Command(CommandMethod.Info, docKeyForTrack, fileId, callbackUrl);
         }
 
-        public TrackResponse ProcessData(string fileId, TrackerData fileData)
+        public async Task<TrackResponse> ProcessData(string fileId, TrackerData fileData)
         {
             switch (fileData.Status)
             {
@@ -263,14 +264,14 @@ namespace ASC.Web.Files.Services.DocumentService
                     break;
 
                 case TrackerStatus.Editing:
-                    ProcessEdit(fileId, fileData);
+                    await ProcessEdit(fileId, fileData);
                     break;
 
                 case TrackerStatus.MustSave:
                 case TrackerStatus.Corrupted:
                 case TrackerStatus.ForceSave:
                 case TrackerStatus.CorruptedForceSave:
-                    return ProcessSave(fileId, fileData);
+                    return await ProcessSave(fileId, fileData);
 
                 case TrackerStatus.MailMerge:
                     return ProcessMailMerge(fileId, fileData);
@@ -278,7 +279,7 @@ namespace ASC.Web.Files.Services.DocumentService
             return null;
         }
 
-        private void ProcessEdit<T>(T fileId, TrackerData fileData)
+        private async Task ProcessEdit<T>(T fileId, TrackerData fileData)
         {
             if (ThirdPartySelector.GetAppByFileId(fileId.ToString()) != null)
             {
@@ -321,7 +322,7 @@ namespace ASC.Web.Files.Services.DocumentService
                     try
                     {
                         var doc = FileShareLink.CreateKey(fileId);
-                        EntryManager.TrackEditing(fileId, userId, userId, doc);
+                        await EntryManager.TrackEditing(fileId, userId, userId, doc);
                     }
                     catch (Exception e)
                     {
@@ -346,7 +347,7 @@ namespace ASC.Web.Files.Services.DocumentService
             SocketManager.FilesChangeEditors(fileId);
         }
 
-        private TrackResponse ProcessSave<T>(T fileId, TrackerData fileData)
+        private async Task<TrackResponse> ProcessSave<T>(T fileId, TrackerData fileData)
         {
             var comments = new List<string>();
             if (fileData.Status == TrackerStatus.Corrupted
@@ -404,7 +405,7 @@ namespace ASC.Web.Files.Services.DocumentService
                 {
                     comments.Add(FilesCommonResource.ErrorMassage_SaveUrlLost);
 
-                    file = EntryManager.CompleteVersionFile(fileId, 0, false, false);
+                    file = await EntryManager.CompleteVersionFile(fileId, 0, false, false);
 
                     DaoFactory.GetFileDao<T>().UpdateComment(file.ID, file.Version, string.Join("; ", comments));
 
@@ -445,7 +446,7 @@ namespace ASC.Web.Files.Services.DocumentService
 
                 try
                 {
-                    file = EntryManager.SaveEditing(fileId, null, DocumentServiceConnector.ReplaceDocumentAdress(fileData.Url), null, string.Empty, string.Join("; ", comments), false, fileData.Encrypted, forcesaveType);
+                    file = await EntryManager.SaveEditing(fileId, null, DocumentServiceConnector.ReplaceDocumentAdress(fileData.Url), null, string.Empty, string.Join("; ", comments), false, fileData.Encrypted, forcesaveType);
                     saveMessage = fileData.Status == TrackerStatus.MustSave || fileData.Status == TrackerStatus.ForceSave ? null : "Status " + fileData.Status;
                 }
                 catch (Exception ex)
@@ -474,7 +475,7 @@ namespace ASC.Web.Files.Services.DocumentService
             var result = new TrackResponse { Message = saveMessage };
             if (string.IsNullOrEmpty(saveMessage) && file != null && file.Encrypted)
             {
-                result.Addresses = EncryptionAddressHelper.GetAddresses(file.ID.ToString()).ToArray();
+                result.Addresses = (await EncryptionAddressHelper.GetAddresses(file.ID.ToString())).ToArray();
             }
             return result;
         }

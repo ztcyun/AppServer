@@ -28,7 +28,7 @@ namespace ASC.Files.Core.Thirdparty
             FileConverter = fileConverter;
         }
 
-        public File<TTo> PerformCrossDaoFileCopy<TFrom, TTo>(
+        public async Task<File<TTo>> PerformCrossDaoFileCopy<TFrom, TTo>(
             TFrom fromFileId, IFileDao<TFrom> fromFileDao, Func<TFrom, TFrom> fromConverter,
             TTo toFolderId, IFileDao<TTo> toFileDao, Func<TTo, TTo> toConverter,
             bool deleteSourceFile)
@@ -63,7 +63,7 @@ namespace ASC.Files.Core.Thirdparty
                                             : fromFileDao.GetFileStream(fromFile))
             {
                 toFile.ContentLength = fromFileStream.CanSeek ? fromFileStream.Length : fromFile.ContentLength;
-                toFile = toFileDao.SaveFile(toFile, fromFileStream);
+                toFile = await toFileDao.SaveFile(toFile, fromFileStream);
             }
 
             if (deleteSourceFile)

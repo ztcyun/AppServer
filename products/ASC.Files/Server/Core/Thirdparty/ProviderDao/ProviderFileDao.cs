@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Core;
@@ -245,7 +246,7 @@ namespace ASC.Files.Thirdparty.ProviderDao
             return streamUri;
         }
 
-        public File<string> SaveFile(File<string> file, Stream fileStream)
+        public async Task<File<string>> SaveFile(File<string> file, Stream fileStream)
         {
             if (file == null) throw new ArgumentNullException("file");
 
@@ -262,14 +263,14 @@ namespace ASC.Files.Thirdparty.ProviderDao
                 if (folderId != null)
                     file.FolderID = selector.ConvertId(folderId);
                 var fileDao = selector.GetFileDao(fileId);
-                fileSaved = fileDao.SaveFile(file, fileStream);
+                fileSaved = await fileDao.SaveFile(file, fileStream);
             }
             else if (folderId != null)
             {
                 selector = GetSelector(folderId);
                 file.FolderID = selector.ConvertId(folderId);
                 var fileDao = selector.GetFileDao(folderId);
-                fileSaved = fileDao.SaveFile(file, fileStream);
+                fileSaved = await fileDao.SaveFile(file, fileStream);
             }
 
             if (fileSaved != null)
@@ -279,7 +280,7 @@ namespace ASC.Files.Thirdparty.ProviderDao
             throw new ArgumentException("No file id or folder id toFolderId determine provider");
         }
 
-        public File<string> ReplaceFileVersion(File<string> file, Stream fileStream)
+        public async Task<File<string>> ReplaceFileVersion(File<string> file, Stream fileStream)
         {
             if (file == null) throw new ArgumentNullException("file");
             if (file.ID == null) throw new ArgumentException("No file id or folder id toFolderId determine provider");
@@ -294,7 +295,7 @@ namespace ASC.Files.Thirdparty.ProviderDao
             if (folderId != null) file.FolderID = selector.ConvertId(folderId);
 
             var fileDao = selector.GetFileDao(fileId);
-            return fileDao.ReplaceFileVersion(file, fileStream);
+            return await fileDao.ReplaceFileVersion(file, fileStream);
         }
 
         public void DeleteFile(string fileId)
@@ -304,85 +305,85 @@ namespace ASC.Files.Thirdparty.ProviderDao
             fileDao.DeleteFile(selector.ConvertId(fileId));
         }
 
-        public bool IsExist(string title, object folderId)
+        public async Task<bool> IsExist(string title, object folderId)
         {
             var selector = GetSelector(folderId.ToString());
 
             var fileDao = selector.GetFileDao(folderId.ToString());
-            return fileDao.IsExist(title, selector.ConvertId(folderId.ToString()));
+            return await fileDao.IsExist(title, selector.ConvertId(folderId.ToString()));
         }
 
-        public TTo MoveFile<TTo>(string fileId, TTo toFolderId)
+        public async Task<TTo> MoveFile<TTo>(string fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tId), typeof(TTo));
             }
 
             if (toFolderId is string tsId)
             {
-                return (TTo)Convert.ChangeType(MoveFile(fileId, tsId), typeof(TTo));
+                return (TTo)Convert.ChangeType(await MoveFile(fileId, tsId), typeof(TTo));
             }
 
             throw new NotImplementedException();
         }
 
-        public int MoveFile(string fileId, int toFolderId)
+        public async Task<int> MoveFile(string fileId, int toFolderId)
         {
-            var movedFile = PerformCrossDaoFileCopy(fileId, toFolderId, true);
+            var movedFile = await PerformCrossDaoFileCopy(fileId, toFolderId, true);
             return movedFile.ID;
         }
 
-        public string MoveFile(string fileId, string toFolderId)
+        public async Task<string> MoveFile(string fileId, string toFolderId)
         {
             var selector = GetSelector(fileId);
             if (IsCrossDao(fileId, toFolderId))
             {
-                var movedFile = PerformCrossDaoFileCopy(fileId, toFolderId, true);
+                var movedFile = await PerformCrossDaoFileCopy(fileId, toFolderId, true);
                 return movedFile.ID;
             }
 
             var fileDao = selector.GetFileDao(fileId);
-            return fileDao.MoveFile(selector.ConvertId(fileId), selector.ConvertId(toFolderId));
+            return await fileDao.MoveFile(selector.ConvertId(fileId), selector.ConvertId(toFolderId));
         }
 
-        public File<TTo> CopyFile<TTo>(string fileId, TTo toFolderId)
+        public async Task<File<TTo>> CopyFile<TTo>(string fileId, TTo toFolderId)
         {
             if (toFolderId is int tId)
             {
-                return CopyFile(fileId, tId) as File<TTo>;
+                return await CopyFile(fileId, tId) as File<TTo>;
             }
 
             if (toFolderId is string tsId)
             {
-                return CopyFile(fileId, tsId) as File<TTo>;
+                return await CopyFile(fileId, tsId) as File<TTo>;
             }
 
             throw new NotImplementedException();
         }
 
-        public File<int> CopyFile(string fileId, int toFolderId)
+        public async Task<File<int>> CopyFile(string fileId, int toFolderId)
         {
-            return PerformCrossDaoFileCopy(fileId, toFolderId, false);
+            return await PerformCrossDaoFileCopy(fileId, toFolderId, false);
         }
 
-        public File<string> CopyFile(string fileId, string toFolderId)
+        public async Task<File<string>> CopyFile(string fileId, string toFolderId)
         {
             var selector = GetSelector(fileId);
             if (IsCrossDao(fileId, toFolderId))
             {
-                return PerformCrossDaoFileCopy(fileId, toFolderId, false);
+                return await PerformCrossDaoFileCopy(fileId, toFolderId, false);
             }
 
             var fileDao = selector.GetFileDao(fileId);
-            return fileDao.CopyFile(selector.ConvertId(fileId), selector.ConvertId(toFolderId));
+            return await fileDao.CopyFile(selector.ConvertId(fileId), selector.ConvertId(toFolderId));
         }
 
-        public string FileRename(File<string> file, string newTitle)
+        public async Task<string> FileRename(File<string> file, string newTitle)
         {
             var selector = GetSelector(file.ID);
             var fileDao = selector.GetFileDao(file.ID);
-            return fileDao.FileRename(ConvertId(file), newTitle);
+            return await fileDao.FileRename(ConvertId(file), newTitle);
         }
 
         public string UpdateComment(string fileId, int fileVersion, string comment)
@@ -417,17 +418,17 @@ namespace ASC.Files.Thirdparty.ProviderDao
 
         #region chunking
 
-        public ChunkedUploadSession<string> CreateUploadSession(File<string> file, long contentLength)
+        public async Task<ChunkedUploadSession<string>> CreateUploadSession(File<string> file, long contentLength)
         {
             var fileDao = GetFileDao(file);
-            return fileDao.CreateUploadSession(ConvertId(file), contentLength);
+            return await fileDao.CreateUploadSession(ConvertId(file), contentLength);
         }
 
-        public void UploadChunk(ChunkedUploadSession<string> uploadSession, Stream chunkStream, long chunkLength)
+        public async Task UploadChunk(ChunkedUploadSession<string> uploadSession, Stream chunkStream, long chunkLength)
         {
             var fileDao = GetFileDao(uploadSession.File);
             uploadSession.File = ConvertId(uploadSession.File);
-            fileDao.UploadChunk(uploadSession, chunkStream, chunkLength);
+            await fileDao.UploadChunk(uploadSession, chunkStream, chunkLength);
         }
 
         public void AbortUploadSession(ChunkedUploadSession<string> uploadSession)

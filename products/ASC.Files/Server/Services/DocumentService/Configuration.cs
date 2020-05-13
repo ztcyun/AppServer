@@ -257,7 +257,7 @@ namespace ASC.Web.Files.Services.DocumentService
                 {
                     const string crumbsSeporator = " \\ ";
 
-                    var breadCrumbsList = BreadCrumbsManager.GetBreadCrumbs(File.FolderID);
+                    var breadCrumbsList = BreadCrumbsManager.GetBreadCrumbs(File.FolderID).Result;
                     _breadCrumbs = string.Join(crumbsSeporator, breadCrumbsList.Select(folder => folder.Title).ToArray());
                 }
 
@@ -287,11 +287,11 @@ namespace ASC.Web.Files.Services.DocumentService
             {
                 if (Type == EditorType.Embedded
                     || Type == EditorType.External
-                    || !FileSharing.CanSetAccess(File)) return null;
+                    || !FileSharing.CanSetAccess(File).Result) return null;
 
                 try
                 {
-                    return FileSharing.GetSharedInfoShort<string>(File.UniqID);
+                    return FileSharing.GetSharedInfoShort<string>(File.UniqID).Result;
                 }
                 catch
                 {
@@ -711,17 +711,17 @@ namespace ASC.Web.Files.Services.DocumentService
                 var folderDao = DaoFactory.GetFolderDao<T>();
                 try
                 {
-                    var parent = folderDao.GetFolder(_configuration.Document.Info.File.FolderID);
+                    var parent = folderDao.GetFolder(_configuration.Document.Info.File.FolderID).Result;
                     var fileSecurity = FileSecurity;
                     if (_configuration.Document.Info.File.RootFolderType == FolderType.USER
-                        && !Equals(_configuration.Document.Info.File.RootFolderId, GlobalFolderHelper.FolderMy)
-                        && !fileSecurity.CanRead(parent))
+                        && !Equals(_configuration.Document.Info.File.RootFolderId, GlobalFolderHelper.FolderMy.Result)
+                        && !fileSecurity.CanRead(parent).Result)
                     {
-                        if (fileSecurity.CanRead(_configuration.Document.Info.File))
+                        if (fileSecurity.CanRead(_configuration.Document.Info.File).Result)
                         {
                             return new GobackConfig
                             {
-                                Url = PathProvider.GetFolderUrl(GlobalFolderHelper.FolderShare),
+                                Url = PathProvider.GetFolderUrl(GlobalFolderHelper.FolderShare.Result),
                             };
                         }
                         return null;

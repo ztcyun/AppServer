@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 using ASC.Web.Files.Services.DocumentService;
 
@@ -166,7 +167,7 @@ namespace ASC.Files.Core
         ///
         /// Save in all other cases
         /// </remarks>
-        File<T> SaveFile(File<T> file, Stream fileStream);
+        Task<File<T>> SaveFile(File<T> file, Stream fileStream);
 
         /// <summary>
         /// 
@@ -174,7 +175,7 @@ namespace ASC.Files.Core
         /// <param name="file"></param>
         /// <param name="fileStream"></param>
         /// <returns></returns>
-        File<T> ReplaceFileVersion(File<T> file, Stream fileStream);
+        Task<File<T>> ReplaceFileVersion(File<T> file, Stream fileStream);
 
         /// <summary>
         ///   Deletes a file including all previous versions
@@ -188,34 +189,34 @@ namespace ASC.Files.Core
         /// <param name="title">file name</param>
         /// <param name="folderId">folder id</param>
         /// <returns>Returns true if the file exists, otherwise false</returns>
-        bool IsExist(string title, object folderId);
+        Task<bool> IsExist(string title, object folderId);
 
         /// <summary>
         ///   Moves a file or set of files in a folder
         /// </summary>
         /// <param name="fileId">file id</param>
         /// <param name="toFolderId">The ID of the destination folder</param>
-        T MoveFile(T fileId, T toFolderId);
-        TTo MoveFile<TTo>(T fileId, TTo toFolderId);
-        string MoveFile(T fileId, string toFolderId);
-        int MoveFile(T fileId, int toFolderId);
+        Task<T> MoveFile(T fileId, T toFolderId);
+        Task<TTo> MoveFile<TTo>(T fileId, TTo toFolderId);
+        Task<string> MoveFile(T fileId, string toFolderId);
+        Task<int> MoveFile(T fileId, int toFolderId);
 
         /// <summary>
         ///  Copy the files in a folder
         /// </summary>
         /// <param name="fileId">file id</param>
         /// <param name="toFolderId">The ID of the destination folder</param>
-        File<T> CopyFile(T fileId, T toFolderId);
-        File<TTo> CopyFile<TTo>(T fileId, TTo toFolderId);
-        File<string> CopyFile(T fileId, string toFolderId);
-        File<int> CopyFile(T fileId, int toFolderId);
+        Task<File<T>> CopyFile(T fileId, T toFolderId);
+        Task<File<TTo>> CopyFile<TTo>(T fileId, TTo toFolderId);
+        Task<File<string>> CopyFile(T fileId, string toFolderId);
+        Task<File<int>> CopyFile(T fileId, int toFolderId);
 
         /// <summary>
         ///   Rename file
         /// </summary>
         /// <param name="file"></param>
         /// <param name="newTitle">new name</param>
-        T FileRename(File<T> file, string newTitle);
+        Task<T> FileRename(File<T> file, string newTitle);
 
         /// <summary>
         ///   Update comment file
@@ -250,9 +251,9 @@ namespace ASC.Files.Core
 
         #region chunking
 
-        ChunkedUploadSession<T> CreateUploadSession(File<T> file, long contentLength);
+        Task<ChunkedUploadSession<T>> CreateUploadSession(File<T> file, long contentLength);
 
-        void UploadChunk(ChunkedUploadSession<T> uploadSession, Stream chunkStream, long chunkLength);
+        Task UploadChunk(ChunkedUploadSession<T> uploadSession, Stream chunkStream, long chunkLength);
 
         void AbortUploadSession(ChunkedUploadSession<T> uploadSession);
 

@@ -114,25 +114,25 @@ namespace ASC.Files.Thirdparty.ProviderDao
         }
 
 
-        protected internal File<string> PerformCrossDaoFileCopy(string fromFileId, string toFolderId, bool deleteSourceFile)
+        protected internal async Task<File<string>> PerformCrossDaoFileCopy(string fromFileId, string toFolderId, bool deleteSourceFile)
         {
             var fromSelector = GetSelector(fromFileId);
             var toSelector = GetSelector(toFolderId);
 
-            return CrossDao.PerformCrossDaoFileCopy(
+            return await CrossDao.PerformCrossDaoFileCopy(
                 fromFileId, fromSelector.GetFileDao(fromFileId), fromSelector.ConvertId,
                 toFolderId, toSelector.GetFileDao(toFolderId), toSelector.ConvertId,
                 deleteSourceFile);
         }
 
-        protected File<int> PerformCrossDaoFileCopy(string fromFileId, int toFolderId, bool deleteSourceFile)
+        protected async Task<File<int>> PerformCrossDaoFileCopy(string fromFileId, int toFolderId, bool deleteSourceFile)
         {
             var fromSelector = GetSelector(fromFileId);
             using var scope = ServiceProvider.CreateScope();
             var tenantManager = scope.ServiceProvider.GetService<TenantManager>();
             tenantManager.SetCurrentTenant(TenantID);
 
-            return CrossDao.PerformCrossDaoFileCopy(
+            return await CrossDao.PerformCrossDaoFileCopy(
                 fromFileId, fromSelector.GetFileDao(fromFileId), fromSelector.ConvertId,
                 toFolderId, scope.ServiceProvider.GetService<IFileDao<int>>(), r => r,
                 deleteSourceFile);

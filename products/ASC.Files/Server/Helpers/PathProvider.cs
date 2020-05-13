@@ -28,6 +28,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 using ASC.Common;
@@ -106,7 +107,7 @@ namespace ASC.Web.Files.Classes
             return BaseCommonLinkUtility.ToAbsolute("~/Products/Files/Controls/" + fileName);
         }
 
-        public string GetFolderUrl<T>(Folder<T> folder, int projectID = 0)
+        public async Task<string> GetFolderUrl<T>(Folder<T> folder, int projectID = 0)
         {
             if (folder == null) throw new ArgumentNullException("folder", FilesCommonResource.ErrorMassage_FolderNotFound);
 
@@ -117,7 +118,7 @@ namespace ASC.Web.Files.Classes
                 case FolderType.BUNCH:
                     if (projectID == 0)
                     {
-                        var path = folderDao.GetBunchObjectID(folder.RootFolderId);
+                        var path = await folderDao.GetBunchObjectID(folder.RootFolderId);
 
                         var projectIDFromDao = path.Split('/').Last();
 

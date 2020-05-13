@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Common.Logging;
@@ -112,9 +113,9 @@ namespace ASC.Api.Documents
         /// </summary>
         /// <visible>false</visible>
         [Read("access/{fileId}")]
-        public IEnumerable<EncryptionAddress> GetAddressesWithAccess(string fileId)
+        public async Task<IEnumerable<EncryptionAddress>> GetAddressesWithAccess(string fileId)
         {
-            var accountsString = EncryptionAddressHelper.GetAddresses(fileId);
+            var accountsString = await EncryptionAddressHelper.GetAddresses(fileId);
 
             var accounts = accountsString.Select(JsonConvert.DeserializeObject<EncryptionAddress>);
             return accounts;

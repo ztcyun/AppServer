@@ -302,7 +302,7 @@ namespace ASC.Web.Files
                 var doc = context.Request.Query[FilesLinkUtility.DocShareKey].FirstOrDefault() ?? "";
 
                 var fileDao = DaoFactory.GetFileDao<T>();
-                var readLink = FileShareLink.Check(doc, true, fileDao, out var file);
+                var (readLink, file) = await FileShareLink.Check(doc, true, fileDao);
                 if (!readLink && file == null)
                 {
                     fileDao.InvalidateCache(id);
@@ -319,7 +319,7 @@ namespace ASC.Web.Files
                     return;
                 }
 
-                if (!readLink && !FileSecurity.CanRead(file))
+                if (!readLink && !await FileSecurity.CanRead(file))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                     return;
@@ -599,7 +599,7 @@ namespace ASC.Web.Files
 
                 fileDao.InvalidateCache(id);
 
-                var linkRight = FileShareLink.Check(doc, fileDao, out var file);
+                var (linkRight, file) = await FileShareLink.Check(doc, fileDao);
                 if (linkRight == FileShare.Restrict && !SecurityContext.IsAuthenticated)
                 {
                     var auth = context.Request.Query[FilesLinkUtility.AuthKey];
@@ -673,7 +673,7 @@ namespace ASC.Web.Files
                     return;
                 }
 
-                if (linkRight == FileShare.Restrict && SecurityContext.IsAuthenticated && !FileSecurity.CanRead(file))
+                if (linkRight == FileShare.Restrict && SecurityContext.IsAuthenticated && !await FileSecurity.CanRead(file))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                     return;
@@ -883,7 +883,7 @@ namespace ASC.Web.Files
                 int.TryParse(context.Request.Query[FilesLinkUtility.Version].FirstOrDefault() ?? "", out var version);
                 var doc = context.Request.Query[FilesLinkUtility.DocShareKey];
 
-                var linkRight = FileShareLink.Check(doc, fileDao, out var file);
+                var (linkRight, file) = await FileShareLink.Check(doc, fileDao);
                 if (linkRight == FileShare.Restrict && !SecurityContext.IsAuthenticated)
                 {
                     var auth = context.Request.Query[FilesLinkUtility.AuthKey].FirstOrDefault();
@@ -916,7 +916,7 @@ namespace ASC.Web.Files
                     return;
                 }
 
-                if (linkRight == FileShare.Restrict && SecurityContext.IsAuthenticated && !FileSecurity.CanRead(file))
+                if (linkRight == FileShare.Restrict && SecurityContext.IsAuthenticated && !await FileSecurity.CanRead(file))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                     return;
@@ -968,7 +968,7 @@ namespace ASC.Web.Files
             var folderId = context.Request.Query[FilesLinkUtility.FolderId].FirstOrDefault();
             if (string.IsNullOrEmpty(folderId))
             {
-                await CreateFile(context, GlobalFolderHelper.FolderMy);
+                await CreateFile(context, await GlobalFolderHelper.FolderMy);
             }
             else
             {
@@ -982,10 +982,10 @@ namespace ASC.Web.Files
             Folder<T> folder;
 
             var folderDao = DaoFactory.GetFolderDao<T>();
-            folder = folderDao.GetFolder(folderId);
+            folder = await folderDao.GetFolder(folderId);
 
             if (folder == null) throw new HttpException((int)HttpStatusCode.NotFound, FilesCommonResource.ErrorMassage_FolderNotFound);
-            if (!FileSecurity.CanCreate(folder)) throw new HttpException((int)HttpStatusCode.Forbidden, FilesCommonResource.ErrorMassage_SecurityException_Create);
+            if (!await FileSecurity.CanCreate(folder)) throw new HttpException((int)HttpStatusCode.Forbidden, FilesCommonResource.ErrorMassage_SecurityException_Create);
 
             File<T> file;
             var fileUri = context.Request.Query[FilesLinkUtility.FileUri];
@@ -994,12 +994,12 @@ namespace ASC.Web.Files
             {
                 if (!string.IsNullOrEmpty(fileUri))
                 {
-                    file = CreateFileFromUri(folder, fileUri, fileTitle);
+                    file = await CreateFileFromUri(folder, fileUri, fileTitle);
                 }
                 else
                 {
                     var docType = context.Request.Query["doctype"];
-                    file = CreateFileFromTemplate(folder, fileTitle, docType);
+                    file = await CreateFileFromTemplate(folder, fileTitle, docType);
                 }
             }
             catch (Exception ex)
@@ -1014,7 +1014,7 @@ namespace ASC.Web.Files
                 return;
             }
 
-            FileMarker.MarkAsNew(file);
+            await FileMarker.MarkAsNew(file);
 
             if (responseMessage)
             {
@@ -1028,7 +1028,7 @@ namespace ASC.Web.Files
                     : (FilesLinkUtility.GetFileWebEditorUrl(file.ID) + "#message/" + HttpUtility.UrlEncode(string.Format(FilesCommonResource.MessageFileCreated, folder.Title))));
         }
 
-        private File<T> CreateFileFromTemplate<T>(Folder<T> folder, string fileTitle, string docType)
+        private async Task<File<T>> CreateFileFromTemplate<T>(Folder<T> folder, string fileTitle, string docType)
         {
             var storeTemplate = GlobalStore.GetStoreTemplate();
 
@@ -1067,10 +1067,10 @@ namespace ASC.Web.Files
             var fileDao = DaoFactory.GetFileDao<T>();
             var stream = storeTemplate.GetReadStream("", templatePath);
             file.ContentLength = stream.CanSeek ? stream.Length : storeTemplate.GetFileSize(templatePath);
-            return fileDao.SaveFile(file, stream);
+            return await fileDao.SaveFile(file, stream);
         }
 
-        private File<T> CreateFileFromUri<T>(Folder<T> folder, string fileUri, string fileTitle)
+        private async Task<File<T>> CreateFileFromUri<T>(Folder<T> folder, string fileUri, string fileTitle)
         {
             if (string.IsNullOrEmpty(fileTitle))
                 fileTitle = Path.GetFileName(HttpUtility.UrlDecode(fileUri));
@@ -1092,7 +1092,7 @@ namespace ASC.Web.Files
             var fileStream = new ResponseStream(req.GetResponse());
             file.ContentLength = fileStream.Length;
 
-            return fileDao.SaveFile(file, fileStream);
+            return await fileDao.SaveFile(file, fileStream);
         }
 
         private void Redirect(HttpContext context)
@@ -1244,7 +1244,7 @@ namespace ASC.Web.Files
             DocumentServiceTracker.TrackResponse result;
             try
             {
-                result = DocumentServiceTrackerHelper.ProcessData(fileId, fileData);
+                result = await DocumentServiceTrackerHelper.ProcessData(fileId, fileData);
             }
             catch (Exception e)
             {

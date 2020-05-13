@@ -107,7 +107,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
         }
 
         public abstract void RunJob(DistributedTask _, CancellationToken cancellationToken);
-        protected abstract void Do(IServiceScope serviceScope);
+        protected abstract Task Do(IServiceScope serviceScope);
     }
 
     internal class ComposeFileOperation<T1, T2> : FileOperation
@@ -214,7 +214,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             TaskInfo.PublishChanges();
         }
 
-        protected override void Do(IServiceScope serviceScope)
+        protected override Task Do(IServiceScope serviceScope)
         {
             throw new NotImplementedException();
         }
@@ -352,7 +352,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
         protected virtual int InitTotalProgressSteps()
         {
             var count = Files.Count;
-            Folders.ForEach(f => count += 1 + (FolderDao.CanCalculateSubitems(f) ? FolderDao.GetItemsCount(f) : 0));
+            Folders.ForEach(async f => count += 1 + (FolderDao.CanCalculateSubitems(f) ? await FolderDao.GetItemsCount(f) : 0));
             return count;
         }
 

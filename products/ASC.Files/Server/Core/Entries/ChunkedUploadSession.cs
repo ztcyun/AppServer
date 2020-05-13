@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Common.Logging;
@@ -73,10 +74,10 @@ namespace ASC.Files.Core
         }
 
 
-        public object ToResponseObject<T>(ChunkedUploadSession<T> session, bool appendBreadCrumbs = false)
+        public async Task<object> ToResponseObject<T>(ChunkedUploadSession<T> session, bool appendBreadCrumbs = false)
         {
             var pathFolder = appendBreadCrumbs
-                                 ? EntryManager.GetBreadCrumbs(session.FolderId).Select(f =>
+                                 ? (await EntryManager.GetBreadCrumbs(session.FolderId)).Select(f =>
                                  {
                                      //todo: check how?
                                      if (f == null)

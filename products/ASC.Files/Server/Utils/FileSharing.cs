@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security;
+using System.Threading.Tasks;
 
 using ASC.Common;
 using ASC.Common.Logging;
@@ -85,10 +86,10 @@ namespace ASC.Web.Files.Utils
             FileSharingHelper = fileSharingHelper;
         }
 
-        public bool SetAceObject(List<AceWrapper> aceWrappers, FileEntry<T> entry, bool notify, string message)
+        public async Task<bool> SetAceObject(List<AceWrapper> aceWrappers, FileEntry<T> entry, bool notify, string message)
         {
             if (entry == null) throw new ArgumentNullException(FilesCommonResource.ErrorMassage_BadRequest);
-            if (!FileSharingHelper.CanSetAccess(entry)) throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException);
+            if (!await FileSharingHelper.CanSetAccess(entry)) throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException);
 
             var fileSecurity = FileSecurity;
 
@@ -160,7 +161,7 @@ namespace ASC.Web.Files.Utils
 
             if (entryType == FileEntryType.File)
             {
-                DocumentServiceHelper.CheckUsersForDrop((File<T>)entry);
+                await DocumentServiceHelper.CheckUsersForDrop((File<T>)entry);
             }
 
             if (recipients.Any())
@@ -169,7 +170,7 @@ namespace ASC.Web.Files.Utils
                     || ((Folder<T>)entry).TotalSubFolders + ((Folder<T>)entry).TotalFiles > 0
                     || entry.ProviderEntry)
                 {
-                    FileMarker.MarkAsNew(entry, recipients.Keys.ToList());
+                    await FileMarker.MarkAsNew(entry, recipients.Keys.ToList());
                 }
 
                 if (entry.RootFolderType == FolderType.USER
@@ -179,7 +180,7 @@ namespace ASC.Web.Files.Utils
                 }
             }
 
-            usersWithoutRight.ForEach(userId => FileMarker.RemoveMarkAsNew(entry, userId));
+            usersWithoutRight.ForEach(async userId => await FileMarker.RemoveMarkAsNew(entry, userId));
 
             return changed;
         }
@@ -188,7 +189,7 @@ namespace ASC.Web.Files.Utils
         {
             var fileSecurity = FileSecurity;
 
-            entries.ForEach(
+            entries.ForEach(async
                 entry =>
                 {
                     if (entry.RootFolderType != FolderType.USER || Equals(entry.RootFolderId, GlobalFolderHelper.FolderMy))
@@ -199,10 +200,10 @@ namespace ASC.Web.Files.Utils
 
                     if (entryType == FileEntryType.File)
                     {
-                        DocumentServiceHelper.CheckUsersForDrop((File<T>)entry);
+                        await DocumentServiceHelper.CheckUsersForDrop((File<T>)entry);
                     }
 
-                    FileMarker.RemoveMarkAsNew(entry);
+                    await FileMarker.RemoveMarkAsNew(entry);
                 });
         }
     }
@@ -229,13 +230,13 @@ namespace ASC.Web.Files.Utils
         public AuthContext AuthContext { get; }
         public UserManager UserManager { get; }
 
-        public bool CanSetAccess<T>(FileEntry<T> entry)
+        public async Task<bool> CanSetAccess<T>(FileEntry<T> entry)
         {
             return
                 entry != null
                 && (entry.RootFolderType == FolderType.COMMON && Global.IsAdministrator
                     || entry.RootFolderType == FolderType.USER
-                    && (Equals(entry.RootFolderId, GlobalFolderHelper.GetFolderMy<T>()) || FileSecurity.CanEdit(entry))
+                    && (Equals(entry.RootFolderId, await GlobalFolderHelper.GetFolderMy<T>()) || await FileSecurity.CanEdit(entry))
                     && !UserManager.GetUsers(AuthContext.CurrentAccount.ID).IsVisitor(UserManager));
         }
     }
@@ -274,15 +275,15 @@ namespace ASC.Web.Files.Utils
             Logger = optionsMonitor.CurrentValue;
         }
 
-        public bool CanSetAccess<T>(FileEntry<T> entry)
+        public async Task<bool> CanSetAccess<T>(FileEntry<T> entry)
         {
-            return FileSharingHelper.CanSetAccess(entry);
+            return await FileSharingHelper.CanSetAccess(entry);
         }
 
-        public List<AceWrapper> GetSharedInfo<T>(FileEntry<T> entry)
+        public async Task<List<AceWrapper>> GetSharedInfo<T>(FileEntry<T> entry)
         {
             if (entry == null) throw new ArgumentNullException(FilesCommonResource.ErrorMassage_BadRequest);
-            if (!CanSetAccess(entry))
+            if (!await CanSetAccess(entry))
             {
                 Logger.ErrorFormat("User {0} can't get shared info for {1} {2}", AuthContext.CurrentAccount.ID, (entry.FileEntryType == FileEntryType.File ? "file" : "folder"), entry.ID);
                 throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException);
@@ -412,7 +413,7 @@ namespace ASC.Web.Files.Utils
             return result;
         }
 
-        public ItemList<AceWrapper> GetSharedInfo<T>(ItemList<string> objectIds)
+        public async Task<ItemList<AceWrapper>> GetSharedInfo<T>(ItemList<string> objectIds)
         {
             if (!AuthContext.IsAuthenticated)
             {
@@ -436,12 +437,12 @@ namespace ASC.Web.Files.Utils
 
                 var entry = entryType == FileEntryType.File
                                 ? fileDao.GetFile(entryId)
-                                : (FileEntry<T>)folderDao.GetFolder(entryId);
+                                : (FileEntry<T>)await folderDao.GetFolder(entryId);
 
                 IEnumerable<AceWrapper> acesForObject;
                 try
                 {
-                    acesForObject = GetSharedInfo(entry);
+                    acesForObject = await GetSharedInfo(entry);
                 }
                 catch (Exception e)
                 {
@@ -532,9 +533,9 @@ namespace ASC.Web.Files.Utils
             return new ItemList<AceWrapper>(result);
         }
 
-        public ItemList<AceShortWrapper> GetSharedInfoShort<T>(string objectId)
+        public async Task<ItemList<AceShortWrapper>> GetSharedInfoShort<T>(string objectId)
         {
-            var aces = GetSharedInfo<T>(new ItemList<string> { objectId });
+            var aces = await GetSharedInfo<T>(new ItemList<string> { objectId });
 
             return new ItemList<AceShortWrapper>(
                 aces.Where(aceWrapper => !aceWrapper.SubjectId.Equals(FileConstant.ShareLinkId) || aceWrapper.Share != FileShare.Restrict)
