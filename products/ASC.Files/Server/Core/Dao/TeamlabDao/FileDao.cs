@@ -116,29 +116,29 @@ namespace ASC.Files.Core.Data
         {
         }
 
-        public File<int> GetFile(int fileId)
+        public async Task<File<int>> GetFile(int fileId)
         {
             var query = GetFileQuery(r => r.Id == fileId && r.CurrentVersion);
-            return FromQueryWithShared(query).SingleOrDefault();
+            return (await FromQueryWithShared(query)).SingleOrDefault();
         }
 
-        public File<int> GetFile(int fileId, int fileVersion)
+        public async Task<File<int>> GetFile(int fileId, int fileVersion)
         {
             var query = GetFileQuery(r => r.Id == fileId && r.Version == fileVersion);
-            return FromQueryWithShared(query).SingleOrDefault();
+            return (await FromQueryWithShared(query)).SingleOrDefault();
         }
 
-        public File<int> GetFile(int parentId, string title)
+        public async Task<File<int>> GetFile(int parentId, string title)
         {
             if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(title);
 
             var query = GetFileQuery(r => r.Title == title && r.CurrentVersion == true && r.FolderId == parentId)
                 .OrderBy(r => r.CreateOn);
 
-            return FromQueryWithShared(query).FirstOrDefault();
+            return (await FromQueryWithShared(query)).FirstOrDefault();
         }
 
-        public File<int> GetFileStable(int fileId, int fileVersion = -1)
+        public async Task<File<int>> GetFileStable(int fileId, int fileVersion = -1)
         {
             var query = GetFileQuery(r => r.Id == fileId && r.Forcesave == ForcesaveType.None);
 
@@ -149,26 +149,26 @@ namespace ASC.Files.Core.Data
 
             query = query.OrderByDescending(r => r.Version);
 
-            return FromQueryWithShared(query).SingleOrDefault();
+            return (await FromQueryWithShared(query)).SingleOrDefault();
         }
 
-        public List<File<int>> GetFileHistory(int fileId)
+        public async Task<List<File<int>>> GetFileHistory(int fileId)
         {
             var query = GetFileQuery(r => r.Id == fileId).OrderByDescending(r => r.Version);
 
-            return FromQueryWithShared(query);
+            return await FromQueryWithShared(query);
         }
 
-        public List<File<int>> GetFiles(int[] fileIds)
+        public async Task<List<File<int>>> GetFiles(int[] fileIds)
         {
             if (fileIds == null || fileIds.Length == 0) return new List<File<int>>();
 
             var query = GetFileQuery(r => fileIds.Any(a => a == r.Id) && r.CurrentVersion);
 
-            return FromQueryWithShared(query);
+            return await FromQueryWithShared(query);
         }
 
-        public List<File<int>> GetFilesForShare(int[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public async Task<List<File<int>>> GetFilesForShare(int[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
             if (fileIds == null || fileIds.Length == 0 || filterType == FilterType.FoldersOnly) return new List<File<int>>();
 
@@ -219,21 +219,21 @@ namespace ASC.Files.Core.Data
                     break;
             }
 
-            return FromQuery(query);
+            return await FromQuery(query);
         }
 
 
-        public List<int> GetFiles(int parentId)
+        public async Task<List<int>> GetFiles(int parentId)
         {
             var query = GetFileQuery(r => r.FolderId == parentId && r.CurrentVersion).Select(r => r.Id);
 
-            return Query(FilesDbContext.Files)
+            return await Query(FilesDbContext.Files)
                 .Where(r => r.FolderId == parentId && r.CurrentVersion)
                 .Select(r => r.Id)
-                .ToList();
+                .ToListAsync();
         }
 
-        public List<File<int>> GetFiles(int parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
+        public async Task<List<File<int>>> GetFiles(int parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
         {
             if (filterType == FilterType.FoldersOnly) return new List<File<int>>();
 
@@ -319,7 +319,7 @@ namespace ASC.Files.Core.Data
                     break;
             }
 
-            return FromQueryWithShared(q);
+            return await FromQueryWithShared(q);
         }
 
         public Stream GetFileStream(File<int> file, long offset)
@@ -346,7 +346,7 @@ namespace ASC.Files.Core.Data
             return GetFileStream(file, 0);
         }
 
-        public Task<File<int>> SaveFile(File<int> file, Stream fileStream)
+        public async Task<File<int>> SaveFile(File<int> file, Stream fileStream)
         {
             if (file == null)
             {
@@ -468,7 +468,7 @@ namespace ASC.Files.Core.Data
                     if (isNew)
                     {
                         var stored = GlobalStore.GetStore().IsDirectory(GetUniqFileDirectory(file.ID));
-                        DeleteFile(file.ID, stored);
+                        await DeleteFile(file.ID, stored);
                     }
                     else if (!IsExistOnStorage(file))
                     {
@@ -480,10 +480,10 @@ namespace ASC.Files.Core.Data
 
             FactoryIndexer.IndexAsync(FilesWrapper.GetFilesWrapper(ServiceProvider, file, parentFoldersIds));
 
-            return Task.FromResult(GetFile(file.ID));
+            return await GetFile(file.ID);
         }
 
-        public Task<File<int>> ReplaceFileVersion(File<int> file, Stream fileStream)
+        public async Task<File<int>> ReplaceFileVersion(File<int> file, Stream fileStream)
         {
             if (file == null) throw new ArgumentNullException("file");
             if (file.ID == default) throw new ArgumentException("No file id or folder id toFolderId determine provider");
@@ -583,7 +583,7 @@ namespace ASC.Files.Core.Data
 
             FactoryIndexer.IndexAsync(FilesWrapper.GetFilesWrapper(ServiceProvider, file, parentFoldersIds));
 
-            return Task.FromResult(GetFile(file.ID));
+            return await GetFile(file.ID);
         }
 
         private void DeleteVersion(File<int> file)
@@ -622,21 +622,21 @@ namespace ASC.Files.Core.Data
             GlobalStore.GetStore().Save(string.Empty, GetUniqFilePath(file), stream, file.Title);
         }
 
-        public void DeleteFile(int fileId)
+        public async Task DeleteFile(int fileId)
         {
-            DeleteFile(fileId, true);
+            await DeleteFile(fileId, true);
         }
 
-        private void DeleteFile(int fileId, bool deleteFolder)
+        private async Task DeleteFile(int fileId, bool deleteFolder)
         {
             if (fileId == default) return;
-            using var tx = FilesDbContext.Database.BeginTransaction();
+            using var tx = await FilesDbContext.Database.BeginTransactionAsync();
 
-            var fromFolders = Query(FilesDbContext.Files)
+            var fromFolders = await Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId)
                 .Select(a => a.FolderId)
                 .Distinct()
-                .ToList();
+                .ToListAsync();
 
             var toDeleteFiles = Query(FilesDbContext.Files).Where(r => r.Id == fileId);
             FilesDbContext.RemoveRange(toDeleteFiles);
@@ -654,9 +654,9 @@ namespace ASC.Files.Core.Data
                 .Where(r => r.EntryType == FileEntryType.File);
 
             FilesDbContext.Security.RemoveRange(securityToDelete);
-            FilesDbContext.SaveChanges();
+            await FilesDbContext.SaveChangesAsync();
 
-            tx.Commit();
+            await tx.CommitAsync();
 
             fromFolders.ForEach(folderId => RecalculateFilesCount(folderId));
 
@@ -778,7 +778,7 @@ namespace ASC.Files.Core.Data
 
         public async Task<File<int>> CopyFile(int fileId, int toFolderId)
         {
-            var file = GetFile(fileId);
+            var file = await GetFile(fileId);
             if (file != null)
             {
                 var copy = ServiceProvider.GetService<File<int>>();
@@ -829,24 +829,24 @@ namespace ASC.Files.Core.Data
             return file.ID;
         }
 
-        public string UpdateComment(int fileId, int fileVersion, string comment)
+        public async Task<string> UpdateComment(int fileId, int fileVersion, string comment)
         {
             comment ??= string.Empty;
             comment = comment.Substring(0, Math.Min(comment.Length, 255));
 
-            var toUpdate = Query(FilesDbContext.Files)
+            var toUpdate = await Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId)
                 .Where(r => r.Version == fileVersion)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             toUpdate.Comment = comment;
 
-            FilesDbContext.SaveChanges();
+            await FilesDbContext.SaveChangesAsync();
 
             return comment;
         }
 
-        public void CompleteVersion(int fileId, int fileVersion)
+        public async Task CompleteVersion(int fileId, int fileVersion)
         {
             var toUpdate = Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId)
@@ -857,18 +857,18 @@ namespace ASC.Files.Core.Data
                 f.VersionGroup += 1;
             }
 
-            FilesDbContext.SaveChanges();
+            await FilesDbContext.SaveChangesAsync();
         }
 
-        public void ContinueVersion(int fileId, int fileVersion)
+        public async Task ContinueVersion(int fileId, int fileVersion)
         {
-            using var tx = FilesDbContext.Database.BeginTransaction();
+            using var tx = await FilesDbContext.Database.BeginTransactionAsync();
 
-            var versionGroup = Query(FilesDbContext.Files)
+            var versionGroup = await Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId)
                 .Where(r => r.Version == fileVersion)
                 .Select(r => r.VersionGroup)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             var toUpdate = Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId)
@@ -880,9 +880,9 @@ namespace ASC.Files.Core.Data
                 f.VersionGroup -= 1;
             }
 
-            FilesDbContext.SaveChanges();
+            await FilesDbContext.SaveChangesAsync();
 
-            tx.Commit();
+            await tx.CommitAsync();
         }
 
         public bool UseTrashForRemove(File<int> file)
@@ -937,7 +937,7 @@ namespace ASC.Files.Core.Data
                 {
                     if (streamToSave != Stream.Null)
                     {
-                        uploadSession.File = await SaveFile(GetFileForCommit(uploadSession), streamToSave);
+                        uploadSession.File = await SaveFile(await GetFileForCommit(uploadSession), streamToSave);
                     }
                 }
 
@@ -956,7 +956,7 @@ namespace ASC.Files.Core.Data
         {
             ChunkedUploadSessionHolder.FinalizeUploadSession(uploadSession);
 
-            var file = GetFileForCommit(uploadSession);
+            var file = await GetFileForCommit(uploadSession);
             await SaveFile(file, null);
             ChunkedUploadSessionHolder.Move(uploadSession, GetUniqFilePath(file));
 
@@ -968,11 +968,11 @@ namespace ASC.Files.Core.Data
             ChunkedUploadSessionHolder.AbortUploadSession(uploadSession);
         }
 
-        private File<int> GetFileForCommit(ChunkedUploadSession<int> uploadSession)
+        private async Task<File<int>> GetFileForCommit(ChunkedUploadSession<int> uploadSession)
         {
             if (uploadSession.File.ID != default)
             {
-                var file = GetFile(uploadSession.File.ID);
+                var file = await GetFile(uploadSession.File.ID);
                 file.Version++;
                 file.ContentLength = uploadSession.BytesTotal;
                 file.ConvertedType = null;
@@ -1009,7 +1009,7 @@ namespace ASC.Files.Core.Data
             FilesDbContext.SaveChanges();
         }
 
-        public List<File<int>> GetFiles(int[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public async Task<List<File<int>>> GetFiles(int[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
             if (parentIds == null || parentIds.Length == 0 || filterType == FilterType.FoldersOnly) return new List<File<int>>();
 
@@ -1064,15 +1064,15 @@ namespace ASC.Files.Core.Data
                     break;
             }
 
-            return FromQueryWithShared(q);
+            return await FromQueryWithShared(q);
         }
 
-        public IEnumerable<File<int>> Search(string searchText, bool bunch)
+        public async Task<IEnumerable<File<int>>> Search(string searchText, bool bunch)
         {
             if (FactoryIndexer.TrySelectIds(s => s.MatchAll(searchText), out var ids))
             {
                 var query = GetFileQuery(r => r.CurrentVersion && ids.Any(i => i == r.Id));
-                return FromQueryWithShared(query)
+                return (await FromQueryWithShared(query))
                     .Where(
                         f =>
                         bunch
@@ -1083,7 +1083,7 @@ namespace ASC.Files.Core.Data
             else
             {
                 var query = BuildSearch(GetFileQuery(r => r.CurrentVersion), searchText, SearhTypeEnum.Any);
-                return FromQueryWithShared(query)
+                return (await FromQueryWithShared(query))
                     .Where(f =>
                            bunch
                                 ? f.RootFolderType == FolderType.BUNCH
@@ -1247,9 +1247,9 @@ namespace ASC.Files.Core.Data
            };
         }
 
-        protected List<File<int>> FromQueryWithShared(IQueryable<DbFile> dbFiles)
+        protected async Task<List<File<int>>> FromQueryWithShared(IQueryable<DbFile> dbFiles)
         {
-            return dbFiles
+            return (await dbFiles
                 .Select(r => new DbFileQuery
                 {
                     file = r,
@@ -1267,14 +1267,14 @@ namespace ASC.Files.Core.Data
                         .Where(x => x.EntryId == r.Id.ToString())
                         .Any()
                 })
-                .ToList()
+                .ToListAsync())
                 .Select(ToFile)
                 .ToList();
         }
 
-        protected List<File<int>> FromQuery(IQueryable<DbFile> dbFiles)
+        protected async Task<List<File<int>>> FromQuery(IQueryable<DbFile> dbFiles)
         {
-            return dbFiles
+            return (await dbFiles
                 .Select(r => new DbFileQuery
                 {
                     file = r,
@@ -1287,7 +1287,7 @@ namespace ASC.Files.Core.Data
                             .FirstOrDefault(),
                     shared = true
                 })
-                .ToList()
+                .ToListAsync())
                 .Select(ToFile)
                 .ToList();
         }

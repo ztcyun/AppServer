@@ -130,7 +130,7 @@ namespace ASC.Web.Files.Utils
             await FileMarker.MarkAsNew(file);
 
             if (FileConverter.EnableAsUploaded && FileConverter.MustConvert(file))
-                FileConverter.ExecAsync(file, deleteConvertStatus);
+                await FileConverter.ExecAsync(file, deleteConvertStatus);
 
             return file;
         }
@@ -145,7 +145,7 @@ namespace ASC.Web.Files.Utils
             folderId = await GetFolderId(folderId, string.IsNullOrEmpty(relativePath) ? null : relativePath.Split('/').ToList());
 
             var fileDao = DaoFactory.GetFileDao<T>();
-            var file = fileDao.GetFile(folderId, fileName);
+            var file = await fileDao.GetFile(folderId, fileName);
 
             if (updateIfExists && await CanEdit(file))
             {
@@ -295,7 +295,7 @@ namespace ASC.Web.Files.Utils
             }
 
             var dao = DaoFactory.GetFileDao<T>();
-            dao.UploadChunk(uploadSession, stream, chunkLength);
+            await dao.UploadChunk(uploadSession, stream, chunkLength);
 
             if (uploadSession.BytesUploaded == uploadSession.BytesTotal)
             {

@@ -45,6 +45,7 @@ using ASC.Web.Studio.Core;
 
 using Box.V2.Models;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace ASC.Files.Thirdparty.Box
@@ -83,43 +84,43 @@ namespace ASC.Files.Thirdparty.Box
             if (parentPath != null) ProviderInfo.CacheReset(parentPath);
         }
 
-        public File<string> GetFile(string fileId)
+        public Task<File<string>> GetFile(string fileId)
         {
             return GetFile(fileId, 1);
         }
 
-        public File<string> GetFile(string fileId, int fileVersion)
+        public Task<File<string>> GetFile(string fileId, int fileVersion)
         {
-            return ToFile(GetBoxFile(fileId));
+            return Task.FromResult(ToFile(GetBoxFile(fileId)));
         }
 
-        public File<string> GetFile(string parentId, string title)
+        public Task<File<string>> GetFile(string parentId, string title)
         {
-            return ToFile(GetBoxItems(parentId, false)
-                              .FirstOrDefault(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase)) as BoxFile);
+            return Task.FromResult(ToFile(GetBoxItems(parentId, false)
+                              .FirstOrDefault(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase)) as BoxFile));
         }
 
-        public File<string> GetFileStable(string fileId, int fileVersion)
+        public Task<File<string>> GetFileStable(string fileId, int fileVersion)
         {
-            return ToFile(GetBoxFile(fileId));
+            return Task.FromResult(ToFile(GetBoxFile(fileId)));
         }
 
-        public List<File<string>> GetFileHistory(string fileId)
+        public async Task<List<File<string>>> GetFileHistory(string fileId)
         {
-            return new List<File<string>> { GetFile(fileId) };
+            return new List<File<string>> { await GetFile(fileId) };
         }
 
-        public List<File<string>> GetFiles(string[] fileIds)
+        public Task<List<File<string>>> GetFiles(string[] fileIds)
         {
-            if (fileIds == null || fileIds.Length == 0) return new List<File<string>>();
-            return fileIds.Select(GetBoxFile).Select(ToFile).ToList();
+            if (fileIds == null || fileIds.Length == 0) return Task.FromResult(new List<File<string>>());
+            return Task.FromResult(fileIds.Select(GetBoxFile).Select(ToFile).ToList());
         }
 
-        public List<File<string>> GetFilesForShare(string[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public async Task<List<File<string>>> GetFilesForShare(string[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
             if (fileIds == null || fileIds.Length == 0 || filterType == FilterType.FoldersOnly) return new List<File<string>>();
 
-            var files = GetFiles(fileIds).AsEnumerable();
+            var files = (await GetFiles(fileIds)).AsEnumerable();
 
             //Filter
             if (subjectID != Guid.Empty)
@@ -167,14 +168,14 @@ namespace ASC.Files.Thirdparty.Box
             return files.ToList();
         }
 
-        public List<string> GetFiles(string parentId)
+        public Task<List<string>> GetFiles(string parentId)
         {
-            return GetBoxItems(parentId, false).Select(entry => MakeId(entry.Id)).ToList();
+            return Task.FromResult(GetBoxItems(parentId, false).Select(entry => MakeId(entry.Id)).ToList());
         }
 
-        public List<File<string>> GetFiles(string parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
+        public Task<List<File<string>>> GetFiles(string parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
         {
-            if (filterType == FilterType.FoldersOnly) return new List<File<string>>();
+            if (filterType == FilterType.FoldersOnly) return Task.FromResult(new List<File<string>>());
 
             //Get only files
             var files = GetBoxItems(parentId, false).Select(item => ToFile(item as BoxFile));
@@ -190,7 +191,7 @@ namespace ASC.Files.Thirdparty.Box
             switch (filterType)
             {
                 case FilterType.FoldersOnly:
-                    return new List<File<string>>();
+                    return Task.FromResult(new List<File<string>>());
                 case FilterType.DocumentsOnly:
                     files = files.Where(x => FileUtility.GetFileTypeByFileName(x.Title) == FileType.Document);
                     break;
@@ -243,7 +244,7 @@ namespace ASC.Files.Thirdparty.Box
                     break;
             }
 
-            return files.ToList();
+            return Task.FromResult(files.ToList());
         }
 
         public Stream GetFileStream(File<string> file)
@@ -313,7 +314,7 @@ namespace ASC.Files.Thirdparty.Box
             return await SaveFile(file, fileStream);
         }
 
-        public void DeleteFile(string fileId)
+        public async Task DeleteFile(string fileId)
         {
             var boxFile = GetBoxFile(fileId);
             if (boxFile == null) return;
@@ -321,17 +322,17 @@ namespace ASC.Files.Thirdparty.Box
 
             using (var tx = FilesDbContext.Database.BeginTransaction())
             {
-                var hashIDs = Query(FilesDbContext.ThirdpartyIdMapping)
+                var hashIDs = await Query(FilesDbContext.ThirdpartyIdMapping)
                     .Where(r => r.Id.StartsWith(id))
                     .Select(r => r.HashId)
-                    .ToList();
+                    .ToListAsync();
 
-                var link = Query(FilesDbContext.TagLink)
+                var link = await Query(FilesDbContext.TagLink)
                     .Where(r => hashIDs.Any(h => h == r.EntryId))
-                    .ToList();
+                    .ToListAsync();
 
                 FilesDbContext.TagLink.RemoveRange(link);
-                FilesDbContext.SaveChanges();
+                await FilesDbContext.SaveChangesAsync();
 
                 var tagsToRemove = Query(FilesDbContext.Tag)
                     .Where(r => !Query(FilesDbContext.TagLink).Where(a => a.TagId == r.Id).Any());
@@ -342,15 +343,15 @@ namespace ASC.Files.Thirdparty.Box
                     .Where(r => hashIDs.Any(h => h == r.EntryId));
 
                 FilesDbContext.Security.RemoveRange(securityToDelete);
-                FilesDbContext.SaveChanges();
+                await FilesDbContext.SaveChangesAsync();
 
                 var mappingToDelete = Query(FilesDbContext.ThirdpartyIdMapping)
                     .Where(r => hashIDs.Any(h => h == r.HashId));
 
                 FilesDbContext.ThirdpartyIdMapping.RemoveRange(mappingToDelete);
-                FilesDbContext.SaveChanges();
+                await FilesDbContext.SaveChangesAsync();
 
-                tx.Commit();
+                await tx.CommitAsync();
             }
 
             if (!(boxFile is ErrorFile))
@@ -470,17 +471,19 @@ namespace ASC.Files.Thirdparty.Box
             return MakeId(boxFile.Id);
         }
 
-        public string UpdateComment(string fileId, int fileVersion, string comment)
+        public Task<string> UpdateComment(string fileId, int fileVersion, string comment)
         {
-            return string.Empty;
+            return Task.FromResult(string.Empty);
         }
 
-        public void CompleteVersion(string fileId, int fileVersion)
+        public Task CompleteVersion(string fileId, int fileVersion)
         {
+            return Task.CompletedTask;
         }
 
-        public void ContinueVersion(string fileId, int fileVersion)
+        public Task ContinueVersion(string fileId, int fileVersion)
         {
+            return Task.CompletedTask;
         }
 
         public bool UseTrashForRemove(File<string> file)
@@ -567,12 +570,12 @@ namespace ASC.Files.Thirdparty.Box
         {
         }
 
-        public List<File<string>> GetFiles(string[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public Task<List<File<string>>> GetFiles(string[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
-            return new List<File<string>>();
+            return Task.FromResult(new List<File<string>>());
         }
 
-        public IEnumerable<File<string>> Search(string text, bool bunch)
+        public Task<IEnumerable<File<string>>> Search(string text, bool bunch)
         {
             return null;
         }

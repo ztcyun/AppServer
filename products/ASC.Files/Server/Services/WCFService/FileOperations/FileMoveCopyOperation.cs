@@ -225,7 +225,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
 
                             if (FolderDao.UseRecursiveOperation(folder.ID, toFolderId))
                             {
-                                await MoveOrCopyFiles(scope, FileDao.GetFiles(folder.ID), newFolder, copy);
+                                await MoveOrCopyFiles(scope, await FileDao.GetFiles(folder.ID), newFolder, copy);
                                 await MoveOrCopyFolders(scope, (await FolderDao.GetFolders(folder.ID)).Select(f => f.ID).ToList(), newFolder, copy);
 
                                 if (!copy)
@@ -269,7 +269,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                                     }
                                     else
                                     {
-                                        var tmpError = await WithError(scope, FileDao.GetFiles(folder.ID, new OrderBy(SortedByType.AZ, true), FilterType.FilesOnly, false, Guid.Empty, string.Empty, false, true));
+                                        var tmpError = await WithError(scope, await FileDao.GetFiles(folder.ID, new OrderBy(SortedByType.AZ, true), FilterType.FilesOnly, false, Guid.Empty, string.Empty, false, true));
                                         if (!string.IsNullOrEmpty(tmpError))
                                         {
                                             Error = tmpError;
@@ -310,7 +310,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                             }
                             else
                             {
-                                var tmpError = await WithError(scope, FileDao.GetFiles(folder.ID, new OrderBy(SortedByType.AZ, true), FilterType.FilesOnly, false, Guid.Empty, string.Empty, false, true));
+                                var tmpError = await WithError(scope, await FileDao.GetFiles(folder.ID, new OrderBy(SortedByType.AZ, true), FilterType.FilesOnly, false, Guid.Empty, string.Empty, false, true));
                                 if (!string.IsNullOrEmpty(tmpError))
                                 {
                                     Error = tmpError;
@@ -373,7 +373,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             {
                 CancellationToken.ThrowIfCancellationRequested();
 
-                var file = FileDao.GetFile(fileId);
+                var file = await FileDao.GetFile(fileId);
                 if (file == null)
                 {
                     Error = FilesCommonResource.ErrorMassage_FileNotFound;
@@ -394,7 +394,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                     {
                         var conflict = _resolveType == FileConflictResolveType.Duplicate
                                            ? null
-                                           : fileDao.GetFile(toFolderId, file.Title);
+                                           : await fileDao.GetFile(toFolderId, file.Title);
                         if (conflict == null)
                         {
                             File<TTo> newFile = null;
@@ -419,7 +419,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                                 {
                                     if (newFile != null)
                                     {
-                                        fileDao.DeleteFile(newFile.ID);
+                                        await fileDao.DeleteFile(newFile.ID);
                                     }
                                     throw;
                                 }
@@ -436,7 +436,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                                     await fileMarker.RemoveMarkAsNewForAll(file);
 
                                     var newFileId = await FileDao.MoveFile(file.ID, toFolderId);
-                                    newFile = fileDao.GetFile(newFileId);
+                                    newFile = await fileDao.GetFile(newFileId);
 
                                     if (file.RootFolderType != FolderType.USER)
                                     {
@@ -520,7 +520,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                                             }
                                             else
                                             {
-                                                FileDao.DeleteFile(file.ID);
+                                                await FileDao.DeleteFile(file.ID);
 
                                                 if (file.RootFolderType != FolderType.USER)
                                                 {

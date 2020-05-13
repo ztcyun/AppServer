@@ -336,7 +336,7 @@ namespace ASC.Web.Files.Services.WCFService
             folders = (await FileSecurity.FilterRead(folders)).ToList();
             entries = entries.Concat(folders);
 
-            var files = fileDao.GetFiles(filesId.ToArray());
+            var files = await fileDao.GetFiles(filesId.ToArray());
             files = (await FileSecurity.FilterRead(files)).ToList();
             entries = entries.Concat(files);
 
@@ -444,8 +444,8 @@ namespace ASC.Web.Files.Services.WCFService
             fileDao.InvalidateCache(fileId);
 
             var file = version > 0
-                           ? fileDao.GetFile(fileId, version)
-                           : fileDao.GetFile(fileId);
+                           ? await fileDao.GetFile(fileId, version)
+                           : await fileDao.GetFile(fileId);
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
             ErrorIf(!await FileSecurity.CanRead(file), FilesCommonResource.ErrorMassage_SecurityException_ReadFile);
 
@@ -471,7 +471,7 @@ namespace ASC.Web.Files.Services.WCFService
             var fileDao = GetFileDao();
             var folderDao = GetFolderDao();
 
-            var file = fileDao.GetFile(fileId);
+            var file = await fileDao.GetFile(fileId);
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
             ErrorIf(!await FileSecurity.CanRead(file), FilesCommonResource.ErrorMassage_SecurityException_ReadFile);
 
@@ -624,7 +624,7 @@ namespace ASC.Web.Files.Services.WCFService
             var fileDao = GetFileDao();
             var ids = filesId.Where(FileTracker.IsEditing).Select(id => id).ToArray();
 
-            foreach (var file in fileDao.GetFiles(ids))
+            foreach (var file in await fileDao.GetFiles(ids))
             {
                 if (file == null || !await FileSecurity.CanEdit(file) && !await FileSecurity.CanReview(file)) continue;
 
@@ -772,10 +772,10 @@ namespace ASC.Web.Files.Services.WCFService
         public async Task<ItemList<File<T>>> GetFileHistory(T fileId)
         {
             var fileDao = GetFileDao();
-            var file = fileDao.GetFile(fileId);
+            var file = await fileDao.GetFile(fileId);
             ErrorIf(!await FileSecurity.CanRead(file), FilesCommonResource.ErrorMassage_SecurityException_ReadFile);
 
-            return new ItemList<File<T>>(fileDao.GetFileHistory(fileId));
+            return new ItemList<File<T>>(await fileDao.GetFileHistory(fileId));
         }
 
         public async Task<KeyValuePair<File<T>, ItemList<File<T>>>> UpdateToVersion(T fileId, int version)
@@ -799,13 +799,13 @@ namespace ASC.Web.Files.Services.WCFService
         public async Task<string> UpdateComment(T fileId, int version, string comment)
         {
             var fileDao = GetFileDao();
-            var file = fileDao.GetFile(fileId, version);
+            var file = await fileDao.GetFile(fileId, version);
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
             ErrorIf(!await FileSecurity.CanEdit(file) || UserManager.GetUsers(AuthContext.CurrentAccount.ID).IsVisitor(UserManager), FilesCommonResource.ErrorMassage_SecurityException_EditFile);
             ErrorIf(EntryManager.FileLockedForMe(file.ID), FilesCommonResource.ErrorMassage_LockedFile);
             ErrorIf(file.RootFolderType == FolderType.TRASH, FilesCommonResource.ErrorMassage_ViewTrashItem);
 
-            comment = fileDao.UpdateComment(fileId, version, comment);
+            comment = await fileDao.UpdateComment(fileId, version, comment);
 
             FilesMessageService.Send(file, GetHttpHeaders(), MessageAction.FileUpdatedRevisionComment, file.Title, version.ToString(CultureInfo.InvariantCulture));
 
@@ -837,7 +837,7 @@ namespace ASC.Web.Files.Services.WCFService
         {
             var tagDao = GetTagDao();
             var fileDao = GetFileDao();
-            var file = fileDao.GetFile(fileId);
+            var file = await fileDao.GetFile(fileId);
 
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
             ErrorIf(!await FileSecurity.CanEdit(file) || lockfile && UserManager.GetUsers(AuthContext.CurrentAccount.ID).IsVisitor(UserManager), FilesCommonResource.ErrorMassage_SecurityException_EditFile);
@@ -862,7 +862,7 @@ namespace ASC.Web.Files.Services.WCFService
                 var usersDrop = FileTracker.GetEditingBy(file.ID).Where(uid => uid != AuthContext.CurrentAccount.ID).Select(u => u.ToString()).ToArray();
                 if (usersDrop.Any())
                 {
-                    var fileStable = file.Forcesave == ForcesaveType.None ? file : fileDao.GetFileStable(file.ID, file.Version);
+                    var fileStable = file.Forcesave == ForcesaveType.None ? file : await fileDao.GetFileStable(file.ID, file.Version);
                     var docKey = DocumentServiceHelper.GetDocKey(fileStable);
                     DocumentServiceHelper.DropUser(docKey, usersDrop, file.ID);
                 }
@@ -905,7 +905,7 @@ namespace ASC.Web.Files.Services.WCFService
             var fileDao = GetFileDao();
             var (readLink, file) = await FileShareLink.Check(doc, true, fileDao);
             if (file == null)
-                file = fileDao.GetFile(fileId);
+                file = await fileDao.GetFile(fileId);
 
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
             ErrorIf(!readLink && !await FileSecurity.CanRead(file), FilesCommonResource.ErrorMassage_SecurityException_ReadFile);
@@ -928,8 +928,8 @@ namespace ASC.Web.Files.Services.WCFService
                 || version > 0 && file.Version != version)
             {
                 file = version > 0
-                           ? fileDao.GetFile(fileId, version)
-                           : fileDao.GetFile(fileId);
+                           ? await fileDao.GetFile(fileId, version)
+                           : await fileDao.GetFile(fileId);
             }
 
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
@@ -949,7 +949,7 @@ namespace ASC.Web.Files.Services.WCFService
                 string sourceFileUrl;
                 if (file.Version > 1)
                 {
-                    var previousFileStable = fileDao.GetFileStable(file.ID, file.Version - 1);
+                    var previousFileStable = await fileDao.GetFileStable(file.ID, file.Version - 1);
                     ErrorIf(previousFileStable == null, FilesCommonResource.ErrorMassage_FileNotFound);
 
                     sourceFileUrl = PathProvider.GetFileStreamUrl(previousFileStable, doc);
@@ -1002,7 +1002,7 @@ namespace ASC.Web.Files.Services.WCFService
             {
                 string modifiedOnString;
                 fileDao = GetFileDao();
-                var fromFile = fileDao.GetFile(fileId, version);
+                var fromFile = await fileDao.GetFile(fileId, version);
                 modifiedOnString = fromFile.ModifiedOnString;
                 file = await EntryManager.SaveEditing(fileId, null, url, null, doc, string.Format(FilesCommonResource.CommentRevertChanges, modifiedOnString));
             }
@@ -1315,7 +1315,7 @@ namespace ASC.Web.Files.Services.WCFService
 
             foreach (var id in filesId)
             {
-                var file = fileDao.GetFile(id);
+                var file = await fileDao.GetFile(id);
                 if (file != null && await fileDao.IsExist(file.Title, toFolder.ID))
                 {
                     checkedFiles.Add(id);
@@ -1333,7 +1333,7 @@ namespace ASC.Web.Files.Services.WCFService
                     var toSub = toSubfolders.FirstOrDefault(to => Equals(to.Title, folderProject.Title));
                     if (toSub == null) continue;
 
-                    var filesPr = fileDao.GetFiles(folderProject.ID);
+                    var filesPr = await fileDao.GetFiles(folderProject.ID);
                     var foldersPr = (await folderDao.GetFolders(folderProject.ID)).Select(d => d.ID);
 
                     var (cFiles, cFolders) = await MoveOrCopyFilesCheck(filesPr, foldersPr, toSub.ID);
@@ -1392,7 +1392,7 @@ namespace ASC.Web.Files.Services.WCFService
             var fileDao = GetFileDao();
             var trashId = await folderDao.GetFolderIDTrash(true);
             var foldersId = (await folderDao.GetFolders(trashId)).Select(f => f.ID).ToList();
-            var filesId = fileDao.GetFiles(trashId).ToList();
+            var filesId = (await fileDao.GetFiles(trashId)).ToList();
 
             return FileOperationsManagerHelper.Delete(foldersId, filesId, false, true, false, GetHttpHeaders());
         }
@@ -1408,8 +1408,8 @@ namespace ASC.Web.Files.Services.WCFService
                 var fileId = (T)Convert.ChangeType(fileInfo[0], typeof(T));
 
                 var file = int.TryParse(fileInfo[1], out var version) && version > 0
-                                ? fileDao.GetFile(fileId, version)
-                                : fileDao.GetFile(fileId);
+                                ? await fileDao.GetFile(fileId, version)
+                                : await fileDao.GetFile(fileId);
 
                 if (file == null)
                 {
@@ -1428,7 +1428,7 @@ namespace ASC.Web.Files.Services.WCFService
                 {
                     try
                     {
-                        FileConverter.ExecAsync(file, false, fileInfo.Count > 3 ? fileInfo[3] : null);
+                        await FileConverter.ExecAsync(file, false, fileInfo.Count > 3 ? fileInfo[3] : null);
                     }
                     catch (Exception e)
                     {
@@ -1586,7 +1586,7 @@ namespace ASC.Web.Files.Services.WCFService
                 var entryType = objectId.StartsWith("file_") ? FileEntryType.File : FileEntryType.Folder;
                 var entryId = (T)Convert.ChangeType(objectId.Substring((entryType == FileEntryType.File ? "file_" : "folder_").Length), typeof(T));
                 var entry = entryType == FileEntryType.File
-                                ? fileDao.GetFile(entryId)
+                                ? await fileDao.GetFile(entryId)
                                 : (FileEntry<T>)await folderDao.GetFolder(entryId);
 
                 try
@@ -1622,7 +1622,7 @@ namespace ASC.Web.Files.Services.WCFService
 
             var fileDao = GetFileDao();
             var folderDao = GetFolderDao();
-            entries.AddRange(filesId.Select(fileId => fileDao.GetFile(fileId)));
+            entries.AddRange(await Task.WhenAll(filesId.Select(fileId => fileDao.GetFile(fileId))));
 
             foreach (var f in foldersId)
             {
@@ -1636,7 +1636,7 @@ namespace ASC.Web.Files.Services.WCFService
         {
             File<T> file;
             var fileDao = GetFileDao();
-            file = fileDao.GetFile(fileId);
+            file = await fileDao.GetFile(fileId);
             ErrorIf(!await FileSharing.CanSetAccess(file), FilesCommonResource.ErrorMassage_SecurityException);
             var shareLink = FileShareLink.GetLink(file);
 
@@ -1654,7 +1654,7 @@ namespace ASC.Web.Files.Services.WCFService
         {
             FileEntry<T> file;
             var fileDao = GetFileDao();
-            file = fileDao.GetFile(fileId);
+            file = await fileDao.GetFile(fileId);
             var aces = new List<AceWrapper>
                 {
                     new AceWrapper
@@ -1690,7 +1690,7 @@ namespace ASC.Web.Files.Services.WCFService
 
             FileEntry<T> file;
             var fileDao = GetFileDao();
-            file = fileDao.GetFile(fileId);
+            file = await fileDao.GetFile(fileId);
 
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
 
@@ -1727,7 +1727,7 @@ namespace ASC.Web.Files.Services.WCFService
 
             File<T> file;
             var fileDao = GetFileDao();
-            file = fileDao.GetFile(fileId);
+            file = await fileDao.GetFile(fileId);
 
             ErrorIf(file == null, FilesCommonResource.ErrorMassage_FileNotFound);
 
@@ -1875,7 +1875,7 @@ namespace ASC.Web.Files.Services.WCFService
             }
 
             var fileDao = GetFileDao();
-            var files = fileDao.GetFiles(filesId.ToArray());
+            var files = await fileDao.GetFiles(filesId.ToArray());
 
             foreach (var file in files)
             {

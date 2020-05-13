@@ -593,7 +593,7 @@ namespace ASC.Web.Files.Utils
             return await SaveConvertedFile(file, convertUri);
         }
 
-        public void ExecAsync<T>(File<T> file, bool deleteAfter, string password = null)
+        public async Task ExecAsync<T>(File<T> file, bool deleteAfter, string password = null)
         {
             if (!MustConvert(file))
             {
@@ -604,7 +604,7 @@ namespace ASC.Web.Files.Utils
                 return;
             }
 
-            FileMarker.RemoveMarkAsNew(file);
+            await FileMarker.RemoveMarkAsNew(file);
             GetFileConverter<T>().Add(file, password, TenantManager.GetCurrentTenant().TenantId, AuthContext.CurrentAccount, deleteAfter, HttpContextAccesor?.HttpContext != null ? HttpContextAccesor.HttpContext.Request.GetUrlRewriter().ToString() : null);
         }
 
@@ -661,7 +661,7 @@ namespace ASC.Web.Files.Utils
 
                 if (FilesSettingsHelper.UpdateIfExist && (parent != null && !folderId.Equals(parent.ID) || !file.ProviderEntry))
                 {
-                    newFile = fileDao.GetFile(folderId, newFileTitle);
+                    newFile = await fileDao.GetFile(folderId, newFileTitle);
                     if (newFile != null && await fileSecurity.CanEdit(newFile) && !EntryManager.FileLockedForMe(newFile.ID) && !FileTracker.IsEditing(newFile.ID))
                     {
                         newFile.Version++;
@@ -719,7 +719,7 @@ namespace ASC.Web.Files.Utils
             }
 
             FilesMessageService.Send(newFile, MessageInitiator.DocsService, MessageAction.FileConverted, newFile.Title);
-            FileMarker.MarkAsNew(newFile);
+            await FileMarker.MarkAsNew(newFile);
 
             var tagDao = DaoFactory.GetTagDao<T>();
             var tags = tagDao.GetTags(file.ID, FileEntryType.File, TagType.System).ToList();

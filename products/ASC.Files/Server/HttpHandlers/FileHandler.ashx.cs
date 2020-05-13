@@ -208,7 +208,7 @@ namespace ASC.Web.Files
                         await CreateFile(context);
                         break;
                     case "redirect":
-                        Redirect(context);
+                        await Redirect(context);
                         break;
                     case "diff":
                         await DifferenceFile(context);
@@ -308,8 +308,8 @@ namespace ASC.Web.Files
                     fileDao.InvalidateCache(id);
 
                     file = int.TryParse(context.Request.Query[FilesLinkUtility.Version], out var version) && version > 0
-                               ? fileDao.GetFile(id, version)
-                               : fileDao.GetFile(id);
+                               ? await fileDao.GetFile(id, version)
+                               : await fileDao.GetFile(id);
                 }
 
                 if (file == null)
@@ -335,7 +335,7 @@ namespace ASC.Web.Files
                     return;
                 }
 
-                FileMarker.RemoveMarkAsNew(file);
+                await FileMarker.RemoveMarkAsNew(file);
 
                 context.Response.Clear();
                 context.Response.Headers.Clear();
@@ -663,8 +663,8 @@ namespace ASC.Web.Files
                     || version > 0 && file.Version != version)
                 {
                     file = version > 0
-                               ? fileDao.GetFile(id, version)
-                               : fileDao.GetFile(id);
+                               ? await fileDao.GetFile(id, version)
+                               : await fileDao.GetFile(id);
                 }
 
                 if (file == null)
@@ -906,8 +906,8 @@ namespace ASC.Web.Files
                     || version > 0 && file.Version != version)
                 {
                     file = version > 0
-                               ? fileDao.GetFile(id, version)
-                               : fileDao.GetFile(id);
+                               ? await fileDao.GetFile(id, version)
+                               : await fileDao.GetFile(id);
                 }
 
                 if (file == null)
@@ -1095,22 +1095,22 @@ namespace ASC.Web.Files
             return await fileDao.SaveFile(file, fileStream);
         }
 
-        private void Redirect(HttpContext context)
+        private async Task Redirect(HttpContext context)
         {
             var q = context.Request.Query[FilesLinkUtility.FileId];
             var q1 = context.Request.Query[FilesLinkUtility.FolderId];
 
             if (int.TryParse(q, out var fileId) && int.TryParse(q1, out var folderId))
             {
-                Redirect(context, fileId, folderId);
+                await Redirect(context, fileId, folderId);
             }
             else
             {
-                Redirect(context, q, q1);
+                await Redirect(context, q, q1);
             }
         }
 
-        private void Redirect<T>(HttpContext context, T folderId, T fileId)
+        private async Task Redirect<T>(HttpContext context, T folderId, T fileId)
         {
             if (!SecurityContext.AuthenticateMe(CookiesManager.GetCookies(CookiesType.AuthKey)))
             {
@@ -1133,7 +1133,7 @@ namespace ASC.Web.Files
             if (fileId != null)
             {
                 var fileDao = DaoFactory.GetFileDao<T>();
-                var file = fileDao.GetFile(fileId);
+                var file = await fileDao.GetFile(fileId);
                 if (file == null)
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;

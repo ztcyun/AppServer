@@ -193,8 +193,8 @@ namespace ASC.Api.Documents
                         }
                     }
 
-                    result.Files = GetFiles(fString).ToList();
-                    result.Files.AddRange(GetFiles(fInt));
+                    result.Files = (await GetFiles(fString)).ToList();
+                    result.Files.AddRange(await GetFiles(fInt));
                 }
 
                 if (result.OperationType == FileOperationType.Download)
@@ -215,11 +215,13 @@ namespace ASC.Api.Documents
                     .Cast<FileEntryWrapper>();
             }
 
-            IEnumerable<FileEntryWrapper> GetFiles<T>(IEnumerable<T> files)
+            async Task<IEnumerable<FileEntryWrapper>> GetFiles<T>(IEnumerable<T> files)
             {
                 var fileDao = DaoFactory.GetFileDao<T>();
-                return fileDao.GetFiles(files.ToArray())
-                    .Select(FilesWrapperHelper.Get)
+                return (
+                    await Task.WhenAll(
+                    (await fileDao.GetFiles(files.ToArray()))
+                    .Select(FilesWrapperHelper.Get)))
                     .Cast<FileEntryWrapper>();
             }
         }

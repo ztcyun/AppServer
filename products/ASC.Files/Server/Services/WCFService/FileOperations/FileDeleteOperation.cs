@@ -117,8 +117,8 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                 Status += string.Format("folder_{0}{1}", root.ID, SPLIT_CHAR);
             }
 
-            DeleteFiles(Files, scope);
-            DeleteFolders(Folders, scope);
+            await DeleteFiles(Files, scope);
+            await DeleteFolders(Folders, scope);
         }
 
         private async Task DeleteFolders(IEnumerable<T> folderIds, IServiceScope scope)
@@ -150,7 +150,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                 {
                     canCalculate = FolderDao.CanCalculateSubitems(folderId) ? default : folderId;
 
-                    fileMarker.RemoveMarkAsNewForAll(folder);
+                    await fileMarker.RemoveMarkAsNewForAll(folder);
                     if (folder.ProviderEntry && folder.ID.Equals(folder.RootFolderId))
                     {
                         if (ProviderDao != null)
@@ -166,7 +166,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                         var immediately = _immediately || !FolderDao.UseTrashForRemove(folder);
                         if (immediately && FolderDao.UseRecursiveOperation(folder.ID, default(T)))
                         {
-                            DeleteFiles(FileDao.GetFiles(folder.ID), scope);
+                            await DeleteFiles(await FileDao.GetFiles(folder.ID), scope);
                             await DeleteFolders((await FolderDao.GetFolders(folder.ID)).Select(f => f.ID).ToList(), scope);
 
                             if (await FolderDao.IsEmpty(folder.ID))
@@ -179,7 +179,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                         }
                         else
                         {
-                            var files = FileDao.GetFiles(folder.ID, new OrderBy(SortedByType.AZ, true), FilterType.FilesOnly, false, Guid.Empty, string.Empty, false, true);
+                            var files = await FileDao.GetFiles(folder.ID, new OrderBy(SortedByType.AZ, true), FilterType.FilesOnly, false, Guid.Empty, string.Empty, false, true);
                             var tmpError = _ignoreException ? null : await WithError(scope, files, true);
                             if (!string.IsNullOrEmpty(tmpError))
                             {
@@ -216,7 +216,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             {
                 CancellationToken.ThrowIfCancellationRequested();
 
-                var file = FileDao.GetFile(fileId);
+                var file = await FileDao.GetFile(fileId);
                 if (file == null)
                 {
                     Error = FilesCommonResource.ErrorMassage_FileNotFound;
@@ -230,17 +230,17 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                     }
                     else
                     {
-                        fileMarker.RemoveMarkAsNewForAll(file);
+                        await fileMarker.RemoveMarkAsNewForAll(file);
                         if (!_immediately && FileDao.UseTrashForRemove(file))
                         {
-                            FileDao.MoveFile(file.ID, _trashId);
+                            await FileDao.MoveFile(file.ID, _trashId);
                             filesMessageService.Send(file, _headers, MessageAction.FileMovedToTrash, file.Title);
                         }
                         else
                         {
                             try
                             {
-                                FileDao.DeleteFile(file.ID);
+                                await FileDao.DeleteFile(file.ID);
                                 filesMessageService.Send(file, _headers, MessageAction.FileDeleted, file.Title);
                             }
                             catch (Exception ex)

@@ -448,7 +448,7 @@ namespace ASC.Web.Files.Classes
         {
             foreach (var file in storeTemplate.ListFilesRelative("", path, "*", false))
             {
-                SaveFile(fileMarker, fileDao, folderId, path + file, storeTemplate);
+                await SaveFile(fileMarker, fileDao, folderId, path + file, storeTemplate);
             }
 
             foreach (var folderName in storeTemplate.ListDirectoriesRelative(path, false))

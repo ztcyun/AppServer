@@ -306,7 +306,7 @@ namespace ASC.Files.Core.Data
 
             var isnew = false;
 
-            var tx = transaction ?? FilesDbContext.Database.BeginTransaction();
+            var tx = transaction ?? await FilesDbContext.Database.BeginTransactionAsync();
 
             if (!folder.ID.Equals(default) && await IsExist(folder.ID))
             {
@@ -916,7 +916,7 @@ namespace ASC.Files.Core.Data
                         folder.Title = key;
                         break;
                 }
-                using var tx = FilesDbContext.Database.BeginTransaction(); //NOTE: Maybe we shouldn't start transaction here at all
+                using var tx = await FilesDbContext.Database.BeginTransactionAsync(); //NOTE: Maybe we shouldn't start transaction here at all
                 newFolderId = await SaveFolder(folder, tx); //Save using our db manager
                 var toInsert = new DbFilesBunchObjects
                 {

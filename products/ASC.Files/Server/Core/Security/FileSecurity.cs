@@ -616,7 +616,7 @@ namespace ASC.Files.Core.Security
 
             if (filterType != FilterType.FoldersOnly)
             {
-                var files = fileDao.GetFilesForShare(fileIds.Keys.Select(r => (T)r).ToArray(), filterType, subjectGroup, subjectID, searchText, searchInContent);
+                var files = await fileDao.GetFilesForShare(fileIds.Keys.Select(r => (T)r).ToArray(), filterType, subjectGroup, subjectID, searchText, searchInContent);
 
                 files.ForEach(async x =>
                     {
@@ -652,7 +652,7 @@ namespace ASC.Files.Core.Security
 
             if (filterType != FilterType.FoldersOnly && withSubfolders)
             {
-                var filesInSharedFolders = fileDao.GetFiles(folderIds.Keys.Select(r => (T)r).ToArray(), filterType, subjectGroup, subjectID, searchText, searchInContent);
+                var filesInSharedFolders = await fileDao.GetFiles(folderIds.Keys.Select(r => (T)r).ToArray(), filterType, subjectGroup, subjectID, searchText, searchInContent);
                 filesInSharedFolders = (await FilterRead(filesInSharedFolders)).ToList();
                 entries.AddRange(filesInSharedFolders);
                 entries = entries.Distinct().ToList();

@@ -99,11 +99,11 @@ namespace ASC.Web.Files.Configuration
             ThirdpartyConfiguration = thirdpartyConfiguration;
         }
 
-        public IEnumerable<File<int>> SearchFiles(string text)
+        public async Task<IEnumerable<File<int>>> SearchFiles(string text)
         {
             var security = FileSecurity;
             var fileDao = DaoFactory.GetFileDao<int>();
-            return fileDao.Search(text).Where(r => security.CanRead(r).Result); //TODO: Result
+            return (await fileDao.Search(text)).Where(r => security.CanRead(r).Result); //TODO: Result
         }
 
         public async Task<IEnumerable<Folder<int>>> SearchFolders(string text)
@@ -134,7 +134,7 @@ namespace ASC.Web.Files.Configuration
         public async Task<SearchResultItem[]> Search(string text)
         {
             var folderDao = DaoFactory.GetFolderDao<int>();
-            var result = await Task.WhenAll(SearchFiles(text)
+            var result = await Task.WhenAll((await SearchFiles(text))
                             .Select(async r => new SearchResultItem
                             {
                                 Name = r.Title ?? string.Empty,

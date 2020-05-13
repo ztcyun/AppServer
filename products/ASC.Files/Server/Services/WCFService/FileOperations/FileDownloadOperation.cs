@@ -92,8 +92,8 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                 AlternateEncoding = Encoding.UTF8,
             })
             {
-                (ThirdPartyOperation as FileDownloadOperation<string>).CompressToZip(zip, stream, scope);
-                (DaoOperation as FileDownloadOperation<int>).CompressToZip(zip, stream, scope);
+                (ThirdPartyOperation as FileDownloadOperation<string>).CompressToZip(zip, stream, scope).Wait();
+                (DaoOperation as FileDownloadOperation<int>).CompressToZip(zip, stream, scope).Wait();
             }
 
             if (stream != null)
@@ -166,7 +166,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                     AlternateEncoding = Encoding.UTF8
                 };
 
-                CompressToZip(zip, stream, scope);
+                await CompressToZip(zip, stream, scope);
 
                 if (stream != null)
                 {
@@ -184,10 +184,10 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             }
         }
 
-        private ItemNameValueCollection<T> ExecPathFromFile(IServiceScope scope, File<T> file, string path)
+        private async Task<ItemNameValueCollection<T>> ExecPathFromFile(IServiceScope scope, File<T> file, string path)
         {
             var fileMarker = scope.ServiceProvider.GetService<FileMarker>();
-            fileMarker.RemoveMarkAsNew(file);
+            await fileMarker.RemoveMarkAsNew(file);
 
             var title = file.Title;
 
@@ -213,16 +213,16 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             var entriesPathId = new ItemNameValueCollection<T>();
             if (0 < Files.Count)
             {
-                var files = FileDao.GetFiles(Files.ToArray());
+                var files = await FileDao.GetFiles(Files.ToArray());
                 files = (await FilesSecurity.FilterRead(files)).ToList();
-                files.ForEach(file => entriesPathId.Add(ExecPathFromFile(scope, file, string.Empty)));
+                files.ForEach(async file => entriesPathId.Add(await ExecPathFromFile(scope, file, string.Empty)));
             }
             if (0 < Folders.Count)
             {
                 (await FilesSecurity.FilterRead(await FolderDao.GetFolders(Files.ToArray())))
                     .Cast<FileEntry<T>>()
                     .ToList()
-                    .ForEach(folder => fileMarker.RemoveMarkAsNew(folder));
+                    .ForEach(async folder => await fileMarker.RemoveMarkAsNew(folder));
 
                 var filesInFolder = await GetFilesInFolders(scope, Folders, string.Empty);
                 entriesPathId.Add(filesInFolder);
@@ -245,11 +245,11 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                 if (folder == null || !await FilesSecurity.CanRead(folder)) continue;
                 var folderPath = path + folder.Title + "/";
 
-                var files = FileDao.GetFiles(folder.ID, null, FilterType.None, false, Guid.Empty, string.Empty, true);
+                var files = await FileDao.GetFiles(folder.ID, null, FilterType.None, false, Guid.Empty, string.Empty, true);
                 files = (await FilesSecurity.FilterRead(files)).ToList();
-                files.ForEach(file => entriesPathId.Add(ExecPathFromFile(scope, file, folderPath)));
+                files.ForEach(async file => entriesPathId.Add(await ExecPathFromFile(scope, file, folderPath)));
 
-                fileMarker.RemoveMarkAsNew(folder);
+                await fileMarker.RemoveMarkAsNew(folder);
 
                 var nestedFolders = await FolderDao.GetFolders(folder.ID);
                 nestedFolders = (await FilesSecurity.FilterRead(nestedFolders)).ToList();
@@ -264,7 +264,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             return entriesPathId;
         }
 
-        internal void CompressToZip(ZipOutputStream zip, Stream stream, IServiceScope scope)
+        internal async Task CompressToZip(ZipOutputStream zip, Stream stream, IServiceScope scope)
         {
             if (entriesPathId == null) return;
             var setupInfo = scope.ServiceProvider.GetService<SetupInfo>();
@@ -292,7 +292,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
                     if (!entryId.Equals(default(T)))
                     {
                         FileDao.InvalidateCache(entryId);
-                        file = FileDao.GetFile(entryId);
+                        file = await FileDao.GetFile(entryId);
 
                         if (file == null)
                         {

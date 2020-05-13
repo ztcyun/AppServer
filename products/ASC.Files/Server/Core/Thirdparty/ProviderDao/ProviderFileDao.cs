@@ -59,12 +59,12 @@ namespace ASC.Files.Thirdparty.ProviderDao
             fileDao.InvalidateCache(selector.ConvertId(fileId));
         }
 
-        public File<string> GetFile(string fileId)
+        public async Task<File<string>> GetFile(string fileId)
         {
             var selector = GetSelector(fileId);
 
             var fileDao = selector.GetFileDao(fileId);
-            var result = fileDao.GetFile(selector.ConvertId(fileId));
+            var result = await fileDao.GetFile(selector.ConvertId(fileId));
 
             if (result != null)
             {
@@ -74,12 +74,12 @@ namespace ASC.Files.Thirdparty.ProviderDao
             return result;
         }
 
-        public File<string> GetFile(string fileId, int fileVersion)
+        public async Task<File<string>> GetFile(string fileId, int fileVersion)
         {
             var selector = GetSelector(fileId);
 
             var fileDao = selector.GetFileDao(fileId);
-            var result = fileDao.GetFile(selector.ConvertId(fileId), fileVersion);
+            var result = await fileDao.GetFile(selector.ConvertId(fileId), fileVersion);
 
             if (result != null)
             {
@@ -89,11 +89,11 @@ namespace ASC.Files.Thirdparty.ProviderDao
             return result;
         }
 
-        public File<string> GetFile(string parentId, string title)
+        public async Task<File<string>> GetFile(string parentId, string title)
         {
             var selector = GetSelector(parentId);
             var fileDao = selector.GetFileDao(parentId);
-            var result = fileDao.GetFile(selector.ConvertId(parentId), title);
+            var result = await fileDao.GetFile(selector.ConvertId(parentId), title);
 
             if (result != null)
             {
@@ -103,12 +103,12 @@ namespace ASC.Files.Thirdparty.ProviderDao
             return result;
         }
 
-        public File<string> GetFileStable(string fileId, int fileVersion = -1)
+        public async Task<File<string>> GetFileStable(string fileId, int fileVersion = -1)
         {
             var selector = GetSelector(fileId);
 
             var fileDao = selector.GetFileDao(fileId);
-            var result = fileDao.GetFileStable(selector.ConvertId(fileId), fileVersion);
+            var result = await fileDao.GetFileStable(selector.ConvertId(fileId), fileVersion);
 
             if (result != null)
             {
@@ -118,14 +118,14 @@ namespace ASC.Files.Thirdparty.ProviderDao
             return result;
         }
 
-        public List<File<string>> GetFileHistory(string fileId)
+        public async Task<List<File<string>>> GetFileHistory(string fileId)
         {
             var selector = GetSelector(fileId);
             var fileDao = selector.GetFileDao(fileId);
-            return fileDao.GetFileHistory(selector.ConvertId(fileId));
+            return await fileDao.GetFileHistory(selector.ConvertId(fileId));
         }
 
-        public List<File<string>> GetFiles(string[] fileIds)
+        public async Task<List<File<string>>> GetFiles(string[] fileIds)
         {
             var result = Enumerable.Empty<File<string>>();
 
@@ -136,20 +136,18 @@ namespace ASC.Files.Thirdparty.ProviderDao
 
                 if (!matchedIds.Any()) continue;
 
-                result = result.Concat(matchedIds.GroupBy(selectorLocal.GetIdCode)
-                                                .SelectMany(matchedId =>
-                                                {
-                                                    var fileDao = selectorLocal.GetFileDao(matchedId.FirstOrDefault());
-                                                    return fileDao.GetFiles(matchedId.Select(selectorLocal.ConvertId).ToArray());
-                                                }
-                    )
-                    .Where(r => r != null));
+                foreach (var m in matchedIds.GroupBy(selectorLocal.GetIdCode))
+                {
+                    var fileDao = selectorLocal.GetFileDao(m.FirstOrDefault()); ;
+
+                    result = result.Concat((await fileDao.GetFiles(m.Select(selectorLocal.ConvertId).ToArray())).Where(r => r != null));
+                }
             }
 
             return result.ToList();
         }
 
-        public List<File<string>> GetFilesForShare(string[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public async Task<List<File<string>>> GetFilesForShare(string[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
             var result = Enumerable.Empty<File<string>>();
 
@@ -160,34 +158,34 @@ namespace ASC.Files.Thirdparty.ProviderDao
 
                 if (!matchedIds.Any()) continue;
 
-                result = result.Concat(matchedIds.GroupBy(selectorLocal.GetIdCode)
-                                        .SelectMany(matchedId =>
-                                        {
-                                            var fileDao = selectorLocal.GetFileDao(matchedId.FirstOrDefault());
-                                            return fileDao.GetFilesForShare(matchedId.Select(selectorLocal.ConvertId).ToArray(),
-                                                    filterType, subjectGroup, subjectID, searchText, searchInContent);
-                                        })
-                                        .Where(r => r != null));
+                foreach (var m in matchedIds.GroupBy(selectorLocal.GetIdCode))
+                {
+                    var fileDao = selectorLocal.GetFileDao(m.FirstOrDefault());
+
+                    result = result.Concat((await fileDao.GetFilesForShare(m.Select(selectorLocal.ConvertId).ToArray(), filterType, subjectGroup, subjectID, searchText, searchInContent))
+                                                    .Where(r => r != null));
+                }
             }
 
             return result.ToList();
         }
 
-        public List<string> GetFiles(string parentId)
+        public async Task<List<string>> GetFiles(string parentId)
         {
             var selector = GetSelector(parentId);
             var fileDao = selector.GetFileDao(parentId);
-            return fileDao.GetFiles(selector.ConvertId(parentId)).Where(r => r != null).ToList();
+            return (await fileDao.GetFiles(selector.ConvertId(parentId))).Where(r => r != null).ToList();
         }
 
-        public List<File<string>> GetFiles(string parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
+        public async Task<List<File<string>>> GetFiles(string parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
         {
             var selector = GetSelector(parentId);
 
             var fileDao = selector.GetFileDao(parentId);
-            var result = fileDao
-                .GetFiles(selector.ConvertId(parentId), orderBy, filterType, subjectGroup, subjectID, searchText, searchInContent, withSubfolders)
-                .Where(r => r != null).ToList();
+            var result = (await fileDao
+                .GetFiles(selector.ConvertId(parentId), orderBy, filterType, subjectGroup, subjectID, searchText, searchInContent, withSubfolders))
+                .Where(r => r != null)
+                .ToList();
 
             if (!result.Any()) return new List<File<string>>();
 
@@ -298,11 +296,11 @@ namespace ASC.Files.Thirdparty.ProviderDao
             return await fileDao.ReplaceFileVersion(file, fileStream);
         }
 
-        public void DeleteFile(string fileId)
+        public async Task DeleteFile(string fileId)
         {
             var selector = GetSelector(fileId);
             var fileDao = selector.GetFileDao(fileId);
-            fileDao.DeleteFile(selector.ConvertId(fileId));
+            await fileDao.DeleteFile(selector.ConvertId(fileId));
         }
 
         public async Task<bool> IsExist(string title, object folderId)
@@ -386,27 +384,27 @@ namespace ASC.Files.Thirdparty.ProviderDao
             return await fileDao.FileRename(ConvertId(file), newTitle);
         }
 
-        public string UpdateComment(string fileId, int fileVersion, string comment)
+        public async Task<string> UpdateComment(string fileId, int fileVersion, string comment)
         {
             var selector = GetSelector(fileId);
 
             var fileDao = selector.GetFileDao(fileId);
-            return fileDao.UpdateComment(selector.ConvertId(fileId), fileVersion, comment);
+            return await fileDao.UpdateComment(selector.ConvertId(fileId), fileVersion, comment);
         }
 
-        public void CompleteVersion(string fileId, int fileVersion)
+        public async Task CompleteVersion(string fileId, int fileVersion)
         {
             var selector = GetSelector(fileId);
 
             var fileDao = selector.GetFileDao(fileId);
-            fileDao.CompleteVersion(selector.ConvertId(fileId), fileVersion);
+            await fileDao.CompleteVersion(selector.ConvertId(fileId), fileVersion);
         }
 
-        public void ContinueVersion(string fileId, int fileVersion)
+        public async Task ContinueVersion(string fileId, int fileVersion)
         {
             var selector = GetSelector(fileId);
             var fileDao = selector.GetFileDao(fileId);
-            fileDao.ContinueVersion(selector.ConvertId(fileId), fileVersion);
+            await fileDao.ContinueVersion(selector.ConvertId(fileId), fileVersion);
         }
 
         public bool UseTrashForRemove(File<string> file)
@@ -470,12 +468,12 @@ namespace ASC.Files.Thirdparty.ProviderDao
             throw new NotImplementedException();
         }
 
-        public List<File<string>> GetFiles(string[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public Task<List<File<string>>> GetFiles(string[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<File<string>> Search(string text, bool bunch)
+        public Task<IEnumerable<File<string>>> Search(string text, bool bunch)
         {
             throw new NotImplementedException();
         }

@@ -294,7 +294,7 @@ namespace ASC.Web.Files.Services.DocumentService
             if (app == null)
             {
                 File<T> fileStable;
-                fileStable = DaoFactory.GetFileDao<T>().GetFileStable(fileId);
+                fileStable = await DaoFactory.GetFileDao<T>().GetFileStable(fileId);
 
                 docKey = DocumentServiceHelper.GetDocKey(fileStable);
             }
@@ -365,7 +365,7 @@ namespace ASC.Web.Files.Services.DocumentService
             if (app == null)
             {
                 File<T> fileStable;
-                fileStable = DaoFactory.GetFileDao<T>().GetFileStable(fileId);
+                fileStable = await DaoFactory.GetFileDao<T>().GetFileStable(fileId);
 
                 var docKey = DocumentServiceHelper.GetDocKey(fileStable);
                 if (!fileData.Key.Equals(docKey))
@@ -407,7 +407,7 @@ namespace ASC.Web.Files.Services.DocumentService
 
                     file = await EntryManager.CompleteVersionFile(fileId, 0, false, false);
 
-                    DaoFactory.GetFileDao<T>().UpdateComment(file.ID, file.Version, string.Join("; ", comments));
+                    await DaoFactory.GetFileDao<T>().UpdateComment(file.ID, file.Version, string.Join("; ", comments));
 
                     file = null;
                     Logger.ErrorFormat("DocService save error. Empty url. File id: '{0}'. UserId: {1}. DocKey '{2}'", fileId, userId, fileData.Key);

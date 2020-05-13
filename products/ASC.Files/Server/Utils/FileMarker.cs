@@ -540,7 +540,7 @@ namespace ASC.Web.Files.Utils
             foreach (var tag in tags)
             {
                 var entry = tag.EntryType == FileEntryType.File
-                                ? fileDao.GetFile((T)tag.EntryId)
+                                ? await fileDao.GetFile((T)tag.EntryId)
                                 : (FileEntry<T>)await folderDao.GetFolder((T)tag.EntryId);
                 if (entry != null)
                 {
@@ -669,7 +669,7 @@ namespace ASC.Web.Files.Utils
                     }
                     else
                     {
-                        RemoveMarkAsNew(parent);
+                        await RemoveMarkAsNew(parent);
                     }
                 }
 

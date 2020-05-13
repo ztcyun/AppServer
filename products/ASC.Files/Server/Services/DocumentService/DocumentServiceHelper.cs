@@ -100,11 +100,11 @@ namespace ASC.Web.Files.Services.DocumentService
 
             if (file == null)
             {
-                var curFile = fileDao.GetFile(fileId);
+                var curFile = await fileDao.GetFile(fileId);
 
                 if (curFile != null && 0 < version && version < curFile.Version)
                 {
-                    file = fileDao.GetFile(fileId, version);
+                    file = await fileDao.GetFile(fileId, version);
                     lastVersion = false;
                 }
                 else
@@ -249,7 +249,7 @@ namespace ASC.Web.Files.Services.DocumentService
             if (lastVersion && file.Forcesave != ForcesaveType.None && tryEdit)
             {
                 var fileDao = DaoFactory.GetFileDao<T>();
-                fileStable = fileDao.GetFileStable(file.ID, file.Version);
+                fileStable = await fileDao.GetFileStable(file.ID, file.Version);
             }
 
             var docKey = GetDocKey(fileStable);
@@ -347,7 +347,7 @@ namespace ASC.Web.Files.Services.DocumentService
             if (file.Forcesave != ForcesaveType.None)
             {
                 var fileDao = DaoFactory.GetFileDao<T>();
-                fileStable = fileDao.GetFileStable(file.ID, file.Version);
+                fileStable = await fileDao.GetFileStable(file.ID, file.Version);
             }
 
             var docKey = GetDocKey(fileStable);
@@ -359,7 +359,7 @@ namespace ASC.Web.Files.Services.DocumentService
             return DocumentServiceConnector.Command(Web.Core.Files.DocumentService.CommandMethod.Drop, docKeyForTrack, fileId, null, users);
         }
 
-        public bool RenameFile<T>(File<T> file, IFileDao<T> fileDao)
+        public async Task<bool> RenameFile<T>(File<T> file, IFileDao<T> fileDao)
         {
             if (!FileUtility.CanWebView(file.Title)
                 && !FileUtility.CanWebEdit(file.Title)
@@ -368,7 +368,7 @@ namespace ASC.Web.Files.Services.DocumentService
                 && !FileUtility.CanWebComment(file.Title))
                 return true;
 
-            var fileStable = file.Forcesave == ForcesaveType.None ? file : fileDao.GetFileStable(file.ID, file.Version);
+            var fileStable = file.Forcesave == ForcesaveType.None ? file : await fileDao.GetFileStable(file.ID, file.Version);
             var docKeyForTrack = GetDocKey(fileStable);
 
             var meta = new Web.Core.Files.DocumentService.MetaData { Title = file.Title };

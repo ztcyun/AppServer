@@ -348,7 +348,7 @@ namespace ASC.Web.Files.Utils
 
                     if (filter != FilterType.FoldersOnly && withSubfolders)
                     {
-                        var files = DaoFactory.GetFileDao<int>().GetFiles(rootKeys, filter, subjectGroup, subjectId, searchText, searchInContent).ToList();
+                        var files = (await DaoFactory.GetFileDao<int>().GetFiles(rootKeys, filter, subjectGroup, subjectId, searchText, searchInContent)).ToList();
                         files = (await fileSecurity.FilterRead(files)).ToList();
                         entries = entries.Concat(files.Cast<FileEntry<T>>());
                     }
@@ -377,7 +377,7 @@ namespace ASC.Web.Files.Utils
                 entries = entries.Concat(folders);
 
 
-                var files = DaoFactory.GetFileDao<T>()
+                var files = await DaoFactory.GetFileDao<T>()
                     .GetFiles(parent.ID, orderBy, filter, subjectGroup, subjectId, searchText, searchInContent, withSubfolders);
                 entries = entries.Concat(await fileSecurity.FilterRead(files));
 
@@ -682,7 +682,7 @@ namespace ASC.Web.Files.Utils
             var (editLink, file) = await FileShareLink.Check(doc, false, fileDao);
             if (file == null)
             {
-                file = fileDao.GetFile(fileId);
+                file = await fileDao.GetFile(fileId);
             }
 
             if (file == null) throw new FileNotFoundException(FilesCommonResource.ErrorMassage_FileNotFound);
@@ -817,7 +817,7 @@ namespace ASC.Web.Files.Utils
             var fileDao = DaoFactory.GetFileDao<T>();
             var (editLink, file) = await FileShareLink.Check(doc, false, fileDao);
             if (file == null)
-                file = fileDao.GetFile(fileId);
+                file = await fileDao.GetFile(fileId);
 
             if (file == null) throw new FileNotFoundException(FilesCommonResource.ErrorMassage_FileNotFound);
             var fileSecurity = FileSecurity;
@@ -840,12 +840,12 @@ namespace ASC.Web.Files.Utils
             var (editLink, fromFile) = await FileShareLink.Check(doc, false, fileDao);
 
             if (fromFile == null)
-                fromFile = fileDao.GetFile(fileId);
+                fromFile = await fileDao.GetFile(fileId);
 
             if (fromFile == null) throw new FileNotFoundException(FilesCommonResource.ErrorMassage_FileNotFound);
 
             if (fromFile.Version != version)
-                fromFile = fileDao.GetFile(fromFile.ID, Math.Min(fromFile.Version, version));
+                fromFile = await fileDao.GetFile(fromFile.ID, Math.Min(fromFile.Version, version));
 
             if (fromFile == null) throw new FileNotFoundException(FilesCommonResource.ErrorMassage_FileNotFound);
             if (checkRight && !editLink && (!await FileSecurity.CanEdit(fromFile) || UserManager.GetUsers(AuthContext.CurrentAccount.ID).IsVisitor(UserManager))) throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException_EditFile);
@@ -866,7 +866,7 @@ namespace ASC.Web.Files.Utils
 
             try
             {
-                var currFile = fileDao.GetFile(fileId);
+                var currFile = await fileDao.GetFile(fileId);
                 var newFile = ServiceProvider.GetService<File<T>>();
 
                 newFile.ID = fromFile.ID;
@@ -910,21 +910,21 @@ namespace ASC.Web.Files.Utils
         {
             var fileDao = DaoFactory.GetFileDao<T>();
             var fileVersion = version > 0
-? fileDao.GetFile(fileId, version)
-: fileDao.GetFile(fileId);
+? await fileDao.GetFile(fileId, version)
+: await fileDao.GetFile(fileId);
             if (fileVersion == null) throw new FileNotFoundException(FilesCommonResource.ErrorMassage_FileNotFound);
             if (checkRight && (!await FileSecurity.CanEdit(fileVersion) || UserManager.GetUsers(AuthContext.CurrentAccount.ID).IsVisitor(UserManager))) throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException_EditFile);
             if (FileLockedForMe(fileVersion.ID)) throw new Exception(FilesCommonResource.ErrorMassage_LockedFile);
             if (fileVersion.RootFolderType == FolderType.TRASH) throw new Exception(FilesCommonResource.ErrorMassage_ViewTrashItem);
             if (fileVersion.ProviderEntry) throw new Exception(FilesCommonResource.ErrorMassage_BadRequest);
 
-            var lastVersionFile = fileDao.GetFile(fileVersion.ID);
+            var lastVersionFile = await fileDao.GetFile(fileVersion.ID);
 
             if (continueVersion)
             {
                 if (lastVersionFile.VersionGroup > 1)
                 {
-                    fileDao.ContinueVersion(fileVersion.ID, fileVersion.Version);
+                    await fileDao.ContinueVersion(fileVersion.ID, fileVersion.Version);
                     lastVersionFile.VersionGroup--;
                 }
             }
@@ -937,7 +937,7 @@ namespace ASC.Web.Files.Utils
                         lastVersionFile = await UpdateToVersionFile(fileVersion.ID, fileVersion.Version, null, checkRight);
                     }
 
-                    fileDao.CompleteVersion(fileVersion.ID, fileVersion.Version);
+                    await fileDao.CompleteVersion(fileVersion.ID, fileVersion.Version);
                     lastVersionFile.VersionGroup++;
                 }
             }
@@ -950,7 +950,7 @@ namespace ASC.Web.Files.Utils
         public async Task<(bool, File<T>)> FileRename<T>(T fileId, string title)
         {
             var fileDao = DaoFactory.GetFileDao<T>();
-            var file = fileDao.GetFile(fileId);
+            var file = await fileDao.GetFile(fileId);
             if (file == null) throw new FileNotFoundException(FilesCommonResource.ErrorMassage_FileNotFound);
             if (!await FileSecurity.CanEdit(file)) throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException_RenameFile);
             if (!await FileSecurity.CanDelete(file) && UserManager.GetUsers(AuthContext.CurrentAccount.ID).IsVisitor(UserManager)) throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException_RenameFile);
@@ -973,10 +973,10 @@ namespace ASC.Web.Files.Utils
             {
                 var newFileID = await fileDao.FileRename(file, title);
 
-                file = fileDao.GetFile(newFileID);
+                file = await fileDao.GetFile(newFileID);
                 file.Access = fileAccess;
 
-                DocumentServiceHelper.RenameFile(file, fileDao);
+                await DocumentServiceHelper.RenameFile(file, fileDao);
 
                 renamed = true;
             }
@@ -1000,11 +1000,11 @@ namespace ASC.Web.Files.Utils
                 await folderDao.DeleteFolder(folder.ID);
             }
 
-            var files = fileDao.GetFiles(parentId, null, FilterType.None, false, Guid.Empty, string.Empty, true);
+            var files = await fileDao.GetFiles(parentId, null, FilterType.None, false, Guid.Empty, string.Empty, true);
             foreach (var file in files)
             {
                 Logger.InfoFormat("Delete file {0} in {1}", file.ID, parentId);
-                fileDao.DeleteFile(file.ID);
+                await fileDao.DeleteFile(file.ID);
             }
         }
 
@@ -1028,7 +1028,7 @@ namespace ASC.Web.Files.Utils
                 }
             }
 
-            var files = fileDao.GetFiles(parentId, null, FilterType.None, false, Guid.Empty, string.Empty, true)
+            var files = (await fileDao.GetFiles(parentId, null, FilterType.None, false, Guid.Empty, string.Empty, true))
                 .Where(file => file.Shared &&
                 fileSecurity.GetShares(file).Any(record => record.Subject != FileConstant.ShareLinkId && record.Share != FileShare.Restrict));
 
@@ -1041,7 +1041,7 @@ namespace ASC.Web.Files.Utils
 
         public static async Task ReassignItems<T>(T parentId, Guid fromUserId, Guid toUserId, IFolderDao<T> folderDao, IFileDao<T> fileDao)
         {
-            var fileIds = fileDao.GetFiles(parentId, new OrderBy(SortedByType.AZ, true), FilterType.ByUser, false, fromUserId, null, true, true)
+            var fileIds = (await fileDao.GetFiles(parentId, new OrderBy(SortedByType.AZ, true), FilterType.ByUser, false, fromUserId, null, true, true))
                                  .Where(file => file.CreateBy == fromUserId).Select(file => file.ID);
 
             fileDao.ReassignFiles(fileIds.ToArray(), toUserId);

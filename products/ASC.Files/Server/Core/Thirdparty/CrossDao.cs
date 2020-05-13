@@ -34,7 +34,7 @@ namespace ASC.Files.Core.Thirdparty
             bool deleteSourceFile)
         {
             //Get File from first dao
-            var fromFile = fromFileDao.GetFile(fromConverter(fromFileId));
+            var fromFile = await fromFileDao.GetFile(fromConverter(fromFileId));
 
             if (fromFile.ContentLength > SetupInfo.AvailableFileSize)
             {
@@ -86,7 +86,7 @@ namespace ASC.Files.Core.Thirdparty
                 }
 
                 //Delete source file if needed
-                fromFileDao.DeleteFile(fromConverter(fromFileId));
+                await fromFileDao.DeleteFile(fromConverter(fromFileId));
             }
             return toFile;
         }
@@ -108,7 +108,7 @@ namespace ASC.Files.Core.Thirdparty
                                  : await toFolderDao.SaveFolder(toFolder1);
 
             var foldersToCopy = await fromFolderDao.GetFolders(fromConverter(fromFolderId));
-            var fileIdsToCopy = fromFileDao.GetFiles(fromConverter(fromFolderId));
+            var fileIdsToCopy = await fromFileDao.GetFiles(fromConverter(fromFolderId));
             Exception copyException = null;
             //Copy files first
             foreach (var fileId in fileIdsToCopy)
@@ -116,7 +116,7 @@ namespace ASC.Files.Core.Thirdparty
                 if (cancellationToken.HasValue) cancellationToken.Value.ThrowIfCancellationRequested();
                 try
                 {
-                    PerformCrossDaoFileCopy(fileId, fromFileDao, fromConverter,
+                    await PerformCrossDaoFileCopy(fileId, fromFileDao, fromConverter,
                         toFolderId, toFileDao, toConverter,
                         deleteSourceFolder);
                 }

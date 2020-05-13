@@ -45,7 +45,7 @@ namespace ASC.Files.Core
         /// </summary>
         /// <param name="fileId">file id</param>
         /// <returns></returns>
-        File<T> GetFile(T fileId);
+        Task<File<T>> GetFile(T fileId);
 
         /// <summary>
         ///     Receive file
@@ -53,7 +53,7 @@ namespace ASC.Files.Core
         /// <param name="fileId">file id</param>
         /// <param name="fileVersion">file version</param>
         /// <returns></returns>
-        File<T> GetFile(T fileId, int fileVersion);
+        Task<File<T>> GetFile(T fileId, int fileVersion);
 
         /// <summary>
         ///     Receive file
@@ -63,7 +63,7 @@ namespace ASC.Files.Core
         /// <returns>
         ///   file
         /// </returns>
-        File<T> GetFile(T parentId, string title);
+        Task<File<T>> GetFile(T parentId, string title);
 
         /// <summary>
         ///     Receive last file without forcesave
@@ -71,21 +71,21 @@ namespace ASC.Files.Core
         /// <param name="fileId">file id</param>
         /// <param name="fileVersion"></param>
         /// <returns></returns>
-        File<T> GetFileStable(T fileId, int fileVersion = -1);
+        Task<File<T>> GetFileStable(T fileId, int fileVersion = -1);
 
         /// <summary>
         ///  Returns all versions of the file
         /// </summary>
         /// <param name="fileId"></param>
         /// <returns></returns>
-        List<File<T>> GetFileHistory(T fileId);
+        Task<List<File<T>>> GetFileHistory(T fileId);
 
         /// <summary>
         ///     Gets the file (s) by ID (s)
         /// </summary>
         /// <param name="fileIds">id file</param>
         /// <returns></returns>
-        List<File<T>> GetFiles(T[] fileIds);
+        Task<List<File<T>>> GetFiles(T[] fileIds);
 
         /// <summary>
         ///     Gets the file (s) by ID (s) for share
@@ -97,14 +97,14 @@ namespace ASC.Files.Core
         /// <param name="searchText"></param>
         /// <param name="searchInContent"></param>
         /// <returns></returns>
-        List<File<T>> GetFilesForShare(T[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent);
+        Task<List<File<T>>> GetFilesForShare(T[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="parentId"></param>
         /// <returns></returns>
-        List<T> GetFiles(T parentId);
+        Task<List<T>> GetFiles(T parentId);
 
         /// <summary>
         ///     Get files in folder
@@ -121,7 +121,7 @@ namespace ASC.Files.Core
         /// <remarks>
         ///    Return only the latest versions of files of a folder
         /// </remarks>
-        List<File<T>> GetFiles(T parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false);
+        Task<List<File<T>>> GetFiles(T parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false);
 
         /// <summary>
         /// Get stream of file
@@ -181,7 +181,7 @@ namespace ASC.Files.Core
         ///   Deletes a file including all previous versions
         /// </summary>
         /// <param name="fileId">file id</param>
-        void DeleteFile(T fileId);
+        Task DeleteFile(T fileId);
 
         /// <summary>
         ///     Checks whether or not file
@@ -224,21 +224,21 @@ namespace ASC.Files.Core
         /// <param name="fileId">file id</param>
         /// <param name="fileVersion">file version</param>
         /// <param name="comment">new comment</param>
-        string UpdateComment(T fileId, int fileVersion, string comment);
+        Task<string> UpdateComment(T fileId, int fileVersion, string comment);
 
         /// <summary>
         ///   Complete file version
         /// </summary>
         /// <param name="fileId">file id</param>
         /// <param name="fileVersion">file version</param>
-        void CompleteVersion(T fileId, int fileVersion);
+        Task CompleteVersion(T fileId, int fileVersion);
 
         /// <summary>
         ///   Continue file version
         /// </summary>
         /// <param name="fileId">file id</param>
         /// <param name="fileVersion">file version</param>
-        void ContinueVersion(T fileId, int fileVersion);
+        Task ContinueVersion(T fileId, int fileVersion);
 
         /// <summary>
         /// Check the need to use the trash before removing
@@ -278,7 +278,7 @@ namespace ASC.Files.Core
         /// <param name="searchText"></param>
         /// <param name="searchInContent"></param>
         /// <returns></returns>
-        List<File<T>> GetFiles(T[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent);
+        Task<List<File<T>>> GetFiles(T[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent);
 
         /// <summary>
         /// Search the list of files containing text
@@ -287,7 +287,7 @@ namespace ASC.Files.Core
         /// <param name="text">search text</param>
         /// <param name="bunch"></param>
         /// <returns>list of files</returns>
-        IEnumerable<File<T>> Search(string text, bool bunch = false);
+        Task<IEnumerable<File<T>>> Search(string text, bool bunch = false);
 
         /// <summary>
         ///   Checks whether file exists on storage

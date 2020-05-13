@@ -436,7 +436,7 @@ namespace ASC.Web.Files.Utils
                 var entryId = (T)Convert.ChangeType(objectId.Substring((entryType == FileEntryType.File ? "file_" : "folder_").Length), typeof(T));
 
                 var entry = entryType == FileEntryType.File
-                                ? fileDao.GetFile(entryId)
+                                ? await fileDao.GetFile(entryId)
                                 : (FileEntry<T>)await folderDao.GetFolder(entryId);
 
                 IEnumerable<AceWrapper> acesForObject;

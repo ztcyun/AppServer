@@ -45,6 +45,7 @@ using ASC.Web.Studio.Core;
 
 using Dropbox.Api.Files;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace ASC.Files.Thirdparty.Dropbox
@@ -84,46 +85,46 @@ namespace ASC.Files.Thirdparty.Dropbox
             if (parentPath != null) ProviderInfo.CacheReset(parentPath);
         }
 
-        public File<string> GetFile(string fileId)
+        public Task<File<string>> GetFile(string fileId)
         {
             return GetFile(fileId, 1);
         }
 
-        public File<string> GetFile(string fileId, int fileVersion)
+        public Task<File<string>> GetFile(string fileId, int fileVersion)
         {
-            return ToFile(GetDropboxFile(fileId));
+            return Task.FromResult(ToFile(GetDropboxFile(fileId)));
         }
 
-        public File<string> GetFile(string parentId, string title)
+        public Task<File<string>> GetFile(string parentId, string title)
         {
             var metadata = GetDropboxItems(parentId, false)
                 .FirstOrDefault(item => item.Name.Equals(title, StringComparison.InvariantCultureIgnoreCase));
-            return metadata == null
+            return Task.FromResult(metadata == null
                        ? null
-                       : ToFile(metadata.AsFile);
+                       : ToFile(metadata.AsFile));
         }
 
-        public File<string> GetFileStable(string fileId, int fileVersion)
+        public Task<File<string>> GetFileStable(string fileId, int fileVersion)
         {
-            return ToFile(GetDropboxFile(fileId));
+            return Task.FromResult(ToFile(GetDropboxFile(fileId)));
         }
 
-        public List<File<string>> GetFileHistory(string fileId)
+        public async Task<List<File<string>>> GetFileHistory(string fileId)
         {
-            return new List<File<string>> { GetFile(fileId) };
+            return new List<File<string>> { await GetFile(fileId) };
         }
 
-        public List<File<string>> GetFiles(string[] fileIds)
+        public Task<List<File<string>>> GetFiles(string[] fileIds)
         {
-            if (fileIds == null || fileIds.Length == 0) return new List<File<string>>();
-            return fileIds.Select(GetDropboxFile).Select(ToFile).ToList();
+            if (fileIds == null || fileIds.Length == 0) return Task.FromResult(new List<File<string>>());
+            return Task.FromResult(fileIds.Select(GetDropboxFile).Select(ToFile).ToList());
         }
 
-        public List<File<string>> GetFilesForShare(string[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public async Task<List<File<string>>> GetFilesForShare(string[] fileIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
             if (fileIds == null || fileIds.Length == 0 || filterType == FilterType.FoldersOnly) return new List<File<string>>();
 
-            var files = GetFiles(fileIds).AsEnumerable();
+            var files = (await GetFiles(fileIds)).AsEnumerable();
 
             //Filter
             if (subjectID != Guid.Empty)
@@ -171,14 +172,14 @@ namespace ASC.Files.Thirdparty.Dropbox
             return files.ToList();
         }
 
-        public List<string> GetFiles(string parentId)
+        public Task<List<string>> GetFiles(string parentId)
         {
-            return GetDropboxItems(parentId, false).Select(entry => MakeId(entry)).ToList();
+            return Task.FromResult(GetDropboxItems(parentId, false).Select(entry => MakeId(entry)).ToList());
         }
 
-        public List<File<string>> GetFiles(string parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
+        public Task<List<File<string>>> GetFiles(string parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
         {
-            if (filterType == FilterType.FoldersOnly) return new List<File<string>>();
+            if (filterType == FilterType.FoldersOnly) return Task.FromResult(new List<File<string>>());
 
             //Get only files
             var files = GetDropboxItems(parentId, false).Select(item => ToFile(item.AsFile));
@@ -194,7 +195,7 @@ namespace ASC.Files.Thirdparty.Dropbox
             switch (filterType)
             {
                 case FilterType.FoldersOnly:
-                    return new List<File<string>>();
+                    return Task.FromResult(new List<File<string>>());
                 case FilterType.DocumentsOnly:
                     files = files.Where(x => FileUtility.GetFileTypeByFileName(x.Title) == FileType.Document);
                     break;
@@ -247,7 +248,7 @@ namespace ASC.Files.Thirdparty.Dropbox
                     break;
             }
 
-            return files.ToList();
+            return Task.FromResult(files.ToList());
         }
 
         public Stream GetFileStream(File<string> file)
@@ -316,25 +317,25 @@ namespace ASC.Files.Thirdparty.Dropbox
             return await SaveFile(file, fileStream);
         }
 
-        public void DeleteFile(string fileId)
+        public async Task DeleteFile(string fileId)
         {
             var dropboxFile = GetDropboxFile(fileId);
             if (dropboxFile == null) return;
             var id = MakeId(dropboxFile);
 
-            using (var tx = FilesDbContext.Database.BeginTransaction())
+            using (var tx = await FilesDbContext.Database.BeginTransactionAsync())
             {
-                var hashIDs = Query(FilesDbContext.ThirdpartyIdMapping)
+                var hashIDs = await Query(FilesDbContext.ThirdpartyIdMapping)
                     .Where(r => r.Id.StartsWith(id))
                     .Select(r => r.HashId)
-                    .ToList();
+                    .ToListAsync();
 
-                var link = Query(FilesDbContext.TagLink)
+                var link = await Query(FilesDbContext.TagLink)
                     .Where(r => hashIDs.Any(h => h == r.EntryId))
-                    .ToList();
+                    .ToListAsync();
 
                 FilesDbContext.TagLink.RemoveRange(link);
-                FilesDbContext.SaveChanges();
+                await FilesDbContext.SaveChangesAsync();
 
                 var tagsToRemove = Query(FilesDbContext.Tag)
                     .Where(r => !Query(FilesDbContext.TagLink).Where(a => a.TagId == r.Id).Any());
@@ -345,15 +346,15 @@ namespace ASC.Files.Thirdparty.Dropbox
                     .Where(r => hashIDs.Any(h => h == r.EntryId));
 
                 FilesDbContext.Security.RemoveRange(securityToDelete);
-                FilesDbContext.SaveChanges();
+                await FilesDbContext.SaveChangesAsync();
 
                 var mappingToDelete = Query(FilesDbContext.ThirdpartyIdMapping)
                     .Where(r => hashIDs.Any(h => h == r.HashId));
 
                 FilesDbContext.ThirdpartyIdMapping.RemoveRange(mappingToDelete);
-                FilesDbContext.SaveChanges();
+                await FilesDbContext.SaveChangesAsync();
 
-                tx.Commit();
+                await tx.CommitAsync();
             }
 
             if (!(dropboxFile is ErrorFile))
@@ -472,17 +473,19 @@ namespace ASC.Files.Thirdparty.Dropbox
             return MakeId(dropboxFile);
         }
 
-        public string UpdateComment(string fileId, int fileVersion, string comment)
+        public Task<string> UpdateComment(string fileId, int fileVersion, string comment)
         {
-            return string.Empty;
+            return Task.FromResult(string.Empty);
         }
 
-        public void CompleteVersion(string fileId, int fileVersion)
+        public Task CompleteVersion(string fileId, int fileVersion)
         {
+            return Task.CompletedTask;
         }
 
-        public void ContinueVersion(string fileId, int fileVersion)
+        public Task ContinueVersion(string fileId, int fileVersion)
         {
+            return Task.CompletedTask;
         }
 
         public bool UseTrashForRemove(File<string> file)
@@ -614,12 +617,12 @@ namespace ASC.Files.Thirdparty.Dropbox
         {
         }
 
-        public List<File<string>> GetFiles(string[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
+        public Task<List<File<string>>> GetFiles(string[] parentIds, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent)
         {
-            return new List<File<string>>();
+            return Task.FromResult(new List<File<string>>());
         }
 
-        public IEnumerable<File<string>> Search(string text, bool bunch)
+        public Task<IEnumerable<File<string>>> Search(string text, bool bunch)
         {
             return null;
         }

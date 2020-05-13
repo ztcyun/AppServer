@@ -254,7 +254,7 @@ namespace ASC.Web.Files.Helpers
         private async Task<(Document, File<T>)> CreateDocument<T>(T fileId, string documentName, string folderId)
         {
             var fileDao = DaoFactory.GetFileDao<T>();
-            var file = fileDao.GetFile(fileId);
+            var file = await fileDao.GetFile(fileId);
             if (file == null) throw new Exception(FilesCommonResource.ErrorMassage_FileNotFound);
             if (!await FileSecurity.CanRead(file)) throw new SecurityException(FilesCommonResource.ErrorMassage_SecurityException_ReadFile);
             if (!SupportedFormats.Contains(FileUtility.GetFileExtension(file.Title))) throw new ArgumentException(FilesCommonResource.ErrorMassage_NotSupportedFormat);

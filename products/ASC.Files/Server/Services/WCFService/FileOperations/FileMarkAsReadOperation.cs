@@ -92,7 +92,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             }
             if (Files.Any())
             {
-                entries.AddRange(FileDao.GetFiles(Files.ToArray()));
+                entries.AddRange(await FileDao.GetFiles(Files.ToArray()));
             }
             entries.ForEach(async x =>
             {
