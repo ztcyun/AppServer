@@ -128,7 +128,8 @@ namespace ASC.Files.Core.Data
                 .Where(r => r.FolderId == folderId)
                 .OrderByDescending(r => r.Level)
                 .Select(r => r.ParentId)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
 
             var query = GetFolderQuery(r => r.Id == id);
 
@@ -137,17 +138,16 @@ namespace ASC.Files.Core.Data
 
         public async Task<Folder<int>> GetRootFolderByFile(int fileId)
         {
-            var fileIdString = fileId.ToString();
             var subq = Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId && r.CurrentVersion)
                 .Select(r => r.FolderId)
                 .Distinct();
 
-            var q = FilesDbContext.Tree
+            var q = await FilesDbContext.Tree
                 .Where(r => subq.Any(q => q == r.FolderId))
                 .OrderByDescending(r => r.Level)
                 .Select(r => r.ParentId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             var query = GetFolderQuery(r => r.Id == q);
             return (await FromQueryWithShared(query)).SingleOrDefault();
@@ -312,7 +312,8 @@ namespace ASC.Files.Core.Data
             {
                 var toUpdate = await Query(FilesDbContext.Folders)
                     .Where(r => r.Id == folder.ID)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
 
                 toUpdate.Title = folder.Title;
                 toUpdate.CreateBy = folder.CreateBy;
@@ -403,14 +404,16 @@ namespace ASC.Files.Core.Data
                     FilesDbContext.Tree
                     .Where(r => r.ParentId == id)
                     .Select(r => r.FolderId)
-                    .ToListAsync();
+                    .ToListAsync()
+                    .ConfigureAwait(false);
 
                 if (!subfolders.Contains(id)) subfolders.Add(id); // chashed folder_tree
 
                 var parent = await Query(FilesDbContext.Folders)
                     .Where(r => r.Id == id)
                     .Select(r => r.ParentId)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
 
                 var folderToDelete = Query(FilesDbContext.Folders).Where(r => subfolders.Any(a => r.Id == a));
                 FilesDbContext.Folders.RemoveRange(folderToDelete);
@@ -621,7 +624,8 @@ namespace ASC.Files.Core.Data
                 var exists = await FilesDbContext.Tree
                     .Where(r => r.ParentId == folderId)
                     .Where(r => r.FolderId == to)
-                    .AnyAsync();
+                    .AnyAsync()
+                    .ConfigureAwait(false);
 
                 if (exists)
                 {
@@ -631,13 +635,15 @@ namespace ASC.Files.Core.Data
                 var title = await Query(FilesDbContext.Folders)
                     .Where(r => r.Id == folderId)
                     .Select(r => r.Title.ToLower())
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
 
                 var conflict = await Query(FilesDbContext.Folders)
                     .Where(r => r.Title.ToLower() == title)
                     .Where(r => r.ParentId == to)
                     .Select(r => r.Id)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
 
                 if (conflict != 0)
                 {
@@ -691,7 +697,8 @@ namespace ASC.Files.Core.Data
             var count = await FilesDbContext.Tree
                 .Where(r => r.ParentId == parentId)
                 .Where(r => r.Level > 0)
-                .CountAsync();
+                .CountAsync()
+                .ConfigureAwait(false);
 
             return count;
         }
@@ -701,7 +708,8 @@ namespace ASC.Files.Core.Data
             var count = await Query(FilesDbContext.Files)
                 .Distinct()
                 .Where(r => FilesDbContext.Tree.Where(r => r.ParentId == folderId).Select(r => r.FolderId).Any(b => b == r.FolderId))
-                .CountAsync();
+                .CountAsync()
+                .ConfigureAwait(false);
 
             return count;
         }
@@ -767,7 +775,8 @@ namespace ASC.Files.Core.Data
         {
             var toUpdate = await Query(FilesDbContext.Folders)
                 .Where(r => folderIds.Any(a => r.Id == a))
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             foreach (var f in toUpdate)
             {
@@ -875,7 +884,8 @@ namespace ASC.Files.Core.Data
             var folderId = await Query(FilesDbContext.BunchObjects)
                 .Where(r => r.RightNode == key)
                 .Select(r => r.LeftNode)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
 
             if (folderId != null)
             {
@@ -989,7 +999,7 @@ namespace ASC.Files.Core.Data
                             .Where(r => r.EntryType == FileEntryType.Folder)
                             .Where(x => x.EntryId == r.Id.ToString())
                             .Any()
-                }).ToListAsync())
+                }).ToListAsync().ConfigureAwait(false))
                 .Select(ToFolder)
                 .ToList();
         }
@@ -1010,7 +1020,7 @@ namespace ASC.Files.Core.Data
                             .FirstOrDefault(),
                     shared = true
                 })
-                .ToListAsync())
+                .ToListAsync().ConfigureAwait(false))
                 .Select(ToFolder)
                 .ToList();
         }
@@ -1074,14 +1084,16 @@ namespace ASC.Files.Core.Data
             return await Query(FilesDbContext.BunchObjects)
                 .Where(r => r.LeftNode == (folderID).ToString())
                 .Select(r => r.RightNode)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
         }
 
         public async Task<Dictionary<string, string>> GetBunchObjectIDs(List<int> folderIDs)
         {
             return await Query(FilesDbContext.BunchObjects)
                 .Where(r => folderIDs.Any(a => a.ToString() == r.LeftNode))
-                .ToDictionaryAsync(r => r.LeftNode, r => r.RightNode);
+                .ToDictionaryAsync(r => r.LeftNode, r => r.RightNode)
+                .ConfigureAwait(false);
         }
 
         private string GetProjectTitle(object folderID)

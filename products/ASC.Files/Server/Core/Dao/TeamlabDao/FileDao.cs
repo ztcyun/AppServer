@@ -230,7 +230,8 @@ namespace ASC.Files.Core.Data
             return await Query(FilesDbContext.Files)
                 .Where(r => r.FolderId == parentId && r.CurrentVersion)
                 .Select(r => r.Id)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
 
         public async Task<List<File<int>>> GetFiles(int parentId, OrderBy orderBy, FilterType filterType, bool subjectGroup, Guid subjectID, string searchText, bool searchInContent, bool withSubfolders = false)
@@ -636,7 +637,8 @@ namespace ASC.Files.Core.Data
                 .Where(r => r.Id == fileId)
                 .Select(a => a.FolderId)
                 .Distinct()
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             var toDeleteFiles = Query(FilesDbContext.Files).Where(r => r.Id == fileId);
             FilesDbContext.RemoveRange(toDeleteFiles);
@@ -679,7 +681,8 @@ namespace ASC.Files.Core.Data
                 .Where(r => r.Title == title)
                 .Where(r => r.FolderId == folderId)
                 .Where(r => r.CurrentVersion)
-                .AnyAsync();
+                .AnyAsync()
+                .ConfigureAwait(false);
         }
 
         public async Task<TTo> MoveFile<TTo>(int fileId, TTo toFolderId)
@@ -707,11 +710,13 @@ namespace ASC.Files.Core.Data
                     .Where(r => r.Id == fileId)
                     .Select(a => a.FolderId)
                     .Distinct()
-                    .ToListAsync();
+                    .ToListAsync()
+                    .ConfigureAwait(false);
 
                 var toUpdate = await Query(FilesDbContext.Files)
                     .Where(r => r.Id == fileId)
-                    .ToListAsync();
+                    .ToListAsync()
+                    .ConfigureAwait(false);
 
                 foreach (var f in toUpdate)
                 {
@@ -736,7 +741,8 @@ namespace ASC.Files.Core.Data
                 .Where(r => r.FolderId == toFolderId)
                 .OrderByDescending(r => r.Level)
                 .Select(r => r.ParentId)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             var wrapper = ServiceProvider.GetService<FilesWrapper>();
             wrapper.Id = fileId;
@@ -837,7 +843,8 @@ namespace ASC.Files.Core.Data
             var toUpdate = await Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId)
                 .Where(r => r.Version == fileVersion)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
 
             toUpdate.Comment = comment;
 
@@ -868,7 +875,8 @@ namespace ASC.Files.Core.Data
                 .Where(r => r.Id == fileId)
                 .Where(r => r.Version == fileVersion)
                 .Select(r => r.VersionGroup)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
 
             var toUpdate = Query(FilesDbContext.Files)
                 .Where(r => r.Id == fileId)
@@ -1267,7 +1275,8 @@ namespace ASC.Files.Core.Data
                         .Where(x => x.EntryId == r.Id.ToString())
                         .Any()
                 })
-                .ToListAsync())
+                .ToListAsync()
+                .ConfigureAwait(false))
                 .Select(ToFile)
                 .ToList();
         }
@@ -1287,7 +1296,8 @@ namespace ASC.Files.Core.Data
                             .FirstOrDefault(),
                     shared = true
                 })
-                .ToListAsync())
+                .ToListAsync()
+                .ConfigureAwait(false))
                 .Select(ToFile)
                 .ToList();
         }
