@@ -49,6 +49,7 @@ using ASC.ElasticSearch;
 using ASC.FederatedLogin.LoginProviders;
 using ASC.Files.Core;
 using ASC.Files.Core.Data;
+using ASC.Files.Core.EF;
 using ASC.Files.Core.Security;
 using ASC.Files.Resources;
 using ASC.MessagingSystem;
@@ -82,8 +83,8 @@ namespace ASC.Web.Files.Services.WCFService
         public FilesSettingsHelper FilesSettingsHelper { get; }
         public AuthContext AuthContext { get; }
         public UserManager UserManager { get; }
-        public FactoryIndexer<FoldersWrapper> FoldersIndexer { get; }
-        public FactoryIndexer<FilesWrapper> FilesIndexer { get; }
+        public FactoryIndexer<DbFolder> FoldersIndexer { get; }
+        public FactoryIndexer<DbFile> FilesIndexer { get; }
         public FileUtility FileUtility { get; }
         public FilesLinkUtility FilesLinkUtility { get; }
         public BaseCommonLinkUtility BaseCommonLinkUtility { get; }
@@ -124,8 +125,8 @@ namespace ASC.Web.Files.Services.WCFService
             FilesSettingsHelper filesSettingsHelper,
             AuthContext authContext,
             UserManager userManager,
-            FactoryIndexer<FoldersWrapper> foldersIndexer,
-            FactoryIndexer<FilesWrapper> filesIndexer,
+            FactoryIndexer<DbFolder> foldersIndexer,
+            FactoryIndexer<DbFile> filesIndexer,
             FileUtility fileUtility,
             FilesLinkUtility filesLinkUtility,
             BaseCommonLinkUtility baseCommonLinkUtility,
@@ -416,10 +417,10 @@ namespace ASC.Web.Files.Services.WCFService
 
                 FilesMessageService.Send(folder, GetHttpHeaders(), MessageAction.FolderRenamed, folder.Title);
 
-                if (!folder.ProviderEntry)
-                {
-                    FoldersIndexer.IndexAsync(FoldersWrapper.GetFolderWrapper(ServiceProvider, folder));
-                }
+                //if (!folder.ProviderEntry)
+                //{
+                //    FoldersIndexer.IndexAsync(FoldersWrapper.GetFolderWrapper(ServiceProvider, folder));
+                //}
             }
 
             var tag = tagDao.GetNewTags(AuthContext.CurrentAccount.ID, folder).FirstOrDefault();
@@ -745,10 +746,10 @@ namespace ASC.Web.Files.Services.WCFService
                 {
                     FilesMessageService.Send(file, GetHttpHeaders(), MessageAction.FileRenamed, file.Title);
 
-                    if (!file.ProviderEntry)
-                    {
-                        FilesIndexer.UpdateAsync(FilesWrapper.GetFilesWrapper(ServiceProvider, file), true, r => r.Title);
-                    }
+                    //if (!file.ProviderEntry)
+                    //{
+                    //    FilesIndexer.UpdateAsync(FilesWrapper.GetFilesWrapper(ServiceProvider, file), true, r => r.Title);
+                    //}
                 }
 
                 if (file.RootFolderType == FolderType.USER
@@ -2067,8 +2068,8 @@ namespace ASC.Web.Files.Services.WCFService
                 .AddGlobalFolderHelperService()
                 .AddAuthContextService()
                 .AddUserManagerService()
-                .AddFoldersWrapperService()
-                .AddFilesWrapperService()
+                .AddFactoryIndexerFolderService()
+                .AddFactoryIndexerFileService()
                 .AddFilesLinkUtilityService()
                 .AddBaseCommonLinkUtilityService()
                 .AddCoreBaseSettingsService()
