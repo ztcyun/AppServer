@@ -66,6 +66,7 @@ namespace ASC.Web.Files.Core.Search
             {
                 var q =
                     folderDao.FilesDbContext.Folders
+                    .AsQueryable()
                     .Where(r => r.ModifiedOn >= lastIndexed)
                     .Join(folderDao.FilesDbContext.Tenants, r => r.TenantId, r => r.Id, (f, t) => new { f, t })
                     .Where(r => r.t.Status == ASC.Core.Tenants.TenantStatus.Active);
@@ -79,6 +80,7 @@ namespace ASC.Web.Files.Core.Search
 
             List<DbFolder> getData(long i, long step, DateTime lastIndexed) =>
                     folderDao.FilesDbContext.Folders
+                    .AsQueryable()
                     .Where(r => r.ModifiedOn >= lastIndexed)
                     .Where(r => r.Id >= i && r.Id <= i + step)
                     .Join(folderDao.FilesDbContext.Tenants, r => r.TenantId, r => r.Id, (f, t) => new { f, t })

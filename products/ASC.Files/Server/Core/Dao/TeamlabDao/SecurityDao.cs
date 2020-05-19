@@ -78,6 +78,7 @@ namespace ASC.Files.Core.Data
             foreach (var record in records)
             {
                 var query = FilesDbContext.Security
+                    .AsQueryable()
                     .Where(r => r.TenantId == record.Tenant)
                     .Where(r => r.EntryId == MappingID(record.EntryId).ToString())
                     .Where(r => r.EntryType == record.EntryType)
@@ -114,6 +115,7 @@ namespace ASC.Files.Core.Data
                         if (int.TryParse(entryId, out var intEntryId))
                         {
                             var foldersInt = FilesDbContext.Tree
+                                .AsQueryable()
                                 .Where(r => r.ParentId.ToString() == entryId)
                                 .Select(r => r.FolderId)
                                 .ToList();
@@ -127,6 +129,7 @@ namespace ASC.Files.Core.Data
                         }
 
                         var toDelete = FilesDbContext.Security
+                            .AsQueryable()
                             .Where(a => a.TenantId == r.Tenant)
                             .Where(a => folders.Any(b => b == a.EntryId))
                             .Where(a => a.EntryType == FileEntryType.Folder)
@@ -144,6 +147,7 @@ namespace ASC.Files.Core.Data
                     if (0 < files.Count)
                     {
                         var toDelete = FilesDbContext.Security
+                            .AsQueryable()
                             .Where(a => a.TenantId == r.Tenant)
                             .Where(a => files.Any(b => b == a.EntryId))
                             .Where(a => a.EntryType == FileEntryType.File)
@@ -304,8 +308,8 @@ namespace ASC.Files.Core.Data
         {
             using var tr = FilesDbContext.Database.BeginTransaction();
 
-            var toDelete1 = FilesDbContext.Security.Where(r => r.Subject == subject);
-            var toDelete2 = FilesDbContext.Security.Where(r => r.Owner == subject);
+            var toDelete1 = FilesDbContext.Security.AsQueryable().Where(r => r.Subject == subject);
+            var toDelete2 = FilesDbContext.Security.AsQueryable().Where(r => r.Owner == subject);
 
             FilesDbContext.RemoveRange(toDelete1);
             FilesDbContext.SaveChanges();

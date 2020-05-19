@@ -78,6 +78,7 @@ namespace ASC.Files.Thirdparty.Sharpbox
             var fakeFolderId = parentFolder.ID.ToString();
 
             var entryIDs = FilesDbContext.ThirdpartyIdMapping
+                            .AsQueryable()
                           .Where(r => r.Id.StartsWith(fakeFolderId))
                           .Select(r => r.HashId)
                           .ToList();
@@ -85,7 +86,7 @@ namespace ASC.Files.Thirdparty.Sharpbox
             if (!entryIDs.Any()) return new List<Tag>();
 
             var q = FilesDbContext.Tag
-                .Join(FilesDbContext.TagLink.DefaultIfEmpty(),
+                .Join(FilesDbContext.TagLink.AsQueryable().DefaultIfEmpty(),
                 r => new TagLink { TenantId = r.TenantId, Id = r.Id },
                 r => new TagLink { TenantId = r.TenantId, Id = r.TagId },
                 (tag, tagLink) => new { tag, tagLink },

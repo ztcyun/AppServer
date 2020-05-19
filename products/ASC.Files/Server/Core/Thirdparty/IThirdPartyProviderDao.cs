@@ -66,7 +66,7 @@ namespace ASC.Files.Thirdparty
 
         protected IQueryable<TSet> Query<TSet>(DbSet<TSet> set) where TSet : class, IDbFile
         {
-            return set.Where(r => r.TenantId == TenantID);
+            return set.AsQueryable().Where(r => r.TenantId == TenantID);
         }
 
         protected string MappingID(string id, bool saveIfNotExist = false)
@@ -81,6 +81,7 @@ namespace ASC.Files.Thirdparty
             else
             {
                 result = FilesDbContext.ThirdpartyIdMapping
+                        .AsQueryable()
                         .Where(r => r.HashId == id)
                         .Select(r => r.Id)
                         .FirstOrDefault();

@@ -115,6 +115,7 @@ namespace ASC.Files.Core.Data
             lock (SyncRoot)
             {
                 return FilesDbContext.EncryptedData
+                    .AsQueryable()
                     .Where(r => r.PublicKey == publicKey)
                     .Where(r => r.FileHash == fileHash)
                     .Select(r => r.Data)
