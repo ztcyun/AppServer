@@ -1,0 +1,12 @@
+version: "3.4"
+
+services:
+  api_01:
+      build:
+        context: .
+        target: runtime
+      ports:
+        - 80:80 
+        - 443:443 
+        - 8092:8092 
+        - 8081:808

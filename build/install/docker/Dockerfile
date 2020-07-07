@@ -1,6 +1,6 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 as builder
 
-ARG RELEASE_DATE="2016-06-21"
+ARG RELEASE_DATE="2016-06-21" 
 ARG RELEASE_DATE_SIGN=""
 ARG VERSION="8.9.0.190"
 ARG SOURCE_REPO_URL="deb http://static.teamlab.com.s3.amazonaws.com/repo/debian squeeze main"
@@ -171,6 +171,54 @@ COPY config/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY config/mysql/dotnet_dump.sql /app/onlyoffice/dotnet_dump.sql
 
 RUN sed -i 's/Server=.*;Port=/Server=127.0.0.1;Port=/' /app/onlyoffice/config/appsettings.test.json
+
+RUN mkdir -p /var/mysqld/ && \
+    chown -R mysql:mysql /var/lib/mysql /var/run/mysqld /var/mysqld/ && \
+    sudo -u mysql bash -c "/usr/bin/pidproxy /var/mysqld/mysqld.pid /usr/bin/mysqld_safe --pid-file=/var/mysqld/mysqld.pid &" && \
+    sleep 5s && \
+    mysql -e "CREATE DATABASE IF NOT EXISTS onlyoffice CHARACTER SET utf8 COLLATE 'utf8_general_ci'" && \
+    mysql -D "onlyoffice" < /app/onlyoffice/dotnet_dump.sql && \
+    mysql -D "onlyoffice" -e 'CREATE USER IF NOT EXISTS "onlyoffice_user"@"localhost" IDENTIFIED WITH mysql_native_password BY "onlyoffice_pass";' && \
+    mysql -D "onlyoffice" -e 'GRANT ALL PRIVILEGES ON *.* TO 'onlyoffice_user'@'localhost';' && \
+    mysql -D "onlyoffice" -e 'UPDATE core_user SET email = "paul.bannov@gmail.com";' && \
+    mysql -D "onlyoffice" -e 'UPDATE core_usersecurity SET pwdhash = "vLFfghR5tNV3K9DKhmwArV+SbjWAcgZZzIDTnJ0JgCo=", pwdhashsha512 = "USubvPlB+ogq0Q1trcSupg==";' && \
+    killall -u mysql -n mysql
+
+RUN rm -rf /var/lib/apt/lists/*
+
+VOLUME /var/lib/mysql
+
+
+FROM mcr.microsoft.com/dotnet/core/sdk AS runtime
+
+WORKDIR /var/www/
+
+RUN apt-get update -y &&\
+    apt-get install -y supervisor jq && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN addgroup --system --gid 107 onlyoffice && \
+    adduser -uid 104 --quiet --home /var/www/onlyoffice --system --gid 107 onlyoffice && \
+    addgroup --system --gid 104 elasticsearch && \
+    adduser -uid 103 --quiet --home /nonexistent --system --gid 104 elasticsearch && \
+    locale-gen en_US.UTF-8 && \
+    apt-get -y update && \
+    apt-get install -yq software-properties-common wget curl cron rsyslog && \
+    curl -OL http://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb && \
+    echo "mysql-apt-config mysql-apt-config/repo-codename select bionic" | sudo debconf-set-selections && \
+    echo "mysql-apt-config mysql-apt-config/repo-distro select ubuntu" | sudo debconf-set-selections && \
+    echo "mysql-apt-config mysql-apt-config/select-server select mysql-8.0" | sudo debconf-set-selections && \
+    DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb && \
+    rm -f mysql-apt-config_0.8.15-1_all.deb
+
+RUN apt-get install -yq mysql-client \
+        mysql-server
+
+COPY --from=builder /var/www/ .
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# COPY build/install/docker/api/docker-entrypoint.sh /
+
 
 RUN mkdir -p /var/mysqld/ && \
     chown -R mysql:mysql /var/lib/mysql /var/run/mysqld /var/mysqld/ && \
