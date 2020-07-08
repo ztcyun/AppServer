@@ -1,12 +1,55 @@
 version: "3.4"
 
 services:
+
   api_01:
-      build:
-        context: .
-        target: runtime
-      ports:
-        - 80:80 
-        - 443:443 
-        - 8092:8092 
-        - 8081:808
+    build:
+      context: .
+      target: builder
+    container_name: app_build 
+    hostname: api 
+    restart: always
+    networks:
+      - onlyoffice
+    depends_on:
+    - mysql  
+    environment:  
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - 80:80 
+      - 443:443 
+      - 8092:8092 
+      - 8081:808
+        
+  mysql:
+    image: mysql:8.0.18     
+    container_name: mysql
+    hostname: mysql
+    restart: always
+    expose:
+    - "3306"
+    networks:
+    - onlyoffice
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+    - ./config/mysql/conf.d:/etc/mysql/conf.d
+    - mysql_data:/var/lib/mysql
+    - mysql_log:/var/log/mysql:rw
+    - mysql_error:/var/log/mysql/error.log:rw
+    
+
+networks:
+  onlyoffice:
+    driver: 'bridge'
+
+volumes:
+  mysql_data:
+  mysql_log:
+  mysql_error:
