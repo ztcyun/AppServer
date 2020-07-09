@@ -22,12 +22,14 @@ services:
       - 80:80 
       - 443:443 
       - 8092:8092 
-      - 8081:808
+      - 8081:8080
         
   mysql:
-    image: mysql:8.0.18     
+    #image: mysql:8.0.18    
+    build:
+     context: ./config/mysql/
     container_name: mysql
-    hostname: mysql
+    hostname: ${MYSQL_HOST}
     restart: always
     expose:
     - "3306"
