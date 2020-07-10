@@ -9,8 +9,6 @@ services:
     container_name: app_build 
     hostname: api 
     restart: always
-    # links:
-    # - "mysql"
     networks:
       - onlyoffice
     depends_on:
@@ -20,11 +18,15 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-    ports:
-      - 80:80 
-      - 443:443 
-      - 8092:8092 
-      - 8081:8080
+    expose:
+      - "5000"
+      - "5010"
+      - "5015"
+      - "5006"
+      - "5004"
+      - "5007"
+      - "5009"
+      - "5003"
         
   mysql:
     build:
@@ -35,20 +37,40 @@ services:
     ports:
       - 3306:3306 
     expose:
-    - "3306"
+      - "3306"
     networks:
-    - onlyoffice
+      - onlyoffice
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-    - ./config/mysql/conf.d:/etc/mysql/conf.d
-    - mysql_data:/var/lib/mysql
-    - mysql_log:/var/log/mysql:rw
-    - mysql_error:/var/log/mysql/error.log:rw
+      - ./config/mysql/conf.d:/etc/mysql/conf.d
+      - mysql_data:/var/lib/mysql
+      - mysql_log:/var/log/mysql:rw
+      - mysql_error:/var/log/mysql/error.log:rw
     
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: web
+    hostname: web
+    restart: always
+    ports:
+      - 80:80 
+      - 443:443 
+      - 8092:8092 
+      - 8081:8080
+    networks:
+      - onlyoffice
+    depends_on:
+      - mysql
+    environment:
+      - NGINX_HOST=api   
+    volumes:
+      - ./nginx/onlyoffice.conf:/etc/nginx/conf.d/onlyoffice.conf
+      - nginx_log:/var/log/nginx
 
 networks:
   onlyoffice:
@@ -58,3 +80,4 @@ volumes:
   mysql_data:
   mysql_log:
   mysql_error:
+  nginx_log:

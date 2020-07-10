@@ -200,7 +200,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 VOLUME /var/lib/mysql
 
-EXPOSE 80 443 8092 8081
+# EXPOSE 80 443 8092 8081
 
 ENTRYPOINT ["/usr/bin/supervisord", "--"]
 #ENTRYPOINT ["mysql", "-h", "mysql", "-u", "onlyoffice_user", "-ponlyoffice_pass"]
