@@ -203,4 +203,22 @@ VOLUME /var/lib/mysql
 # EXPOSE 80 443 8092 8081
 
 ENTRYPOINT ["/usr/bin/supervisord", "--"]
-#ENTRYPOINT ["mysql", "-h", "mysql", "-u", "onlyoffice_user", "-ponlyoffice_pass"]
+
+
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS runtime
+# FROM nginx:stable-alpine AS runtime
+
+WORKDIR /app
+#ENV ASPNETCORE_URLS http://*:5002
+EXPOSE 5002
+COPY --from=builder /var/www/products/ASC.People/client /app
+#COPY --from=builder /var/www/products/ASC.People/client /var/www/products/ASC.People/client
+# COPY config/people.client/onlyoffice-people.conf /etc/nginx/conf.d/
+# RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
+EXPOSE 5002
+
+CMD ["/usr/sbin/nginx"]
+
+#RUN dotnet restore
+ENTRYPOINT ["dotnet", "run"]

@@ -50,10 +50,34 @@ services:
       - mysql_data:/var/lib/mysql
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
-    
 
+  people.client:
+    build:
+      context: .
+      target: runtime  
+    container_name: people.client
+    hostname: people_client
+    restart: always
+    depends_on:
+    - mysql
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+    - "5002"
+    networks:
+    - onlyoffice
+    volumes:
+    - app_data:/app/onlyoffice/data/
+    - app_log:/var/log/supervisor/
+
+      
   nginx:
-    image: nginx:stable-alpine
+    build:
+      context: ./config/nginx/
+   # image: nginx:stable-alpine
     container_name: web
     hostname: web
     restart: always
@@ -67,9 +91,11 @@ services:
     depends_on:
       - mysql
     environment:
-      - NGINX_HOST=api   
+      - NGINX_HOST=api
+      - NGINX_PORT=8092 
     volumes:
-      - ./nginx/onlyoffice.conf:/etc/nginx/conf.d/onlyoffice.conf
+      - ./config/nginx/templates:/etc/nginx/templates
+      # - .config/nginx/onlyoffice.conf:/etc/nginx/conf.d/onlyoffice.conf
       - nginx_log:/var/log/nginx
 
 networks:
@@ -81,3 +107,5 @@ volumes:
   mysql_log:
   mysql_error:
   nginx_log:
+  app_data:
+  app_log:

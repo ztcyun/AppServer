@@ -25,7 +25,7 @@ map $document_root $public_root {
 include /etc/nginx/includes/onlyoffice-*.conf;
 
 server {
-	listen       8092;
+	listen       ${NGINX_PORT};
 
 	add_header Access-Control-Allow-Origin *;
 
