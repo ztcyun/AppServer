@@ -205,20 +205,27 @@ VOLUME /var/lib/mysql
 ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS runtime
-# FROM nginx:stable-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.client
 
-WORKDIR /app
-#ENV ASPNETCORE_URLS http://*:5002
-EXPOSE 5002
-COPY --from=builder /var/www/products/ASC.People/client /app
-#COPY --from=builder /var/www/products/ASC.People/client /var/www/products/ASC.People/client
-# COPY config/people.client/onlyoffice-people.conf /etc/nginx/conf.d/
-# RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+WORKDIR /var/www/studio/client
+
+COPY --from=builder /var/www/products/ASC.People/client /var/www/products/ASC.People/client
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
 
 EXPOSE 5002
 
-CMD ["/usr/sbin/nginx"]
+ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5002", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/"]
 
-#RUN dotnet restore
-ENTRYPOINT ["dotnet", "run"]
+
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.server
+
+WORKDIR /var/www/studio/server/
+
+COPY --from=builder /var/www/products/ASC.Server/server /var/www/products/ASC.Server/server
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
+
+EXPOSE 5004
+
+ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5004", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/"]
