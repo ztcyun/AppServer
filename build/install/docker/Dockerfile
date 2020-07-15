@@ -211,7 +211,7 @@ WORKDIR /var/www/studio/client
 
 COPY --from=builder /var/www/products/ASC.People/client /var/www/products/ASC.People/client
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
-COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
+#COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
 
 EXPOSE 5002
 
@@ -222,9 +222,9 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.server
 
 WORKDIR /var/www/studio/server/
 
-COPY --from=builder /var/www/products/ASC.Server/server /var/www/products/ASC.Server/server
+COPY --from=builder var/www/products/ASC.People/server/ var/www/products/ASC.People/server/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
-COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
+#COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
 
 EXPOSE 5004
 
