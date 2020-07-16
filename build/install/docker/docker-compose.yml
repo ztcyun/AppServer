@@ -2,12 +2,12 @@ version: "3.4"
 
 services:
 
-  api_01:
+  app_build:
     build:
       context: .
       target: builder
     container_name: app_build 
-    hostname: api 
+    hostname: app_build 
     restart: always
     networks:
       - onlyoffice
@@ -82,55 +82,53 @@ services:
     container_name: people.server
     hostname: people_server
     restart: always
+    # depends_on:
+    # - mysql
+    # environment:
+    #   MYSQL_HOST: mysql${MYSQL_HOST}
+    #   MYSQL_USER: ${MYSQL_USER}
+    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    # expose:
+    # - "5004"
+    networks:
+    - onlyoffice
+    # volumes:
+    # - app_data:/app/onlyoffice/data/
+    # - app_log:/var/log/supervisor/
+
+
+  storybook:
+    build:
+      context: ./../../../
+      dockerfile: build/install/docker/storybook/Dockerfile
+    image: storybook
+    container_name: storybook
+    hostname: storybook
+    restart: always
     depends_on:
     - mysql
     environment:
-      MYSQL_HOST: mysql${MYSQL_HOST}
+      MYSQL_HOST: mysql
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-    - "5004"
+    - "8081"
+    - "8082"
     networks:
     - onlyoffice
     volumes:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/
 
-
-# storybook:
-#     build:
-#       context: ./../../../
-#       dockerfile: build/install/docker/storybook/Dockerfile
-#     image: storybook
-#     container_name: storybook
-#     hostname: storybook
-#     restart: always
-#     depends_on:
-#     - mysql
-#     - kafka
-#     environment:
-#       MYSQL_HOST: mysql
-#       MYSQL_USER: ${MYSQL_USER}
-#       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-#       MYSQL_DATABASE: ${MYSQL_DATABASE}
-#       KAFKA_HOST: kafka
-#     expose:
-#     - "8081"
-#     - "8082"
-#     networks:
-#     - onlyoffice
-#     volumes:
-#     - app_data:/app/onlyoffice/data/
-#     - app_log:/var/log/supervisor/
-
       
   nginx:
     build:
-      context: ./config/nginx/
-   # image: nginx:stable-alpine
-    container_name: web
-    hostname: web
+      context: .
+      target: web
+    container_name: nginx
+    hostname: nginx
     restart: always
     ports:
       - 80:80 
@@ -142,12 +140,12 @@ services:
     depends_on:
       - mysql
     environment:
-      - NGINX_HOST=api
+      - NGINX_HOST=app_build
       - NGINX_PORT=8092 
     volumes:
       - ./config/nginx/templates:/etc/nginx/templates
-      # - .config/nginx/onlyoffice.conf:/etc/nginx/conf.d/onlyoffice.conf
       - nginx_log:/var/log/nginx
+   #  command: /bin/sh -c "envsubst < /etc/nginx/templates/onlyoffice.conf.template > /etc/nginx/conf.d/onlyoffice.conf && exec nginx -g 'daemon off;'"
 
 networks:
   onlyoffice:
