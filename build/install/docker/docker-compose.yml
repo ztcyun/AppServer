@@ -19,7 +19,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-      - "5000"
+      #- "5000"
       - "5010"
       - "5015"
       - "5006"
@@ -51,28 +51,29 @@ services:
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
 
-  people.client:
+  api:
     build:
       context: .
-      target: people.client  
-    container_name: people.client
-    hostname: people_client
+      target: api
+    image: api
+    container_name: api
+    hostname: api
     restart: always
     depends_on:
-    - mysql
+      - mysql
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+      KAFKA_HOST: kafka
     expose:
-    - "5002"
+      - "5000"
     networks:
-    - onlyoffice
+      - onlyoffice
     volumes:
-    - app_data:/app/onlyoffice/data/
-    - app_log:/var/log/supervisor/
-
+      - app_data:/app/onlyoffice/data/
+      - app_log:/var/log/supervisor/    
 
   people.server:
     build:
@@ -82,46 +83,20 @@ services:
     container_name: people.server
     hostname: people_server
     restart: always
-    # depends_on:
-    # - mysql
-    # environment:
-    #   MYSQL_HOST: mysql${MYSQL_HOST}
-    #   MYSQL_USER: ${MYSQL_USER}
-    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
-    # expose:
-    # - "5004"
-    networks:
-    - onlyoffice
-    # volumes:
-    # - app_data:/app/onlyoffice/data/
-    # - app_log:/var/log/supervisor/
-
-
-  storybook:
-    build:
-      context: ./../../../
-      dockerfile: build/install/docker/storybook/Dockerfile
-    image: storybook
-    container_name: storybook
-    hostname: storybook
-    restart: always
     depends_on:
     - mysql
     environment:
-      MYSQL_HOST: mysql
+      MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-    - "8081"
-    - "8082"
+    - "5004"
     networks:
     - onlyoffice
     volumes:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/
-
       
   nginx:
     build:
@@ -138,6 +113,7 @@ services:
     networks:
       - onlyoffice
     depends_on:
+      - api
       - app_build
       - mysql
     #environment:
@@ -145,7 +121,6 @@ services:
       # - NGINX_PORT=8092 
     volumes:
       - nginx_log:/var/log/nginx
-    #command: /bin/sh -c "envsubst < /etc/nginx/templates/onlyoffice.conf > /etc/nginx/conf.d/onlyoffice.conf && exec nginx -g 'daemon off;'"
 
 networks:
   onlyoffice:

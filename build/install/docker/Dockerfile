@@ -206,6 +206,7 @@ ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 
 ## NGINX ##
+
 FROM nginx:stable-alpine AS web
 
 COPY --from=builder /etc/nginx/conf.d/ /etc/nginx/conf.d/
@@ -214,31 +215,32 @@ COPY --from=builder /etc/nginx/includes/ /etc/nginx/includes/
 
 # RUN sed -i '/listen*/c listen ${NGINX_PORT};' /etc/nginx/templates/onlyoffice.conf
 RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5000/api:5000/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5004/people.server:5004/' /etc/nginx/conf.d/onlyoffice.conf
 
-## people.client ##
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.client
 
-WORKDIR /var/www/studio/client
+## api ##
 
-COPY --from=builder /var/www/products/ASC.People/client /var/www/products/ASC.People/client
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS api
+
+WORKDIR /var/www/studio/api/
+COPY --from=builder /var/www/studio/api/ .
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
-#COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
 
-EXPOSE 5002
+EXPOSE 5000
 
-ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5002", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/"]
+ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5000", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
+
 
 ## people.server ##
 
-# FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.server
-FROM mcr.microsoft.com/dotnet/core/runtime:3.1 AS people.server
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.server
 
-# WORKDIR /var/www/studio/server/
+WORKDIR /var/www/products/ASC.People/server/
 
-# COPY --from=builder var/www/products/ASC.People/server/ var/www/products/ASC.People/server/
-# COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
-#COPY --from=builder /app/onlyoffice/data/ /app/onlyoffice/data/
+COPY --from=builder /var/www/products/ASC.People/server/ .
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5004
 
-# ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5004", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/"]
+ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5004", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
