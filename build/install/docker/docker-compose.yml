@@ -138,14 +138,14 @@ services:
     networks:
       - onlyoffice
     depends_on:
+      - app_build
       - mysql
-    environment:
-      - NGINX_HOST=app_build
-      - NGINX_PORT=8092 
+    #environment:
+      # - NGINX_HOST=app_build
+      # - NGINX_PORT=8092 
     volumes:
-      - ./config/nginx/templates:/etc/nginx/templates
       - nginx_log:/var/log/nginx
-   #  command: /bin/sh -c "envsubst < /etc/nginx/templates/onlyoffice.conf.template > /etc/nginx/conf.d/onlyoffice.conf && exec nginx -g 'daemon off;'"
+    #command: /bin/sh -c "envsubst < /etc/nginx/templates/onlyoffice.conf > /etc/nginx/conf.d/onlyoffice.conf && exec nginx -g 'daemon off;'"
 
 networks:
   onlyoffice:

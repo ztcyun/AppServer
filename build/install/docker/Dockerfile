@@ -205,11 +205,17 @@ VOLUME /var/lib/mysql
 ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 
+## NGINX ##
 FROM nginx:stable-alpine AS web
 
-COPY --from=builder /etc/nginx/conf.d/*.conf /etc/nginx/templates/
+COPY --from=builder /etc/nginx/conf.d/ /etc/nginx/conf.d/
+COPY --from=builder /etc/nginx/includes/ /etc/nginx/includes/
 
 
+# RUN sed -i '/listen*/c listen ${NGINX_PORT};' /etc/nginx/templates/onlyoffice.conf
+RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
+
+## people.client ##
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.client
 
 WORKDIR /var/www/studio/client
@@ -222,6 +228,7 @@ EXPOSE 5002
 
 ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5002", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/"]
 
+## people.server ##
 
 # FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.server
 FROM mcr.microsoft.com/dotnet/core/runtime:3.1 AS people.server
