@@ -132,6 +132,7 @@ services:
       - onlyoffice
     depends_on:
       - api
+      - api_system
       - app_build
       - mysql
     #environment:
