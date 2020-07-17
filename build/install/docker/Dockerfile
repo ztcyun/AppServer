@@ -217,30 +217,46 @@ COPY --from=builder /etc/nginx/includes/ /etc/nginx/includes/
 RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
 RUN sed -i 's/app_build:5000/api:5000/' /etc/nginx/conf.d/onlyoffice.conf
 RUN sed -i 's/app_build:5004/people.server:5004/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5010/api_system:5010/' /etc/nginx/conf.d/onlyoffice.conf
 
 
 ## api ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS api
+FROM mcr.microsoft.com/dotnet/core/sdk AS api
 
 WORKDIR /var/www/studio/api/
-COPY --from=builder /var/www/studio/api/ .
+
+COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5000
 
-ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5000", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
+ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5000", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
 
 
 ## people.server ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.server
+FROM mcr.microsoft.com/dotnet/core/sdk AS people.server
 
 WORKDIR /var/www/products/ASC.People/server/
 
-COPY --from=builder /var/www/products/ASC.People/server/ .
+COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5004
 
-ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5004", "--pathToConf=/app/onlyoffice/config/", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
+ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5004", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
+
+
+## api_system ##
+
+FROM mcr.microsoft.com/dotnet/core/sdk AS api_system
+
+WORKDIR /var/www/services/apisystem
+
+COPY --from=builder /var/www/  /var/www/
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+
+EXPOSE 5010
+
+ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5010", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api_system"]

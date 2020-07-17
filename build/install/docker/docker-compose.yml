@@ -19,11 +19,8 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-      #- "5000"
       - "5010"
       - "5015"
-      - "5006"
-     # - "5004"
       - "5007"
       - "5009"
       - "5003"
@@ -55,18 +52,16 @@ services:
     build:
       context: .
       target: api
-    image: api
     container_name: api
     hostname: api
     restart: always
     depends_on:
       - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      KAFKA_HOST: kafka
+    # environment:
+    #   MYSQL_HOST: ${MYSQL_HOST}
+    #   MYSQL_USER: ${MYSQL_USER}
+    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
       - "5000"
     networks:
@@ -75,28 +70,51 @@ services:
       - app_data:/app/onlyoffice/data/
       - app_log:/var/log/supervisor/    
 
-  people.server:
+  api_system:
     build:
       context: .
-      target: people.server  
-    image: people.server
-    container_name: people.server
-    hostname: people_server
+      target: api_system
+    image: api_system
+    container_name: api_system
+    hostname: api_system 
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    # environment:
+    #   MYSQL_HOST: ${MYSQL_HOST}
+    #   MYSQL_USER: ${MYSQL_USER}
+    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-    - "5004"
+    - "5010"
     networks:
     - onlyoffice
     volumes:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/
+
+
+  people.server:
+    build:
+      context: .
+      target: people.server  
+    container_name: people.server
+    hostname: people_server
+    restart: always
+    depends_on:
+    - mysql
+    # environment:
+    #   MYSQL_HOST: ${MYSQL_HOST}
+    #   MYSQL_USER: ${MYSQL_USER}
+    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+      - "5004"
+    networks:
+      - onlyoffice
+    volumes:
+      - app_data:/app/onlyoffice/data/
+      - app_log:/var/log/supervisor/
       
   nginx:
     build:
