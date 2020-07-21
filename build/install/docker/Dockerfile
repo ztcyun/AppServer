@@ -209,7 +209,7 @@ ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 FROM nginx:stable-alpine AS web
 
-COPY config/nginx/templates/onlyoffice.upstreams.conf /etc/nginx/includes/
+COPY config/nginx/templates/onlyoffice.upstreams.template /etc/nginx/includes/
 COPY --from=builder /etc/nginx/conf.d/ /etc/nginx/conf.d/
 COPY --from=builder /etc/nginx/includes/ /etc/nginx/includes/
 
