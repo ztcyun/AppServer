@@ -93,6 +93,52 @@ services:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/
 
+  urlshortener:
+    build:
+      context: .
+      target: urlshortener
+    image: urlshortener
+    container_name: urlshortener
+    hostname: urlshortener 
+    restart: always
+    depends_on:
+    - mysql
+    # environment:
+    #   MYSQL_HOST: ${MYSQL_HOST}
+    #   MYSQL_USER: ${MYSQL_USER}
+    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+    - "5015"
+    networks:
+    - onlyoffice
+    volumes:
+    - app_data:/app/onlyoffice/data/
+    - app_log:/var/log/supervisor/
+
+  studio.notify:
+    build:
+      context: .
+      target: studio.notify
+    image: studio.notify
+    container_name: studio.notify
+    hostname: studio_notify
+    restart: always
+    depends_on:
+    - mysql
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+    - "5006"
+    networks:
+    - onlyoffice
+    volumes:
+    - app_data:/app/onlyoffice/data/
+    - app_log:/var/log/supervisor/
+
 
   people.server:
     build:
@@ -115,6 +161,73 @@ services:
     volumes:
       - app_data:/app/onlyoffice/data/
       - app_log:/var/log/supervisor/
+
+  files:
+    build:
+      context: .
+      target: files  
+    container_name: files
+    hostname: files
+    restart: always
+    depends_on:
+    - mysql
+    # environment:
+    #   MYSQL_HOST: ${MYSQL_HOST}
+    #   MYSQL_USER: ${MYSQL_USER}
+    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+      - "5007"
+    networks:
+      - onlyoffice
+    volumes:
+      - app_data:/app/onlyoffice/data/
+      - app_log:/var/log/supervisor/
+
+  files_services:
+    build:
+      context: .
+      target: files_services  
+    container_name: files_services
+    hostname: files_services
+    restart: always
+    depends_on:
+    - mysql
+    # environment:
+    #   MYSQL_HOST: ${MYSQL_HOST}
+    #   MYSQL_USER: ${MYSQL_USER}
+    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+      - "5009"
+    networks:
+      - onlyoffice
+    volumes:
+      - app_data:/app/onlyoffice/data/
+      - app_log:/var/log/supervisor/
+
+  studio:
+    build:
+      context: .
+      target: studio
+    image: studio
+    container_name: studio
+    hostname: studio
+    restart: always
+    depends_on:
+    - mysql
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+    - "5003"
+    networks:
+    - onlyoffice
+    volumes:
+    - app_data:/app/onlyoffice/data/
+    - app_log:/var/log/supervisor/   
       
   nginx:
     build:
@@ -134,10 +247,23 @@ services:
       - api
       - api_system
       - app_build
+      - urlshortener
+      - studio.notify
+      - people.server
+      - files
+      - files_services
+      - studio
       - mysql
-    #environment:
-      # - NGINX_HOST=app_build
-      # - NGINX_PORT=8092 
+    environment:
+      - SERVER_API_PORT="api:5000"
+      - SERVER_API_SYSTEM_PORT="api_system:5010"
+      - SERVER_URLSHORYENER_PORT="urlshortener:5015"
+      - SERVER_STUDIO_NOTIFY_PORT="studio.notify:5006"
+      - SERVER_PEOPLE_SERVER_PORT="people.server:5004"
+      - SERVER_FILES_PORT="files:5007"
+      - SERVER_FILES_SERVICES_PORT="files_services:5009"
+      - SERVER_STUDIO_PORT="studio:5003"
+
     volumes:
       - nginx_log:/var/log/nginx
 

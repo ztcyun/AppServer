@@ -209,15 +209,18 @@ ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 FROM nginx:stable-alpine AS web
 
+COPY config/nginx/templates/onlyoffice.upstreams.conf /etc/nginx/includes/
 COPY --from=builder /etc/nginx/conf.d/ /etc/nginx/conf.d/
 COPY --from=builder /etc/nginx/includes/ /etc/nginx/includes/
 
 
+
 # RUN sed -i '/listen*/c listen ${NGINX_PORT};' /etc/nginx/templates/onlyoffice.conf
 RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5000/api:5000/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5004/people.server:5004/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5010/api_system:5010/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
+#RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
 
 
 ## api ##
@@ -234,6 +237,49 @@ EXPOSE 5000
 ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5000", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
 
 
+## api_system ##
+
+FROM mcr.microsoft.com/dotnet/core/sdk AS api_system
+
+WORKDIR /var/www/services/apisystem
+
+COPY --from=builder /var/www/  /var/www/
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+
+EXPOSE 5010
+
+ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5015", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api_system"]
+
+
+## urlshortener ##
+
+FROM mcr.microsoft.com/dotnet/core/sdk AS urlshortener
+
+WORKDIR /services/urlshortener/service 
+
+COPY --from=builder /var/www/  /var/www/
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+
+EXPOSE 5015
+
+ENTRYPOINT ["dotnet", "ASC.UrlShortener.Svc.dll", "--urls=http://0.0.0.0:5015", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=urlshortener"]
+
+
+
+## studio.notify ##
+
+FROM mcr.microsoft.com/dotnet/core/sdk AS studio.notify
+
+WORKDIR /var/www/services/studio.notify
+
+COPY --from=builder /var/www/  /var/www/
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+
+EXPOSE 5006
+
+ENTRYPOINT ["dotnet", "ASC.Studio.Notify.dll", "--urls=http://0.0.0.0:5006", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio.notify"]
+
+
 ## people.server ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS people.server
@@ -248,15 +294,43 @@ EXPOSE 5004
 ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5004", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
 
 
-## api_system ##
+## files ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS api_system
+FROM mcr.microsoft.com/dotnet/core/sdk AS files
 
-WORKDIR /var/www/services/apisystem
+WORKDIR /var/www/products/ASC.Files/server/
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5010
+EXPOSE 5007
 
-ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5010", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api_system"]
+ENTRYPOINT ["dotnet", "ASC.Files.dll" , "--urls=http://0.0.0.0:5007", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files"]
+
+
+## files_services ##
+
+FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
+
+WORKDIR /var/www/products/ASC.Files/service/
+
+COPY --from=builder /var/www/  /var/www/
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+
+EXPOSE 5009
+
+ENTRYPOINT ["dotnet", "ASC.Files.Service.dll" , "--urls=http://0.0.0.0:5009", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files_services"]
+
+
+## studio ##
+
+FROM mcr.microsoft.com/dotnet/core/sdk AS studio
+
+WORKDIR /var/www/studio/server/
+
+COPY --from=builder /var/www/  /var/www/
+COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+
+EXPOSE 5003
+
+ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5003", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio"]
