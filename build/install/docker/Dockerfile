@@ -209,18 +209,17 @@ ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 FROM nginx:stable-alpine AS web
 
-COPY config/nginx/templates/onlyoffice.upstreams.template /etc/nginx/includes/
 COPY --from=builder /etc/nginx/conf.d/ /etc/nginx/conf.d/
 COPY --from=builder /etc/nginx/includes/ /etc/nginx/includes/
 
 
 
 # RUN sed -i '/listen*/c listen ${NGINX_PORT};' /etc/nginx/templates/onlyoffice.conf
-RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
-#RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
+# RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
+# RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
+# RUN sed -i 's/app_build:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
+# RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
+# RUN sed -i 's/app_build:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
 
 
 ## api ##
