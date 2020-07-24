@@ -1,37 +1,37 @@
 upstream  service_api {
-  server $SERVER_API_PORT;
+  server $SERVICE_API;
 }
 
 upstream  service_api_system {
-  server $SERVER_API_SYSTEM_PORT;
+  server $SERVICE_API_SYSTEM;
 }
 
 
-upstream  service_urlshortener {
-  server $SERVER_URLSHORYENER_PORT;
-}
+#upstream  service_urlshortener {
+#  server $SERVICE_URLSHORYENER;
+#}
 
 
 upstream  service_studio.notify {
-  server $SERVER_STUDIO_NOTIFY_PORT;
+  server $SERVICE_STUDIO_NOTIFY;
 }
 
 
 upstream  service_people.server {
-  server $SERVER_PEOPLE_SERVER_PORT;
+  server $SERVICE_PEOPLE_SERVER;
 }
 
 
 upstream  service_files {
-  server $SERVER_FILES_PORT;
+  server $SERVICE_FILES;
 }
 
 
-upstream  service_files_services {
-  server $SERVER_FILES_SERVICES_PORT;
-}
+#upstream  service_files_services {
+#  server $SERVICE_FILES_SERVICES;
+#}
 
 
 upstream  service_studio {
-  server $SERVER_STUDIO_PORT;
+  server $SERVICE_STUDIO;
 }

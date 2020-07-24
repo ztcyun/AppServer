@@ -1,4 +1,5 @@
-FROM ubuntu:18.04 AS builder
+### STAGE 1: Develop ###
+FROM ubuntu:18.04 AS develop
 
 ARG RELEASE_DATE="2016-06-21"
 ARG RELEASE_DATE_SIGN=""
@@ -143,7 +144,7 @@ RUN cd /app/onlyoffice/src/ && \
     cd ../../../ && \
     cd products/ASC.Files/Server && \
     dotnet -d publish -o /var/www/products/ASC.Files/server && \
-    cp -avrf DocStore /var/www/products/ASC.Files/server/ && \
+    # cp -avrf DocStore /var/www/products/ASC.Files/server/ && \
     cd ../../../ && \
     cd products/ASC.Files/Service && \
     dotnet -d publish -o /var/www/products/ASC.Files/service && \
@@ -181,7 +182,7 @@ COPY config/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/mysql.cnf
 COPY config/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY config/mysql/dotnet_dump.sql /app/onlyoffice/dotnet_dump.sql
 
-# RUN sed -i 's/Server=.*;Port=/Server=127.0.0.1;Port=/' /app/onlyoffice/config/appsettings.test.json
+#RUN sed -i 's/Server=.*;Port=/Server=127.0.0.1;Port=/' /app/onlyoffice/config/appsettings.test.json
 RUN sed -i 's/Server=.*;Port=/Server=mysql;Port=/' /app/onlyoffice/config/appsettings.test.json
 
 RUN mkdir -p /var/mysqld/ && \
@@ -205,22 +206,35 @@ VOLUME /var/lib/mysql
 ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 
+### STAGE 2: Build ###
+FROM develop as builder
+
+RUN sed -i 's/Server=.*;Port=/Server=mysql;Port=/' /app/onlyoffice/config/appsettings.test.json
+
+
 ## NGINX ##
 
-FROM nginx:stable-alpine AS web
+FROM nginx:stable AS web
 
-COPY --from=builder /etc/nginx/conf.d/ /etc/nginx/conf.d/
-COPY --from=builder /etc/nginx/includes/ /etc/nginx/includes/
+# Remove default nginx website
+RUN rm -rf /usr/share/nginx/html/*
+
+COPY --from=builder /etc/nginx/conf.d /etc/nginx/conf.d
+COPY --from=builder /etc/nginx/includes /etc/nginx/includes
+COPY --from=builder /var/www/products /var/www/products
+COPY --from=builder /var/www/story /var/www/story
+COPY --from=builder /var/www/studio/client /var/www/studio/client
+
+RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
 
 
+RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/app_build:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
 
-# RUN sed -i '/listen*/c listen ${NGINX_PORT};' /etc/nginx/templates/onlyoffice.conf
-# RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
-# RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
-# RUN sed -i 's/app_build:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
-# RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
-# RUN sed -i 's/app_build:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
-
+RUN sed -i 's/listen 5008/listen 5050/' /etc/nginx/conf.d/onlyoffice-files.conf
+RUN sed -i 's/listen 5002/listen 5050/' /etc/nginx/conf.d/onlyoffice-people.conf
+RUN sed -i 's/listen 5001/listen 5050/' /etc/nginx/conf.d/onlyoffice-studio.conf
 
 ## api ##
 
@@ -231,9 +245,10 @@ WORKDIR /var/www/studio/api/
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5000
 
-ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5000", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
+EXPOSE 5050
+
+ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
 
 
 ## api_system ##
@@ -245,9 +260,9 @@ WORKDIR /var/www/services/apisystem
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5010
+EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5015", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api_system"]
+ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api_system"]
 
 
 ## urlshortener ##
@@ -256,12 +271,13 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS urlshortener
 
 WORKDIR /services/urlshortener/service 
 
-COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /var/www  /var/www
+COPY --from=builder /services  /services
+COPY --from=builder /app/onlyoffice/config /app/onlyoffice/config
 
-EXPOSE 5015
+EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.UrlShortener.Svc.dll", "--urls=http://0.0.0.0:5015", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=urlshortener"]
+ENTRYPOINT ["dotnet", "ASC.UrlShortener.Svc.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=urlshortener"]
 
 
 
@@ -274,9 +290,9 @@ WORKDIR /var/www/services/studio.notify
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5006
+EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Studio.Notify.dll", "--urls=http://0.0.0.0:5006", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio.notify"]
+ENTRYPOINT ["dotnet", "ASC.Studio.Notify.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio.notify"]
 
 
 ## people.server ##
@@ -288,9 +304,9 @@ WORKDIR /var/www/products/ASC.People/server/
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5004
+EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5004", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
+ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
 
 
 ## files ##
@@ -302,9 +318,9 @@ WORKDIR /var/www/products/ASC.Files/server/
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5007
+EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Files.dll" , "--urls=http://0.0.0.0:5007", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files"]
+ENTRYPOINT ["dotnet", "ASC.Files.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files"]
 
 
 ## files_services ##
@@ -316,9 +332,9 @@ WORKDIR /var/www/products/ASC.Files/service/
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5009
+EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Files.Service.dll" , "--urls=http://0.0.0.0:5009", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files_services"]
+ENTRYPOINT ["dotnet", "ASC.Files.Service.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files_services"]
 
 
 ## studio ##
@@ -330,6 +346,6 @@ WORKDIR /var/www/studio/server/
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-EXPOSE 5003
+EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5003", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio"]
+ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio"]

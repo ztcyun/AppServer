@@ -18,12 +18,6 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-    expose:
-      - "5010"
-      - "5015"
-      - "5007"
-      - "5009"
-      - "5003"
         
   mysql:
     build:
@@ -57,13 +51,13 @@ services:
     restart: always
     depends_on:
       - mysql
-    # environment:
-    #   MYSQL_HOST: ${MYSQL_HOST}
-    #   MYSQL_USER: ${MYSQL_USER}
-    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-      - "5000"
+      - ${SERVICE_PORT}
     networks:
       - onlyoffice
     volumes:
@@ -80,13 +74,13 @@ services:
     restart: always
     depends_on:
     - mysql
-    # environment:
-    #   MYSQL_HOST: ${MYSQL_HOST}
-    #   MYSQL_USER: ${MYSQL_USER}
-    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-    - "5010"
+    - ${SERVICE_PORT}
     networks:
     - onlyoffice
     volumes:
@@ -103,13 +97,13 @@ services:
     restart: always
     depends_on:
     - mysql
-    # environment:
-    #   MYSQL_HOST: ${MYSQL_HOST}
-    #   MYSQL_USER: ${MYSQL_USER}
-    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-    - "5015"
+    - ${SERVICE_PORT}
     networks:
     - onlyoffice
     volumes:
@@ -132,7 +126,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-    - "5006"
+    - ${SERVICE_PORT}
     networks:
     - onlyoffice
     volumes:
@@ -149,13 +143,13 @@ services:
     restart: always
     depends_on:
     - mysql
-    # environment:
-    #   MYSQL_HOST: ${MYSQL_HOST}
-    #   MYSQL_USER: ${MYSQL_USER}
-    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-      - "5004"
+      - ${SERVICE_PORT}
     networks:
       - onlyoffice
     volumes:
@@ -171,13 +165,13 @@ services:
     restart: always
     depends_on:
     - mysql
-    # environment:
-    #   MYSQL_HOST: ${MYSQL_HOST}
-    #   MYSQL_USER: ${MYSQL_USER}
-    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-      - "5007"
+      - ${SERVICE_PORT}
     networks:
       - onlyoffice
     volumes:
@@ -193,11 +187,11 @@ services:
     restart: always
     depends_on:
     - mysql
-    # environment:
-    #   MYSQL_HOST: ${MYSQL_HOST}
-    #   MYSQL_USER: ${MYSQL_USER}
-    #   MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    #   MYSQL_DATABASE: ${MYSQL_DATABASE}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
       - "5009"
     networks:
@@ -222,7 +216,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-    - "5003"
+    - ${SERVICE_PORT}
     networks:
     - onlyoffice
     volumes:
@@ -255,14 +249,15 @@ services:
       - studio
       - mysql
     environment:
-      - SERVER_API_PORT="api:5000"
-      - SERVER_API_SYSTEM_PORT="api_system:5010"
-      - SERVER_URLSHORYENER_PORT="urlshortener:5015"
-      - SERVER_STUDIO_NOTIFY_PORT="studio.notify:5006"
-      - SERVER_PEOPLE_SERVER_PORT="people.server:5004"
-      - SERVER_FILES_PORT="files:5007"
-      - SERVER_FILES_SERVICES_PORT="files_services:5009"
-      - SERVER_STUDIO_PORT="studio:5003"
+      - SERVICE_API="api:${SERVICE_PORT}"
+      - SERVICE_API_SYSTEM="api_system:${SERVICE_PORT}"
+      - SERVICE_URLSHORYENER="urlshortener:${SERVICE_PORT}"
+      - SERVICE_STUDIO_NOTIFY="studio.notify:${SERVICE_PORT}"
+      - SERVICE_PEOPLE_SERVER="people.server:${SERVICE_PORT}"
+      - SERVICE_FILES="files:${SERVICE_PORT}"
+      - SERVICE_FILES_SERVICES="files_services:${SERVICE_PORT}"
+      - SERVICE_STUDIO="studio:${SERVICE_PORT}"
+      - SERVICE_PORT=${SERVICE_PORT}
 
     volumes:
       - ./config/nginx/templates/upstream.conf.template:/etc/nginx/templates/upstream.conf.template
