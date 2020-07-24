@@ -240,14 +240,9 @@ services:
       - 5001:5001
     networks:
       - onlyoffice
-    # expose:
-    #   - "5008"
-    #   - "5002"
-    #   - "5001"
     depends_on:
       - api
       - api_system
-      - app_build
       - urlshortener
       - studio.notify
       - people.server

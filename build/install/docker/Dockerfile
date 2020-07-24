@@ -182,8 +182,7 @@ COPY config/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/mysql.cnf
 COPY config/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY config/mysql/dotnet_dump.sql /app/onlyoffice/dotnet_dump.sql
 
-#RUN sed -i 's/Server=.*;Port=/Server=127.0.0.1;Port=/' /app/onlyoffice/config/appsettings.test.json
-RUN sed -i 's/Server=.*;Port=/Server=mysql;Port=/' /app/onlyoffice/config/appsettings.test.json
+RUN sed -i 's/Server=.*;Port=/Server=127.0.0.1;Port=/' /app/onlyoffice/config/appsettings.test.json
 
 RUN mkdir -p /var/mysqld/ && \
     chown -R mysql:mysql /var/lib/mysql /var/run/mysqld /var/mysqld/ && \
@@ -211,6 +210,8 @@ FROM develop as builder
 
 RUN sed -i 's/Server=.*;Port=/Server=mysql;Port=/' /app/onlyoffice/config/appsettings.test.json
 
+
+### STAGE 3: Run ###
 
 ## NGINX ##
 
