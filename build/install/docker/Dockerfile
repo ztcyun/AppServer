@@ -225,16 +225,15 @@ COPY --from=builder /var/www/products /var/www/products
 COPY --from=builder /var/www/story /var/www/story
 COPY --from=builder /var/www/studio/client /var/www/studio/client
 
-RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
+# RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
 
 
-RUN sed -i 's/app_build:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/app_build:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/localhost:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/localhost:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/localhost:5007/service_files/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/localhost:5003/service_studio/' /etc/nginx/conf.d/onlyoffice.conf
 
-RUN sed -i 's/listen 5008/listen 5050/' /etc/nginx/conf.d/onlyoffice-files.conf
-RUN sed -i 's/listen 5002/listen 5050/' /etc/nginx/conf.d/onlyoffice-people.conf
-RUN sed -i 's/listen 5001/listen 5050/' /etc/nginx/conf.d/onlyoffice-studio.conf
 
 ## api ##
 

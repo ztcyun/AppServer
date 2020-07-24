@@ -193,7 +193,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
-      - "5009"
+      - ${SERVICE_PORT}
     networks:
       - onlyoffice
     volumes:
@@ -234,9 +234,16 @@ services:
       - 80:80 
       - 443:443 
       - 8092:8092 
-      - 8081:8080
+      - 8081:8081
+      - 5008:5008
+      - 5002:5002
+      - 5001:5001
     networks:
       - onlyoffice
+    # expose:
+    #   - "5008"
+    #   - "5002"
+    #   - "5001"
     depends_on:
       - api
       - api_system
