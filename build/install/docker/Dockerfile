@@ -237,8 +237,7 @@ RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && 
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS api
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
 WORKDIR /var/www/studio/api/
 
@@ -252,13 +251,11 @@ EXPOSE 5050
 
 ENTRYPOINT ["./entrypoint.sh"]
 
-
 ## api_system ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS api_system
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
 WORKDIR /var/www/services/apisystem
 
@@ -277,8 +274,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS urlshortener
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
 WORKDIR /services/urlshortener/service 
 
@@ -298,10 +294,9 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS studio.notify
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
-WORKDIR /var/www/services/studio.notify
+WORKDIR /var/www/services/studio.notify/
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
@@ -318,8 +313,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS people.server
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
 WORKDIR /var/www/products/ASC.People/server/
 
@@ -338,8 +332,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS files
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
 WORKDIR /var/www/products/ASC.Files/server/
 
@@ -358,10 +351,9 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
-WORKDIR /var/www/products/ASC.Files/service/
+WORKDIR /var/www/products/ASC.Files/service
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
@@ -378,8 +370,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS studio
 
-ARG ENVIRONMENT_APP=test
-ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
+ENV ENVIRONMENT_APP=test
 
 WORKDIR /var/www/studio/server/
 
