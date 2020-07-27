@@ -356,10 +356,10 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 ## files_services ##
 
+FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
+
 ARG ENVIRONMENT_APP=test
 ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
-
-FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
 
 WORKDIR /var/www/products/ASC.Files/service/
 
@@ -380,8 +380,6 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS studio
 
 ARG ENVIRONMENT_APP=test
 ENV ENVIRONMENT_APP=${ENVIRONMENT_APP}
-
-FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
 
 WORKDIR /var/www/studio/server/
 
