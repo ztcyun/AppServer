@@ -237,44 +237,34 @@ RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && 
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS api
 
-ENV ENVIRONMENT_APP=test
-
 WORKDIR /var/www/studio/api/
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-RUN echo "#!/bin/bash \n  dotnet ASC.Web.Api.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=api" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
 
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
+
 
 ## api_system ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS api_system
-
-ENV ENVIRONMENT_APP=test
 
 WORKDIR /var/www/services/apisystem
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-RUN echo "#!/bin/bash \n  dotnet ASC.ApiSystem.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=api_system" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api_system"]
 
 
 ## urlshortener ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS urlshortener
-
-ENV ENVIRONMENT_APP=test
 
 WORKDIR /services/urlshortener/service 
 
@@ -282,105 +272,77 @@ COPY --from=builder /var/www  /var/www
 COPY --from=builder /services  /services
 COPY --from=builder /app/onlyoffice/config /app/onlyoffice/config
 
-RUN echo "#!/bin/bash \n  dotnet ASC.UrlShortener.Svc.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=urlshortener" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.UrlShortener.Svc.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=urlshortener"]
+
 
 
 ## studio.notify ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS studio.notify
 
-ENV ENVIRONMENT_APP=test
-
-WORKDIR /var/www/services/studio.notify/
+WORKDIR /var/www/services/studio.notify
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-RUN echo "#!/bin/bash \n  dotnet ASC.Studio.Notify.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=studio.notify" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.Studio.Notify.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio.notify"]
 
 
 ## people.server ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS people.server
 
-ENV ENVIRONMENT_APP=test
-
 WORKDIR /var/www/products/ASC.People/server/
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-RUN echo "#!/bin/bash \n  dotnet ASC.People.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=people" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
 
 
 ## files ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS files
 
-ENV ENVIRONMENT_APP=test
-
 WORKDIR /var/www/products/ASC.Files/server/
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-RUN echo "#!/bin/bash \n  dotnet ASC.Files.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=files" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.Files.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files"]
 
 
 ## files_services ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
 
-ENV ENVIRONMENT_APP=test
-
-WORKDIR /var/www/products/ASC.Files/service
+WORKDIR /var/www/products/ASC.Files/service/
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-RUN echo "#!/bin/bash \n  dotnet ASC.Files.Service.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=files_services" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.Files.Service.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files_services"]
 
 
 ## studio ##
 
 FROM mcr.microsoft.com/dotnet/core/sdk AS studio
 
-ENV ENVIRONMENT_APP=test
-
 WORKDIR /var/www/studio/server/
 
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-RUN echo "#!/bin/bash \n  dotnet ASC.Web.Studio.dll --urls=http://0.0.0.0:5050 --pathToConf=/app/onlyoffice/config/ --ENVIRONMENT=${ENVIRONMENT_APP} --\$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=studio" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
-
 EXPOSE 5050
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio"]
