@@ -7,9 +7,9 @@ upstream  service_api_system {
 }
 
 
-#upstream  service_urlshortener {
-#  server $SERVICE_URLSHORYENER;
-#}
+upstream  service_urlshortener {
+  server $SERVICE_URLSHORYENER;
+}
 
 
 upstream  service_studio.notify {
@@ -27,9 +27,9 @@ upstream  service_files {
 }
 
 
-#upstream  service_files_services {
-#  server $SERVICE_FILES_SERVICES;
-#}
+upstream  service_files_services {
+  server $SERVICE_FILES_SERVICES;
+}
 
 
 upstream  service_studio {

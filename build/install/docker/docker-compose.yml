@@ -2,35 +2,15 @@ version: "3.4"
 
 services:
 
-  app_build:
-    build:
-      context: .
-      target: builder
-    container_name: app_build 
-    hostname: app_build 
-    restart: always
-    networks:
-      - onlyoffice
-    depends_on:
-      - "mysql"  
-    environment:  
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-        
   mysql:
-    build:
-     context: ./config/mysql/
+    image: mysql:8.0.18 
     container_name: mysql
     hostname: ${MYSQL_HOST}
     restart: always
-    ports:
-      - 3306:3306 
     expose:
       - "3306"
     networks:
-      - onlyoffice
+        - onlyoffice
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -38,6 +18,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./config/mysql/conf.d:/etc/mysql/conf.d
+      - /config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d
       - mysql_data:/var/lib/mysql
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
@@ -51,11 +32,6 @@ services:
     restart: always
     depends_on:
       - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
       - ${SERVICE_PORT}
     networks:
@@ -74,11 +50,6 @@ services:
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
     - ${SERVICE_PORT}
     networks:
@@ -97,11 +68,6 @@ services:
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
     - ${SERVICE_PORT}
     networks:
@@ -120,11 +86,6 @@ services:
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
     - ${SERVICE_PORT}
     networks:
@@ -143,11 +104,6 @@ services:
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
       - ${SERVICE_PORT}
     networks:
@@ -165,11 +121,6 @@ services:
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
       - ${SERVICE_PORT}
     networks:
@@ -187,11 +138,6 @@ services:
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
       - ${SERVICE_PORT}
     networks:
@@ -210,11 +156,6 @@ services:
     restart: always
     depends_on:
     - mysql
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
     expose:
     - ${SERVICE_PORT}
     networks:
@@ -231,13 +172,8 @@ services:
     hostname: nginx
     restart: always
     ports:
-      - 80:80 
-      - 443:443 
       - 8092:8092 
       - 8081:8081
-      - 5008:5008
-      - 5002:5002
-      - 5001:5001
     networks:
       - onlyoffice
     depends_on:

@@ -14,7 +14,6 @@ LABEL onlyoffice.community.release-date="${RELEASE_DATE}" \
 ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
-    
 
 RUN apt-get -y update && \
     apt-get -y upgrade && \
@@ -73,7 +72,6 @@ RUN apt-get -y update && \
                         git \ 
                         yarn \
                         dotnet-sdk-3.1 \
-                        vim\
                         supervisor \
                         mysql-client \
                         mysql-server
@@ -155,21 +153,20 @@ RUN cd /app/onlyoffice/src/ && \
     cd web/ASC.Web.Studio && \
     dotnet -d publish -o /var/www/studio/server && \
     cd ../../ && \
-    # cd common/services/ASC.Data.Backup && \
-    # dotnet -d publish -o /var/www/services/backup && \
-    # cd ../../../ && \
+    cd common/services/ASC.Data.Backup && \
+    dotnet -d publish -o /var/www/services/backup && \
+    cd ../../../ && \
     cd common/services/ASC.Notify && \
     dotnet -d publish -o /var/www/services/notify && \
     cd ../../../ && \
     cd common/services/ASC.ApiSystem && \
     dotnet -d publish -o /var/www/services/apisystem && \
     cd ../../../ && \
-    # cd common/services/ASC.Thumbnails.Svc && \
-    # dotnet -d publish -o /services/thumb/service && \
-    # cd ../../../ && \
-    # yarn install --cwd common/ASC.Thumbnails --frozen-lockfile && \
-    # mkdir -p /var/www/services/thumb/client && cp -Rf common/ASC.Thumbnails/* /var/www/services/thumb/client && \
-    # cd ../../../ && \
+    cd common/services/ASC.Thumbnails.Svc && \
+    dotnet -d publish -o /services/thumb/service && \
+    cd ../../../ && \
+    yarn install --cwd common/ASC.Thumbnails --frozen-lockfile && \
+    mkdir -p /var/www/services/thumb/client && cp -Rf common/ASC.Thumbnails/* /var/www/services/thumb/client && \
     cd common/services/ASC.UrlShortener.Svc && \
     dotnet -d publish -o /services/urlshortener/service && \
     cd ../../../ && \
@@ -200,7 +197,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 VOLUME /var/lib/mysql
 
-# EXPOSE 80 443 8092 8081
+EXPOSE 80 443 8092 8081
 
 ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
@@ -225,15 +222,16 @@ COPY --from=builder /etc/nginx/includes /etc/nginx/includes
 COPY --from=builder /var/www/products /var/www/products
 COPY --from=builder /var/www/story /var/www/story
 COPY --from=builder /var/www/studio/client /var/www/studio/client
+COPY /config/nginx/templates/upstream.conf.template /etc/nginx/templates/upstream.conf.template
 
 # RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
 
 
-RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/localhost:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/localhost:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/localhost:5007/service_files/' /etc/nginx/conf.d/onlyoffice.conf
-RUN sed -i 's/localhost:5003/service_studio/' /etc/nginx/conf.d/onlyoffice.conf
+RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && \
+    sed -i 's/localhost:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf && \
+    sed -i 's/localhost:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf && \
+    sed -i 's/localhost:5007/service_files/' /etc/nginx/conf.d/onlyoffice.conf && \
+    sed -i 's/localhost:5003/service_studio/' /etc/nginx/conf.d/onlyoffice.conf
 
 
 ## api ##
@@ -245,11 +243,9 @@ WORKDIR /var/www/studio/api/
 COPY --from=builder /var/www/  /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
-
 EXPOSE 5050
 
 ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
-
 
 ## api_system ##
 
