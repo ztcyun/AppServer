@@ -240,7 +240,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS api
 WORKDIR /var/www/studio/api/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 
 EXPOSE 5050
@@ -255,7 +255,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS api_system
 WORKDIR /var/www/services/apisystem
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 EXPOSE 5050
 
@@ -270,7 +270,7 @@ WORKDIR /services/urlshortener/service
 
 COPY --from=builder /var/www  /var/www
 COPY --from=builder /services  /services
-COPY --from=builder /app/onlyoffice/config /app/onlyoffice/config
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 EXPOSE 5050
 
@@ -285,7 +285,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS studio.notify
 WORKDIR /var/www/services/studio.notify
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 EXPOSE 5050
 
@@ -299,7 +299,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS people.server
 WORKDIR /var/www/products/ASC.People/server/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 EXPOSE 5050
 
@@ -313,7 +313,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS files
 WORKDIR /var/www/products/ASC.Files/server/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 EXPOSE 5050
 
@@ -327,7 +327,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
 WORKDIR /var/www/products/ASC.Files/service/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 EXPOSE 5050
 
@@ -341,7 +341,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk AS studio
 WORKDIR /var/www/studio/server/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
+COPY --from=builder /app/onlyoffice/ /app/onlyoffice/
 
 EXPOSE 5050
 

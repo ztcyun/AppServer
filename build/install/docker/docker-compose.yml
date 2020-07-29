@@ -2,6 +2,27 @@ version: "3.4"
 
 services:
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    container_name: elasticsearch
+    hostname: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+
   mysql:
     image: mysql:8.0.18 
     container_name: mysql
@@ -9,8 +30,6 @@ services:
     restart: always
     expose:
       - "3306"
-    networks:
-        - onlyoffice
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -18,7 +37,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./config/mysql/conf.d:/etc/mysql/conf.d
-      - /config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d
+      - ../../../sql:/docker-entrypoint-initdb.d
       - mysql_data:/var/lib/mysql
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
@@ -34,8 +53,6 @@ services:
       - mysql
     expose:
       - ${SERVICE_PORT}
-    networks:
-      - onlyoffice
     volumes:
       - app_data:/app/onlyoffice/data/
       - app_log:/var/log/supervisor/    
@@ -52,8 +69,6 @@ services:
     - mysql
     expose:
     - ${SERVICE_PORT}
-    networks:
-    - onlyoffice
     volumes:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/
@@ -70,8 +85,6 @@ services:
     - mysql
     expose:
     - ${SERVICE_PORT}
-    networks:
-    - onlyoffice
     volumes:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/
@@ -88,8 +101,6 @@ services:
     - mysql
     expose:
     - ${SERVICE_PORT}
-    networks:
-    - onlyoffice
     volumes:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/
@@ -106,8 +117,6 @@ services:
     - mysql
     expose:
       - ${SERVICE_PORT}
-    networks:
-      - onlyoffice
     volumes:
       - app_data:/app/onlyoffice/data/
       - app_log:/var/log/supervisor/
@@ -123,8 +132,6 @@ services:
     - mysql
     expose:
       - ${SERVICE_PORT}
-    networks:
-      - onlyoffice
     volumes:
       - app_data:/app/onlyoffice/data/
       - app_log:/var/log/supervisor/
@@ -140,8 +147,6 @@ services:
     - mysql
     expose:
       - ${SERVICE_PORT}
-    networks:
-      - onlyoffice
     volumes:
       - app_data:/app/onlyoffice/data/
       - app_log:/var/log/supervisor/
@@ -158,8 +163,6 @@ services:
     - mysql
     expose:
     - ${SERVICE_PORT}
-    networks:
-    - onlyoffice
     volumes:
     - app_data:/app/onlyoffice/data/
     - app_log:/var/log/supervisor/   
@@ -174,8 +177,6 @@ services:
     ports:
       - 8092:8092 
       - 8081:8081
-    networks:
-      - onlyoffice
     depends_on:
       - api
       - api_system
@@ -201,10 +202,6 @@ services:
       - ./config/nginx/templates/upstream.conf.template:/etc/nginx/templates/upstream.conf.template
       - nginx_log:/var/log/nginx
 
-networks:
-  onlyoffice:
-    driver: 'bridge'
-
 volumes:
   mysql_data:
   mysql_log:
@@ -212,3 +209,4 @@ volumes:
   nginx_log:
   app_data:
   app_log:
+  es_data:
