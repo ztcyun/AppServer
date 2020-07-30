@@ -20,8 +20,44 @@ services:
         hard: 65535
     volumes:
       - es_data:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
+    expose:
+      - "9200"
+
+
+  zookeeper:
+    image: zookeeper:latest
+    container_name: zookeeper
+    hostname: zookeeper
+    restart: always
+    expose:
+      - "2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVER: server.1=zookeeper:2888:3888
+    volumes:
+    - zoo_data:/data
+    - zoo_log:/datalog
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    hostname: kafka
+    restart: always
+    expose:
+      - "9092"
+    depends_on:
+    - zookeeper
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_LOG4J_LOGGERS: ${KAFKA_LOG4J_LOGGERS}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+    volumes:
+    - kafka_data:/var/lib/kafka/data
 
   mysql:
     image: mysql:8.0.18 
@@ -38,7 +74,7 @@ services:
     volumes:
       - ./config/mysql/conf.d:/etc/mysql/conf.d
       - ../../../sql:/docker-entrypoint-initdb.d
-      - mysql_data:/var/lib/mysql
+      #- mysql_data:/var/lib/mysql
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
 
@@ -203,6 +239,9 @@ services:
       - nginx_log:/var/log/nginx
 
 volumes:
+  kafka_data:
+  zoo_data:
+  zoo_log:
   mysql_data:
   mysql_log:
   mysql_error:

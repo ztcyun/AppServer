@@ -205,7 +205,9 @@ ENTRYPOINT ["/usr/bin/supervisord", "--"]
 ### STAGE 2: Build ###
 FROM develop as builder
 
-RUN sed -i 's/Server=.*;Port=/Server=mysql;Port=/' /app/onlyoffice/config/appsettings.test.json
+RUN sed -i 's/Server=.*;Port=/Server=mysql;Port=/' /app/onlyoffice/config/appsettings.test.json && \
+    sed -i 's/localhost/elasticsearch/' /app/onlyoffice/src/common/services/ASC.ElasticSearch/Service/Settings.cs && \
+    sed -i 's/localhost/kafka/' /app/onlyoffice/config/kafka.test.json
 
 ### STAGE 3: Run ###
 
