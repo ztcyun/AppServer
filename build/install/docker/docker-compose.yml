@@ -73,7 +73,9 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/00_dotnet_dump.sql
+      - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
+      - ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/02_dotnet_dump.sql
+      - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/03_alter_priv.sql
       - ./config/mysql/conf.d:/etc/mysql/conf.d
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
@@ -91,8 +93,7 @@ services:
     expose:
       - ${SERVICE_PORT}
     volumes:
-      - app_data:/app/onlyoffice/data/
-      - app_log:/var/log/supervisor/    
+      - app_data:/app/onlyoffice/data/    
 
   api_system:
     build:
@@ -108,7 +109,6 @@ services:
     - ${SERVICE_PORT}
     volumes:
     - app_data:/app/onlyoffice/data/
-    - app_log:/var/log/supervisor/
 
   urlshortener:
     build:
@@ -124,7 +124,6 @@ services:
     - ${SERVICE_PORT}
     volumes:
     - app_data:/app/onlyoffice/data/
-    - app_log:/var/log/supervisor/
 
   studio.notify:
     build:
@@ -140,8 +139,6 @@ services:
     - ${SERVICE_PORT}
     volumes:
     - app_data:/app/onlyoffice/data/
-    - app_log:/var/log/supervisor/
-
 
   people.server:
     build:
@@ -156,7 +153,6 @@ services:
       - ${SERVICE_PORT}
     volumes:
       - app_data:/app/onlyoffice/data/
-      - app_log:/var/log/supervisor/
 
   files:
     build:
@@ -171,7 +167,6 @@ services:
       - ${SERVICE_PORT}
     volumes:
       - app_data:/app/onlyoffice/data/
-      - app_log:/var/log/supervisor/
 
   files_services:
     build:
@@ -186,7 +181,6 @@ services:
       - ${SERVICE_PORT}
     volumes:
       - app_data:/app/onlyoffice/data/
-      - app_log:/var/log/supervisor/
 
   studio:
     build:
@@ -202,7 +196,6 @@ services:
     - ${SERVICE_PORT}
     volumes:
     - app_data:/app/onlyoffice/data/
-    - app_log:/var/log/supervisor/   
       
   nginx:
     build:
@@ -247,5 +240,4 @@ volumes:
   mysql_error:
   nginx_log:
   app_data:
-  app_log:
   es_data:
