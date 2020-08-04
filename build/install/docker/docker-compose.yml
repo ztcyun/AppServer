@@ -60,7 +60,8 @@ services:
     - kafka_data:/var/lib/kafka/data
 
   mysql:
-    image: mysql:8.0.18 
+    image: mysql:8.0.18
+    command: --default-authentication-plugin=mysql_native_password
     container_name: mysql
     hostname: ${MYSQL_HOST}
     restart: always
@@ -72,14 +73,11 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
-      - ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
-      - ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
-      - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/04_alter_priv.sql
+      - ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/00_dotnet_dump.sql
       - ./config/mysql/conf.d:/etc/mysql/conf.d
-      - mysql_data:/var/lib/mysql
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
+    
 
   api:
     build:
@@ -245,7 +243,6 @@ volumes:
   kafka_data:
   zoo_data:
   zoo_log:
-  mysql_data:
   mysql_log:
   mysql_error:
   nginx_log:
