@@ -1,4 +1,4 @@
-### STAGE 1: Develop ###
+### STAGE 1: Develop ######
 FROM ubuntu:18.04 AS develop
 
 ARG RELEASE_DATE="2016-06-21"
