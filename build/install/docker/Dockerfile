@@ -225,8 +225,6 @@ COPY --from=builder /var/www/story /var/www/story
 COPY --from=builder /var/www/studio/client /var/www/studio/client
 COPY /config/nginx/templates/upstream.conf.template /etc/nginx/templates/upstream.conf.template
 
-# RUN sed -i 's/localhost/app_build/' /etc/nginx/conf.d/onlyoffice.conf
-
 
 RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf && \

@@ -77,7 +77,7 @@ services:
       - ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
       - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/04_alter_priv.sql
       - ./config/mysql/conf.d:/etc/mysql/conf.d
-      #- mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
 
@@ -245,7 +245,7 @@ volumes:
   kafka_data:
   zoo_data:
   zoo_log:
-  # mysql_data:
+  mysql_data:
   mysql_log:
   mysql_error:
   nginx_log:
