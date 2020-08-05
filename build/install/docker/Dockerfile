@@ -234,12 +234,11 @@ RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && 
 
 ## api ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS api
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS api
 
 WORKDIR /var/www/studio/api/
 
-COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
+COPY --from=builder /var/www/ /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 
@@ -250,12 +249,11 @@ ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5050", "--pathTo
 
 ## api_system ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS api_system
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS api_system
 
 WORKDIR /var/www/services/apisystem
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5050
@@ -265,13 +263,11 @@ ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5050", "--path
 
 ## urlshortener ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS urlshortener
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS urlshortener
 
 WORKDIR /services/urlshortener/service 
 
-COPY --from=builder /var/www  /var/www
-COPY --from=builder /services  /services
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
+COPY --from=builder /services/urlshortener/service/  /services/urlshortener/service/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5050
@@ -282,12 +278,11 @@ ENTRYPOINT ["dotnet", "ASC.UrlShortener.Svc.dll", "--urls=http://0.0.0.0:5050", 
 
 ## studio.notify ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS studio.notify
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS studio.notify
 
 WORKDIR /var/www/services/studio.notify
 
-COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
+COPY --from=builder /var/www/ /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5050
@@ -297,12 +292,11 @@ ENTRYPOINT ["dotnet", "ASC.Studio.Notify.dll", "--urls=http://0.0.0.0:5050", "--
 
 ## people.server ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS people.server
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS people.server
 
 WORKDIR /var/www/products/ASC.People/server/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5050
@@ -312,12 +306,11 @@ ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5050", "--pathTo
 
 ## files ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS files
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS files
 
 WORKDIR /var/www/products/ASC.Files/server/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5050
@@ -327,12 +320,11 @@ ENTRYPOINT ["dotnet", "ASC.Files.dll" , "--urls=http://0.0.0.0:5050", "--pathToC
 
 ## files_services ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS files_services
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS files_services
 
 WORKDIR /var/www/products/ASC.Files/service/
 
-COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
+COPY --from=builder /var/www/ /var/www/
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 EXPOSE 5050
@@ -342,12 +334,11 @@ ENTRYPOINT ["dotnet", "ASC.Files.Service.dll" , "--urls=http://0.0.0.0:5050", "-
 
 ## studio ##
 
-FROM mcr.microsoft.com/dotnet/core/sdk AS studio
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS studio
 
 WORKDIR /var/www/studio/server/
 
 COPY --from=builder /var/www/  /var/www/
-COPY --from=builder /app/onlyoffice/data /app/onlyoffice/data
 COPY --from=builder /app/onlyoffice/config/ /app/onlyoffice/config/
 
 

@@ -23,7 +23,6 @@ services:
     expose:
       - "9200"
 
-
   zookeeper:
     image: zookeeper:latest
     container_name: zookeeper
@@ -80,7 +79,6 @@ services:
       - mysql_log:/var/log/mysql:rw
       - mysql_error:/var/log/mysql/error.log:rw
     
-
   api:
     build:
       context: .
@@ -93,8 +91,8 @@ services:
     expose:
       - ${SERVICE_PORT}
     volumes:
-      - app_data:/app/onlyoffice/data/    
-
+      - app_data:/app/onlyoffice/data/  
+    
   api_system:
     build:
       context: .
@@ -109,7 +107,7 @@ services:
     - ${SERVICE_PORT}
     volumes:
     - app_data:/app/onlyoffice/data/
-
+  
   urlshortener:
     build:
       context: .
@@ -124,7 +122,7 @@ services:
     - ${SERVICE_PORT}
     volumes:
     - app_data:/app/onlyoffice/data/
-
+ 
   studio.notify:
     build:
       context: .
@@ -152,7 +150,7 @@ services:
     expose:
       - ${SERVICE_PORT}
     volumes:
-      - app_data:/app/onlyoffice/data/
+      - app_data:/app/onlyoffice/data/ 
 
   files:
     build:
@@ -181,7 +179,7 @@ services:
       - ${SERVICE_PORT}
     volumes:
       - app_data:/app/onlyoffice/data/
-
+      
   studio:
     build:
       context: .
@@ -192,11 +190,12 @@ services:
     restart: always
     depends_on:
     - mysql
+    - api
     expose:
     - ${SERVICE_PORT}
     volumes:
     - app_data:/app/onlyoffice/data/
-      
+  
   nginx:
     build:
       context: .
