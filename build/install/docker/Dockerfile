@@ -223,7 +223,7 @@ USER appuser
 FROM nginx:stable AS web
 
 # Remove default nginx website
-RUN rm -rf /usr/share/nginx/html/*
+RUN rm -rf /usr/share/nginx/html/* 
 
 COPY --from=develop /etc/nginx/conf.d /etc/nginx/conf.d
 COPY --from=develop /etc/nginx/includes /etc/nginx/includes
@@ -237,7 +237,9 @@ RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && 
     sed -i 's/localhost:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5007/service_files/' /etc/nginx/conf.d/onlyoffice.conf && \
-    sed -i 's/localhost:5003/service_studio/' /etc/nginx/conf.d/onlyoffice.conf
+    sed -i 's/localhost:5003/service_studio/' /etc/nginx/conf.d/onlyoffice.conf && \
+    sed -i 's/pid.*nginx.pid;/pid \/tmp\/nginx.pid;/' /etc/nginx/nginx.conf && \
+    sed -i 's/http.*{/http {\n client_body_temp_path \/tmp\/client_temp;\n proxy_temp_path \/tmp\/proxy_temp_path;\n fastcgi_temp_path \/tmp\/fastcgi_temp;\n uwsgi_temp_path \/tmp\/uwsgi_temp;\n scgi_temp_path  \/tmp\/scgi_temp;/' /etc/nginx/nginx.conf
 
 
 ## api ##
