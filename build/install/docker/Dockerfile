@@ -220,7 +220,7 @@ USER appuser
 
 ## NGINX ##
 
-FROM nginx:stable AS web
+FROM nginx:stable-alpine AS web
 
 # Remove default nginx website
 RUN rm -rf /usr/share/nginx/html/* 
@@ -233,14 +233,17 @@ COPY --from=develop /var/www/studio/client /var/www/studio/client
 COPY /config/nginx/templates/upstream.conf.template /etc/nginx/templates/upstream.conf.template
 
 
-RUN sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && \
+RUN chown nginx:nginx /etc/nginx/* -R &&\
+    chown nginx:nginx /docker-entrypoint.d/* &&\
+    # changes for upstream configure
+    sed -i 's/localhost:5000/service_api/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5010/service_api_system/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5007/service_files/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5003/service_studio/' /etc/nginx/conf.d/onlyoffice.conf && \
+    # configute the image nginx whith less privileged https://hub.docker.com/_/nginx
     sed -i 's/pid.*nginx.pid;/pid \/tmp\/nginx.pid;/' /etc/nginx/nginx.conf && \
     sed -i 's/http.*{/http {\n client_body_temp_path \/tmp\/client_temp;\n proxy_temp_path \/tmp\/proxy_temp_path;\n fastcgi_temp_path \/tmp\/fastcgi_temp;\n uwsgi_temp_path \/tmp\/uwsgi_temp;\n scgi_temp_path  \/tmp\/scgi_temp;/' /etc/nginx/nginx.conf
-
 
 ## api ##
 
@@ -275,12 +278,12 @@ EXPOSE 5050
 ENTRYPOINT ["dotnet", "ASC.UrlShortener.Svc.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=urlshortener"]
 
 
-
 ## studio.notify ##
 
 FROM builder AS studio.notify
 
 WORKDIR /var/www/services/studio.notify
+
 
 EXPOSE 5050
 

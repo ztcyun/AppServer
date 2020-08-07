@@ -226,7 +226,6 @@ services:
       - SERVICE_FILES_SERVICES="files_services:${SERVICE_PORT}"
       - SERVICE_STUDIO="studio:${SERVICE_PORT}"
       - SERVICE_PORT=${SERVICE_PORT}
-
     volumes:
       - ./config/nginx/templates/upstream.conf.template:/etc/nginx/templates/upstream.conf.template
       - nginx_log:/var/log/nginx
