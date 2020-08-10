@@ -209,12 +209,10 @@ COPY --from=develop /var/www/  /var/www/
 COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
 COPY --from=develop /services/urlshortener/service/  /services/urlshortener/service/
 
-RUN sed -i 's/Server=.*;Port=/Server=mysql;Port=/' /app/onlyoffice/config/appsettings.test.json && \
-    sed -i 's/localhost/kafka/' /app/onlyoffice/config/kafka.test.json && \
-    groupadd -g 1001 appuser && \
+RUN groupadd -g 1001 appuser && \
     useradd -r -u 1001 -g appuser appuser
 
-USER appuser
+USER root
 
 ### STAGE 3: Run ###
 
@@ -245,90 +243,141 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
     sed -i 's/pid.*nginx.pid;/pid \/tmp\/nginx.pid;/' /etc/nginx/nginx.conf && \
     sed -i 's/http.*{/http {\n client_body_temp_path \/tmp\/client_temp;\n proxy_temp_path \/tmp\/proxy_temp_path;\n fastcgi_temp_path \/tmp\/fastcgi_temp;\n uwsgi_temp_path \/tmp\/uwsgi_temp;\n scgi_temp_path  \/tmp\/scgi_temp;/' /etc/nginx/nginx.conf
 
+
 ## api ##
 
 FROM builder AS api
 
+ENV DOTNET_RUN=ASC.Web.Api.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=api
+
+COPY /config/api/entrypoint.sh /var/www/studio/api/
+
 WORKDIR /var/www/studio/api/
+
+#COPY /config/api/entrypoint.sh /var/www/studio/api/
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Web.Api.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]
 
 
 ## api_system ##
 
 FROM builder AS api_system
 
+ENV DOTNET_RUN=ASC.ApiSystem.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=api_system
+
+COPY /config/api/entrypoint.sh /var/www/services/apisystem
+
 WORKDIR /var/www/services/apisystem
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.ApiSystem.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=api_system"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]
 
 
 ## urlshortener ##
 
 FROM builder AS urlshortener
 
+ENV DOTNET_RUN=ASC.UrlShortener.Svc.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=urlshortener
+
+COPY /config/api/entrypoint.sh /services/urlshortener/service
+
 WORKDIR /services/urlshortener/service 
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.UrlShortener.Svc.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=urlshortener"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]
 
 
 ## studio.notify ##
 
 FROM builder AS studio.notify
 
-WORKDIR /var/www/services/studio.notify
+ENV DOTNET_RUN=ASC.Studio.Notify.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=studio.notify
 
+COPY /config/api/entrypoint.sh /var/www/services/studio.notify
+
+WORKDIR /var/www/services/studio.notify
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Studio.Notify.dll", "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio.notify"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]
 
 
 ## people.server ##
 
 FROM builder AS people.server
 
+ENV DOTNET_RUN=ASC.People.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=people.server
+
+COPY /config/api/entrypoint.sh /var/www/products/ASC.People/server/
+
 WORKDIR /var/www/products/ASC.People/server/
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.People.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=people"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]
 
 
 ## files ##
 
 FROM builder AS files
 
+ENV DOTNET_RUN=ASC.Files.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=files
+
+COPY /config/api/entrypoint.sh /var/www/products/ASC.Files/server/
+
+
 WORKDIR /var/www/products/ASC.Files/server/
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Files.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]
 
 
 ## files_services ##
 
 FROM builder AS files_services
 
+ENV DOTNET_RUN=ASC.Files.Service.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=files_services
+
+COPY /config/api/entrypoint.sh /var/www/products/ASC.Files/service/
+
 WORKDIR /var/www/products/ASC.Files/service/
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Files.Service.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=files_services"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]
 
 
 ## studio ##
 
 FROM builder AS studio
 
+ENV DOTNET_RUN=ASC.Web.Studio.dll
+ENV DOTNET_ENV=test
+ENV DOTNET_LOG_NAME=studio
+
+COPY /config/api/entrypoint.sh /var/www/studio/server/
+
 WORKDIR /var/www/studio/server/
 
 EXPOSE 5050
 
-ENTRYPOINT ["dotnet", "ASC.Web.Studio.dll" , "--urls=http://0.0.0.0:5050", "--pathToConf=/app/onlyoffice/config/", "--ENVIRONMENT=test", "--$STORAGE_ROOT=/app/onlyoffice/data/", "--log:dir=/var/log/onlyoffice", "--log:name=studio"]
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]

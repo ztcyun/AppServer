@@ -90,6 +90,13 @@ services:
       - mysql
     expose:
       - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
       - app_data:/app/onlyoffice/data/  
     
@@ -105,6 +112,13 @@ services:
     - mysql
     expose:
     - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
     - app_data:/app/onlyoffice/data/
   
@@ -120,6 +134,13 @@ services:
     - mysql
     expose:
     - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
     - app_data:/app/onlyoffice/data/
  
@@ -135,6 +156,13 @@ services:
     - mysql
     expose:
     - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
     - app_data:/app/onlyoffice/data/
 
@@ -149,6 +177,13 @@ services:
     - mysql
     expose:
       - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
       - app_data:/app/onlyoffice/data/ 
 
@@ -163,6 +198,13 @@ services:
     - mysql
     expose:
       - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
       - app_data:/app/onlyoffice/data/
 
@@ -177,6 +219,13 @@ services:
     - mysql
     expose:
       - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
       - app_data:/app/onlyoffice/data/
       
@@ -193,6 +242,13 @@ services:
     - api
     expose:
     - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
     volumes:
     - app_data:/app/onlyoffice/data/
   
