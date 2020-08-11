@@ -205,8 +205,6 @@ ENTRYPOINT ["/usr/bin/supervisord", "--"]
 ### STAGE 2: Build ###
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 as builder
 
-USER root
-
 # set up default mysql, kafka values for docker-entrypoint.sh 
 ARG MYSQL_HOST=mysql
 ARG MYSQL_DATABASE=onlyoffice
@@ -227,10 +225,9 @@ COPY --from=develop /services/urlshortener/service/  /services/urlshortener/serv
 
 # add defualt user and group for no-root run
 RUN groupadd -g 1001 appuser && \
-    useradd -r -u 1001 -g appuser appuser &&\
-    chown appuser:appuser /app/onlyoffice -R &&\
-    chown appuser:appuser /var/www -R &&\
-    chown appuser:appuser /services -R
+    useradd -r -u 1001 -g appuser appuser
+
+USER root
 
 ### STAGE 3: Run ###
 
@@ -267,8 +264,6 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
 
 FROM builder AS api
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Web.Api.dll
 ARG DOTNET_ENV=test
@@ -278,8 +273,8 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-#COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY docker-entrypoint.sh /var/www/studio/api/
+#COPY --from=develop /var/www/  /var/www/
 
 WORKDIR /var/www/studio/api/
 
@@ -291,8 +286,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 ## api_system ##
 
 FROM builder AS api_system
-
-USER appuser
 
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.ApiSystem.dll
@@ -316,8 +309,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS urlshortener
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.UrlShortener.Svc.dll
 ARG DOTNET_ENV=test
@@ -339,8 +330,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 ## studio.notify ##
 
 FROM builder AS studio.notify
-
-USER appuser
 
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Studio.Notify.dll
@@ -364,8 +353,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS people.server
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.People.dll
 ARG DOTNET_ENV=test
@@ -387,8 +374,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 ## files ##
 
 FROM builder AS files
-
-USER appuser
 
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Files.dll
@@ -412,8 +397,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS files_services
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Files.Service.dll
 ARG DOTNET_ENV=test
@@ -435,8 +418,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 ## studio ##
 
 FROM builder AS studio
-
-USER appuser
 
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Web.Studio.dll
