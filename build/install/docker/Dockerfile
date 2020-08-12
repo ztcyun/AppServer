@@ -18,34 +18,13 @@ ENV LANG=en_US.UTF-8 \
 RUN apt-get -y update && \
     apt-get -y upgrade && \
     apt-get -y dist-upgrade && \
-    apt-get -yq install gnupg2 ca-certificates && \
     apt-get install -yq sudo locales && \
     addgroup --system --gid 107 onlyoffice && \
     adduser -uid 104 --quiet --home /var/www/onlyoffice --system --gid 107 onlyoffice && \
-    addgroup --system --gid 104 elasticsearch && \
-    adduser -uid 103 --quiet --home /nonexistent --system --gid 104 elasticsearch && \
     locale-gen en_US.UTF-8 && \
     apt-get -y update && \
     apt-get install -yq software-properties-common wget curl cron rsyslog && \
-    curl -OL http://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb && \
-    echo "mysql-apt-config mysql-apt-config/repo-codename select bionic" | sudo debconf-set-selections && \
-    echo "mysql-apt-config mysql-apt-config/repo-distro select ubuntu" | sudo debconf-set-selections && \
-    echo "mysql-apt-config mysql-apt-config/select-server select mysql-8.0" | sudo debconf-set-selections && \
-    DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb && \
-    rm -f mysql-apt-config_0.8.15-1_all.deb && \
-    wget http://nginx.org/keys/nginx_signing.key && \
-    apt-key add nginx_signing.key && \
-    echo "deb http://nginx.org/packages/mainline/ubuntu/ bionic nginx" >> /etc/apt/sources.list.d/nginx.list && \
-    echo "deb-src http://nginx.org/packages/mainline/ubuntu/ bionic nginx" >> /etc/apt/sources.list.d/nginx.list && \
     apt-get install -yq openjdk-8-jre-headless && \
-    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add - && \
-    apt-get install -yq apt-transport-https && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-    echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official.list && \
-    echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-7.x.list && \
-    apt-get -y update && \
-    apt-get install -yq elasticsearch=7.4.0 && \
-    add-apt-repository -y ppa:certbot/certbot && \
     curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && \
     apt-get install -y nodejs && \
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
@@ -53,28 +32,12 @@ RUN apt-get -y update && \
     wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt-get -y update && \
-    apt-get install -yq nginx && \
     cd ~ && \
-    wget https://downloads.apache.org/kafka/2.5.0/kafka_2.12-2.5.0.tgz && \
-    tar xzf kafka_2.12-2.5.0.tgz && \
-    rm kafka_2.12-2.5.0.tgz && \
     echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get install -yq libgdiplus \
-                        python-certbot-nginx \
-                        htop \
-                        nano \
-                        dnsutils \
-                        python3-pip \
-                        multiarch-support \ 
-                        iproute2 \
-                        ffmpeg \
-                        jq \ 
                         git \ 
                         yarn \
-                        dotnet-sdk-3.1 \
-                        supervisor \
-                        mysql-client \
-                        mysql-server
+                        dotnet-sdk-3.1 
 
 RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/
 
@@ -131,7 +94,7 @@ RUN cd /app/onlyoffice/src/ && \
     mkdir -p /var/www/products/ASC.People/client/products/people
 
 RUN cd /app/onlyoffice/src/ && \
-    rm -f /etc/nginx/conf.d/* && \
+    mkdir -p /etc/nginx/conf.d/ && \
     mkdir -p /var/www/public/ && cp -f public/* /var/www/public/ && \
     mkdir -p /app/onlyoffice/config/ && cp -rf config/* /app/onlyoffice/config/ && \
     cp -f config/nginx/onlyoffice*.conf /etc/nginx/conf.d/ && \
@@ -176,22 +139,6 @@ RUN cd /app/onlyoffice/src/ && \
     dotnet -d publish -o /var/www/services/studio.notify
 
 COPY config/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/mysql.cnf
-COPY config/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY config/mysql/dotnet_dump.sql /app/onlyoffice/dotnet_dump.sql
-
-RUN sed -i 's/Server=.*;Port=/Server=127.0.0.1;Port=/' /app/onlyoffice/config/appsettings.test.json
-
-RUN mkdir -p /var/mysqld/ && \
-    chown -R mysql:mysql /var/lib/mysql /var/run/mysqld /var/mysqld/ && \
-    sudo -u mysql bash -c "/usr/bin/pidproxy /var/mysqld/mysqld.pid /usr/bin/mysqld_safe --pid-file=/var/mysqld/mysqld.pid &" && \
-    sleep 5s && \
-    mysql -e "CREATE DATABASE IF NOT EXISTS onlyoffice CHARACTER SET utf8 COLLATE 'utf8_general_ci'" && \
-    mysql -D "onlyoffice" < /app/onlyoffice/dotnet_dump.sql && \
-    mysql -D "onlyoffice" -e 'CREATE USER IF NOT EXISTS "onlyoffice_user"@"localhost" IDENTIFIED WITH mysql_native_password BY "onlyoffice_pass";' && \
-    mysql -D "onlyoffice" -e 'GRANT ALL PRIVILEGES ON *.* TO 'onlyoffice_user'@'localhost';' && \
-    mysql -D "onlyoffice" -e 'UPDATE core_user SET email = "paul.bannov@gmail.com";' && \
-    mysql -D "onlyoffice" -e 'UPDATE core_usersecurity SET pwdhash = "vLFfghR5tNV3K9DKhmwArV+SbjWAcgZZzIDTnJ0JgCo=", pwdhashsha512 = "USubvPlB+ogq0Q1trcSupg==";' && \
-    killall -u mysql -n mysql
 
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -203,7 +150,8 @@ ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 
 ### STAGE 2: Build ###
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 as builder
+
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 as builder
 
 USER root
 
