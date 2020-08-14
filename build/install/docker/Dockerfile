@@ -39,8 +39,8 @@ RUN apt-get -y update && \
                         yarn \
                         dotnet-sdk-3.1 
 
-RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/
-#RUN git clone https://github.com/ONLYOFFICE/AppServer.git -b feature/multi-stage-docker /app/onlyoffice/src/
+# RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/
+RUN git clone https://github.com/ONLYOFFICE/AppServer.git -b feature/multi-stage-docker /app/onlyoffice/src/
 
 RUN cd /app/onlyoffice/src/ && \
     yarn install --cwd web/ASC.Web.Components --frozen-lockfile > build/ASC.Web.Components.log && \
