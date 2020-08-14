@@ -170,8 +170,8 @@ ENV MYSQL_PASSWORD=$MYSQL_PASSWORD
 ENV KAFKA_HOST=$KAFKA_HOST
 
 # copy artefacts and config values for servises
-COPY --from=develop /var/www/  /var/www/
-#COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
+#COPY --from=develop /var/www/  /var/www/
+COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
 COPY --from=develop /services/urlshortener/service/  /services/urlshortener/service/
 
