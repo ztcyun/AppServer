@@ -171,9 +171,9 @@ ENV KAFKA_HOST=$KAFKA_HOST
 
 # copy artefacts and config values for servises
 #COPY --from=develop /var/www/  /var/www/
-COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
+#COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
-COPY --from=develop /services/urlshortener/service/  /services/urlshortener/service/
+#COPY --from=develop /services/urlshortener/service/  /services/urlshortener/service/
 
 # add defualt user and group for no-root run
 RUN groupadd -g 1001 appuser && \
@@ -228,7 +228,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-#COPY --from=builder /var/www/studio/api/  /var/www/studio/api/
+COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY docker-entrypoint.sh /var/www/studio/api/
 
 WORKDIR /var/www/studio/api/
@@ -325,6 +325,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.People/server/
 COPY docker-entrypoint.sh /var/www/products/ASC.People/server/
 
 WORKDIR /var/www/products/ASC.People/server/
@@ -373,6 +374,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop //var/www/products/ASC.Files/service/  /var/www/products/ASC.Files/service/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/service/
 
 WORKDIR /var/www/products/ASC.Files/service/
