@@ -26,7 +26,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 using ASC.Common;
 using ASC.Common.Caching;
@@ -72,13 +71,10 @@ namespace ASC.Data.Storage.Configuration
     }
 
     [Serializable]
-    [DataContract]
     public abstract class BaseStorageSettings<T> : ISettings where T : class, ISettings, new()
     {
-        [DataMember(Name = "Module")]
         public string Module { get; set; }
 
-        [DataMember(Name = "Props")]
         public Dictionary<string, string> Props { get; set; }
 
         public ISettings GetDefault(IServiceProvider serviceProvider) => new T();
@@ -90,7 +86,6 @@ namespace ASC.Data.Storage.Configuration
     }
 
     [Serializable]
-    [DataContract]
     public class StorageSettings : BaseStorageSettings<StorageSettings>
     {
         public override Guid ID
@@ -100,7 +95,6 @@ namespace ASC.Data.Storage.Configuration
     }
 
     [Serializable]
-    [DataContract]
     public class CdnStorageSettings : BaseStorageSettings<CdnStorageSettings>
     {
         public override Guid ID
@@ -232,22 +226,28 @@ namespace ASC.Data.Storage.Configuration
 
         public static DIHelper AddCdnStorageSettingsService(this DIHelper services)
         {
-            services.TryAddScoped<StorageSettingsHelper>();
+            if (services.TryAddScoped<StorageSettingsHelper>())
+            {
+                return services
+                    .AddSettingsManagerService()
+                    .AddBaseStorageSettingsService()
+                    .AddConsumerFactoryService();
+            }
 
-            return services
-                .AddSettingsManagerService()
-                .AddBaseStorageSettingsService()
-                .AddConsumerFactoryService();
+            return services;
         }
 
         public static DIHelper AddStorageSettingsService(this DIHelper services)
         {
-            services.TryAddScoped<StorageSettingsHelper>();
+            if (services.TryAddScoped<StorageSettingsHelper>())
+            {
+                return services
+                    .AddSettingsManagerService()
+                    .AddBaseStorageSettingsService()
+                    .AddConsumerFactoryService();
+            }
 
-            return services
-                .AddSettingsManagerService()
-                .AddBaseStorageSettingsService()
-                .AddConsumerFactoryService();
+            return services;
         }
     }
 }

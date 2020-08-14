@@ -233,7 +233,7 @@ namespace ASC.Data.Storage
             tenant = TenantPath.CreatePath(tenant);
 
             //remove cache
-            //var store = DataStoreCache.Get(tenant, module);
+            //var store = DataStoreCache.Get(tenant, module);//TODO
             //if (store == null)
             //{
             var section = StorageFactoryConfig.Section;
@@ -320,16 +320,21 @@ namespace ASC.Data.Storage
 
         public static DIHelper AddStorageFactoryService(this DIHelper services)
         {
-            services.TryAddScoped<StorageFactory>();
-            services.TryAddSingleton<StorageFactoryListener>();
+            if (services.TryAddScoped<StorageFactory>())
+            {
+                services.TryAddSingleton<StorageFactoryListener>();
 
-            return services
-                .AddTenantManagerService()
-                .AddCoreBaseSettingsService()
-                .AddPathUtilsService()
-                .AddEmailValidationKeyProviderService()
-                .AddStorageSettingsService()
-                .AddStorageFactoryConfigService();
+                return services
+                    .AddConsumerFactoryService()
+                    .AddTenantManagerService()
+                    .AddCoreBaseSettingsService()
+                    .AddPathUtilsService()
+                    .AddEmailValidationKeyProviderService()
+                    .AddStorageSettingsService()
+                    .AddStorage();
+            }
+
+            return services;
         }
     }
 }

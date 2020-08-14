@@ -120,8 +120,12 @@ namespace ASC.Web.Core.Sms
     {
         public static DIHelper AddSmsProviderManagerService(this DIHelper services)
         {
-            services.TryAddScoped<SmsProviderManager>();
-            return services.AddConsumerFactoryService();
+            if (services.TryAddScoped<SmsProviderManager>())
+            {
+                return services.AddConsumerFactoryService();
+            }
+
+            return services;
         }
     }
 
@@ -146,9 +150,10 @@ namespace ASC.Web.Core.Sms
             CoreSettings coreSettings,
             IConfiguration configuration,
             ICacheNotify<ConsumerCacheItem> cache,
+            ConsumerFactory consumerFactory,
             IOptionsMonitor<ILog> options,
             string name, int order, Dictionary<string, string> props, Dictionary<string, string> additional = null)
-            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, name, order, props, additional)
+            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, consumerFactory, name, order, props, additional)
         {
             Log = options.CurrentValue;
         }
@@ -207,9 +212,10 @@ namespace ASC.Web.Core.Sms
             CoreSettings coreSettings,
             IConfiguration configuration,
             ICacheNotify<ConsumerCacheItem> cache,
+            ConsumerFactory consumerFactory,
             IOptionsMonitor<ILog> options,
             string name, int order, Dictionary<string, string> props, Dictionary<string, string> additional = null)
-            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, options, name, order, props, additional)
+            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, consumerFactory, options, name, order, props, additional)
         {
         }
 
@@ -343,9 +349,10 @@ namespace ASC.Web.Core.Sms
             CoreSettings coreSettings,
             IConfiguration configuration,
             ICacheNotify<ConsumerCacheItem> cache,
+            ConsumerFactory consumerFactory,
             IOptionsMonitor<ILog> options,
             string name, int order, Dictionary<string, string> props, Dictionary<string, string> additional = null)
-            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, options, name, order, props, additional)
+            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, consumerFactory, options, name, order, props, additional)
         {
         }
     }
@@ -362,9 +369,10 @@ namespace ASC.Web.Core.Sms
             CoreSettings coreSettings,
             IConfiguration configuration,
             ICacheNotify<ConsumerCacheItem> cache,
+            ConsumerFactory consumerFactory,
             IOptionsMonitor<ILog> options,
             string name, int order, Dictionary<string, string> additional = null)
-            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, options, name, order, null, additional)
+            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, consumerFactory, options, name, order, null, additional)
         {
         }
     }
@@ -433,9 +441,10 @@ namespace ASC.Web.Core.Sms
             CoreSettings coreSettings,
             IConfiguration configuration,
             ICacheNotify<ConsumerCacheItem> cache,
+            ConsumerFactory consumerFactory,
             IOptionsMonitor<ILog> options,
             string name, int order, Dictionary<string, string> props, Dictionary<string, string> additional = null)
-            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, options, name, order, props, additional)
+            : base(tenantManager, coreBaseSettings, coreSettings, configuration, cache, consumerFactory, options, name, order, props, additional)
         {
             VoipDao = voipDao;
         }
@@ -482,9 +491,10 @@ namespace ASC.Web.Core.Sms
             CoreSettings coreSettings,
             IConfiguration configuration,
             ICacheNotify<ConsumerCacheItem> cache,
+            ConsumerFactory consumerFactory,
             IOptionsMonitor<ILog> options,
             string name, int order, Dictionary<string, string> additional = null)
-            : base(voipDao, tenantManager, coreBaseSettings, coreSettings, configuration, cache, options, name, order, null, additional)
+            : base(voipDao, tenantManager, coreBaseSettings, coreSettings, configuration, cache, consumerFactory, options, name, order, null, additional)
         {
         }
     }
@@ -493,12 +503,16 @@ namespace ASC.Web.Core.Sms
     {
         public static DIHelper AddTwilioProviderService(this DIHelper services)
         {
-            services.TryAddScoped<TwilioProvider>();
-            services.TryAddScoped<TwilioSaaSProvider>();
-            return services.AddVoipDaoService()
-                .AddTenantManagerService()
-                .AddCoreBaseSettingsService()
-                .AddCoreSettingsService();
+            if (services.TryAddScoped<TwilioProvider>())
+            {
+                services.TryAddScoped<TwilioSaaSProvider>();
+                return services.AddVoipDaoService()
+                    .AddTenantManagerService()
+                    .AddCoreBaseSettingsService()
+                    .AddCoreSettingsService();
+            }
+
+            return services;
         }
     }
 }

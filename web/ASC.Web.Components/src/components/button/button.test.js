@@ -119,6 +119,10 @@ describe('<Button />', () => {
     expect(wrapper.prop('size')).toEqual('big');
     expect(wrapper.prop('primary')).toEqual(true);
 
+    wrapper.setProps({size: 'large', primary: true});
+    expect(wrapper.prop('size')).toEqual('large');
+    expect(wrapper.prop('primary')).toEqual(true);
+
     wrapper.setProps({scale: true});
     expect(wrapper.prop('scale')).toEqual(true);
   });
@@ -138,5 +142,18 @@ describe('<Button />', () => {
     wrapper.setProps({size: 'medium', primary: true});
     expect(wrapper.prop('size')).toEqual('medium');
     expect(wrapper.prop('primary')).toEqual(true);
+
+    wrapper.setProps({size: 'large', primary: true});
+    expect(wrapper.prop('size')).toEqual('large');
+    expect(wrapper.prop('primary')).toEqual(true);
+  });
+
+  it('accepts minWidth', () => {
+    const wrapper = mount(
+      <Button {...baseProps}/>
+    );
+
+    wrapper.setProps({minWidth: '40px'});
+    expect(wrapper.prop('minWidth')).toEqual('40px');
   });
 });

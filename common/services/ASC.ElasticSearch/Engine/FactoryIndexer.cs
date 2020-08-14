@@ -35,7 +35,6 @@ using System.Threading.Tasks;
 using ASC.Common;
 using ASC.Common.Caching;
 using ASC.Common.Logging;
-using ASC.Common.Threading;
 using ASC.Core;
 using ASC.Core.Tenants;
 using ASC.ElasticSearch.Core;
@@ -79,7 +78,7 @@ namespace ASC.ElasticSearch
 
     public class FactoryIndexer<T> : IFactoryIndexer where T : class, ISearchItem
     {
-        private static readonly TaskScheduler Scheduler = new LimitedConcurrencyLevelTaskScheduler(10);
+        private static readonly TaskScheduler Scheduler = new ConcurrentExclusiveSchedulerPair(TaskScheduler.Default, 10).ConcurrentScheduler;
 
         public ILog Logger { get; }
 
@@ -593,11 +592,15 @@ namespace ASC.ElasticSearch
     {
         public static DIHelper AddFactoryIndexerService(this DIHelper services)
         {
-            services.TryAddSingleton<FactoryIndexerHelper>();
-            services.TryAddScoped<FactoryIndexer>();
-            return services
-                .AddClientService()
-                .AddCoreBaseSettingsService();
+            if (services.TryAddScoped<FactoryIndexer>())
+            {
+                services.TryAddSingleton<FactoryIndexerHelper>();
+                return services
+                    .AddClientService()
+                    .AddCoreBaseSettingsService();
+            }
+
+            return services;
         }
 
         public static DIHelper AddFactoryIndexerService<T>(this DIHelper services, bool addBase = true) where T : class, ISearchItem
@@ -607,14 +610,17 @@ namespace ASC.ElasticSearch
                 services.TryAddScoped<FactoryIndexer<T>>();
             }
 
-            services.TryAddScoped<Selector<T>>();
+            if (services.TryAddScoped<Selector<T>>())
+            {
+                return services
+                    .AddTenantManagerService()
+                    .AddFactoryIndexerService()
+                    .AddClientService()
+                    .AddSearchSettingsHelperService()
+                    .AddBaseIndexerService<T>();
+            }
 
-            return services
-                .AddTenantManagerService()
-                .AddFactoryIndexerService()
-                .AddClientService()
-                .AddSearchSettingsHelperService()
-                .AddBaseIndexerService<T>();
+            return services;
         }
     }
 }

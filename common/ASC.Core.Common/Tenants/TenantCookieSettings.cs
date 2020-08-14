@@ -26,7 +26,6 @@
 
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 
 using ASC.Common;
 using ASC.Core.Common.Settings;
@@ -36,13 +35,10 @@ using Microsoft.Extensions.Configuration;
 namespace ASC.Core.Tenants
 {
     [Serializable]
-    [DataContract]
     public class TenantCookieSettings : ISettings
     {
-        [DataMember(Name = "Index")]
         public int Index { get; set; }
 
-        [DataMember(Name = "LifeTime")]
         public int LifeTime { get; set; }
 
 
@@ -129,8 +125,12 @@ namespace ASC.Core.Tenants
     {
         public static DIHelper AddTenantCookieSettingsService(this DIHelper services)
         {
-            services.TryAddScoped<TenantCookieSettingsHelper>();
-            return services.AddSettingsManagerService();
+            if (services.TryAddScoped<TenantCookieSettingsHelper>())
+            {
+                return services.AddSettingsManagerService();
+            }
+
+            return services;
         }
     }
 }
