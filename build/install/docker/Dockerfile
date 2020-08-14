@@ -39,7 +39,8 @@ RUN apt-get -y update && \
                         yarn \
                         dotnet-sdk-3.1 
 
-RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/
+# RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/
+RUN git clone https://github.com/ONLYOFFICE/AppServer.git -b feature/multi-stage-docker /app/onlyoffice/src/
 
 RUN cd /app/onlyoffice/src/ && \
     yarn install --cwd web/ASC.Web.Components --frozen-lockfile > build/ASC.Web.Components.log && \
@@ -170,6 +171,7 @@ ENV KAFKA_HOST=$KAFKA_HOST
 
 # copy artefacts and config values for servises
 COPY --from=develop /var/www/  /var/www/
+#COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
 COPY --from=develop /services/urlshortener/service/  /services/urlshortener/service/
 
@@ -226,7 +228,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-#COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
+#COPY --from=builder /var/www/studio/api/  /var/www/studio/api/
 COPY docker-entrypoint.sh /var/www/studio/api/
 
 WORKDIR /var/www/studio/api/
