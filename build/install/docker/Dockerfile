@@ -342,7 +342,7 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS files
 
-USER appuser
+#USER appuser
 
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Files.dll
@@ -353,8 +353,11 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop /var/www/products/ASC.Files/server/  /var/www/products/ASC.Files/server/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/server/
+RUN chown appuser:appuser /var/www -R
 
+USER appuser
 WORKDIR /var/www/products/ASC.Files/server/
 
 EXPOSE 5050
