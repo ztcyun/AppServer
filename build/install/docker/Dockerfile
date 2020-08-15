@@ -326,7 +326,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-COPY --from=develop /var/www/  /var/www/
+COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.People/server/
 COPY docker-entrypoint.sh /var/www/products/ASC.People/server/
 RUN chown appuser:appuser /var/www -R
 
