@@ -178,9 +178,9 @@ COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
 # add defualt user and group for no-root run
 RUN groupadd -g 1001 appuser && \
     useradd -r -u 1001 -g appuser appuser &&\
-    chown appuser:appuser /app/onlyoffice -R &&\
-    chown appuser:appuser /var/www -R &&\
-    chown appuser:appuser /services -R
+    chown appuser:appuser /app/onlyoffice -R 
+    # chown appuser:appuser /var/www -R &&\
+    # chown appuser:appuser /services -R
 
 ### STAGE 3: Run ###
 
@@ -217,7 +217,7 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
 
 FROM builder AS api
 
-USER appuser
+
 
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Web.Api.dll
@@ -231,6 +231,9 @@ ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY docker-entrypoint.sh /var/www/studio/api/
 
+RUN chown appuser:appuser /var/www -R
+
+USER appuser
 WORKDIR /var/www/studio/api/
 
 EXPOSE 5050
@@ -314,8 +317,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS people.server
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.People.dll
 ARG DOTNET_ENV=test
@@ -325,9 +326,11 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.People/server/
+COPY --from=develop /var/www/  /var/www/
 COPY docker-entrypoint.sh /var/www/products/ASC.People/server/
+RUN chown appuser:appuser /var/www -R
 
+USER appuser
 WORKDIR /var/www/products/ASC.People/server/
 
 EXPOSE 5050
@@ -363,8 +366,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS files_services
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Files.Service.dll
 ARG DOTNET_ENV=test
@@ -374,9 +375,11 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-COPY --from=develop //var/www/products/ASC.Files/service/  /var/www/products/ASC.Files/service/
+COPY --from=develop /var/www/  /var/www/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/service/
+RUN chown appuser:appuser /var/www -R
 
+USER appuser
 WORKDIR /var/www/products/ASC.Files/service/
 
 EXPOSE 5050
