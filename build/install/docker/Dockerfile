@@ -217,8 +217,6 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
 
 FROM builder AS api
 
-
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Web.Api.dll
 ARG DOTNET_ENV=test
@@ -296,8 +294,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS studio.notify
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Studio.Notify.dll
 ARG DOTNET_ENV=test
@@ -307,8 +303,11 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop /var/www/services/studio.notify/  /var/www/services/studio.notify/
 COPY docker-entrypoint.sh /var/www/services/studio.notify/
+RUN chown appuser:appuser /var/www -R
 
+USER appuser
 WORKDIR /var/www/services/studio.notify/
 
 EXPOSE 5050
@@ -345,8 +344,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS files
 
-#USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Files.dll
 ARG DOTNET_ENV=test
@@ -356,7 +353,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-COPY --from=develop /var/www/products/ASC.Files/server/  /var/www/products/ASC.Files/server/
+COPY --from=develop /var/www/  /var/www/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/server/
 RUN chown appuser:appuser /var/www -R
 
@@ -381,7 +378,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-COPY --from=develop /var/www/  /var/www/
+COPY --from=develop /var/www/products/ASC.Files/service/  /var/www/products/ASC.Files/service/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/service/
 RUN chown appuser:appuser /var/www -R
 
