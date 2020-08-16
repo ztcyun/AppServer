@@ -245,8 +245,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS api_system
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.ApiSystem.dll
 ARG DOTNET_ENV=test
@@ -256,8 +254,11 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop /var/www/services/apisystem/  /var/www/services/apisystem/
 COPY docker-entrypoint.sh /var/www/services/apisystem/
+RUN chown appuser:appuser /var/www -R
 
+USER appuser
 WORKDIR /var/www/services/apisystem/
 
 EXPOSE 5050
