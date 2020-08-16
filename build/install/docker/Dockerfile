@@ -270,8 +270,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS urlshortener
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.UrlShortener.Svc.dll
 ARG DOTNET_ENV=test
@@ -281,7 +279,11 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop /services/urlshortener/service/   /services/urlshortener/service/ 
 COPY docker-entrypoint.sh /services/urlshortener/service/
+RUN chown appuser:appuser /services -R
+
+USER appuser
 
 WORKDIR /services/urlshortener/service/ 
 
@@ -395,8 +397,6 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 
 FROM builder AS studio
 
-USER appuser
-
 # set up default dotnet values for docker-entrypoint.sh
 ARG DOTNET_RUN=ASC.Web.Studio.dll
 ARG DOTNET_ENV=test
@@ -406,8 +406,11 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop /var/www/studio/server/  /var/www/studio/server/
 COPY docker-entrypoint.sh /var/www/studio/server/
+RUN chown appuser:appuser /var/www -R
 
+USER appuser
 WORKDIR /var/www/studio/server/
 
 EXPOSE 5050
