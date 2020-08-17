@@ -47,6 +47,11 @@ class PureArticleMainButtonContent extends React.Component {
 
   onInvitationDialogClick = () => this.setState({ dialogVisible: !this.state.dialogVisible });
 
+  onImportClick = () => {
+    const { history, settings } = this.props;
+    history.push(`${settings.homepage}/import`);
+  }
+
   render() {
     console.log("People ArticleMainButtonContent render");
     const { isAdmin, settings, t } = this.props;
@@ -86,13 +91,11 @@ class PureArticleMainButtonContent extends React.Component {
               label={t('LblInviteAgain')}
               onClick={this.onNotImplementedClick.bind(this, "Invite again action")}
             /> */}
-            {false &&
-              <DropDownItem
-                icon="ImportIcon"
-                label={t('ImportPeople')}
-                onClick={this.onDropDownItemClick.bind(this, `${settings.homepage}/import`)}
-              />
-            }
+            <DropDownItem
+              icon="ImportIcon"
+              label={t('ImportPeople')}
+              onClick={this.onImportClick}
+            />
           </MainButton>
           {dialogVisible &&
             <InviteDialog
