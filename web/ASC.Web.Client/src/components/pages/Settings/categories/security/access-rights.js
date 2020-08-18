@@ -1,9 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { withRouter } from "react-router";
-import i18n from "../../i18n";
-import { I18nextProvider, withTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 import styled from "styled-components";
 import {
     getPortalOwner
@@ -14,49 +12,82 @@ import {
     Link,
     toastr,
     Button,
-    RequestLoader,
     Loader,
-    Icons
+    Icons,
+    Heading
 } from "asc-web-components";
-import { PeopleSelector } from "asc-web-common";
+import { PeopleSelector, history } from "asc-web-common";
 import isEmpty from "lodash/isEmpty";
 
 const StyledWrapper = styled.div`
-  .category-item-wrapper{
-      margin-bottom:40px;
+    .portal-owner-description {
+        margin-left: 16px;
+        overflow: hidden;
+    }
 
-      .category-item-heading{
-         display:flex;
-         align-items: center;
-         margin-bottom: 5px;
-      }
+    .category-item-wrapper{
+        margin-bottom:40px;
 
-      .category-item-subheader{
-         font-size: 13px;
-         font-weight: 600;
-         margin-bottom: 5px;
-      }
+        .category-item-heading{
+            display:flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
 
-      .category-item-description{
-         color: #555F65;
-         font-size: 12px;
-         max-width: 1024px;
-      }
+        .category-item-subheader{
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
 
-      .inherit-title-link{
-         margin-right: 7px;
-         font-size:19px;
-         font-weight: 600;
-      }
+        .category-item-description{
+            color: #555F65;
+            font-size: 12px;
+            max-width: 1024px;
+        }
 
-      .link-text{
-         margin:0;
-      }
-   }
+        .inherit-title-link{
+            margin-right: 7px;
+            font-size:19px;
+            font-weight: 600;
+        }
+
+        .link-text{
+            margin:0;
+        }
+    }
 `;
 
 const OwnerContainer = styled.div`
     margin-bottom:50px;
+
+    .owner-content-wrapper{
+        display:flex;
+        margin-bottom: 30px;
+        padding: 16px;
+        background-color: #F8F9F9;
+        border-radius: 12px;
+
+        .avatar_wrapper {
+            width: 88px;
+            height: 88px;
+            flex: none;
+        }
+
+        .portal-owner-heading{
+            margin:0;
+            margin-bottom: 4px;
+        }
+
+        .portal-owner-info{
+            margin-bottom: 9px;
+        }
+
+        .group-wrapper{
+            display:inline-block;
+            margin-left: 3px;
+        }
+    }
 
     .link_style {
         margin-right: 16px;
@@ -75,27 +106,28 @@ const OwnerContainer = styled.div`
     }
 `;
 
-const AvatarContainer = styled.div`
-  display: flex;
-  width: 330px;
-  height: 120px;
-  margin-right: 130px;
-  margin-bottom: 24px;
-  padding: 8px;
-  border: 1px solid lightgrey;
+const getFormattedDepartments = departments => {
+    const formattedDepartments = departments.map((department, index) => {
+        return (
+            <span key={index}>
+                <Link
+                    href={getGroupLink(department)}
+                    type="page"
+                    fontSize='12px'
+                >
+                    {department.name}
+                </Link>
+                {departments.length - 1 !== index ? ", " : ""}
+            </span>
+        );
+    });
 
-  .avatar_wrapper {
-    width: 100px;
-    height: 100px;
-  }
+    return formattedDepartments;
+};
 
-  .avatar_body {
-    margin-left: 24px;
-    max-width: 190px;
-    word-wrap: break-word;
-    overflow: hidden;
-  }
-`;
+const getGroupLink = (department) => {
+    return `/products/people/filter?group=${department.id}`
+};
 
 class AccessRights extends Component {
     constructor(props) {
@@ -163,6 +195,8 @@ class AccessRights extends Component {
             selectedOwner
         } = this.state;
 
+        const formattedDepartments = owner.department && getFormattedDepartments(owner.groups);
+
         return (
             <>
                 {showLoader ? (
@@ -170,45 +204,45 @@ class AccessRights extends Component {
                 ) : (
                         <StyledWrapper>
                             <OwnerContainer>
-                                <RequestLoader
-                                    visible={isLoading}
-                                    zIndex={256}
-                                    loaderSize='16px'
-                                    loaderColor={"#999"}
-                                    label={`${t("LoadingProcessing")} ${t("LoadingDescription")}`}
-                                    fontSize='12px'
-                                    fontColor={"#999"}
-                                    className="page_loader"
-                                />
+                                <div className="owner-content-wrapper">
+                                    <Link href={owner.profileUrl}>
+                                        <Avatar
+                                            className="avatar_wrapper"
+                                            size="big"
+                                            userName={owner.userName}
+                                            source={owner.avatar}
+                                            role="user"
+                                        />
+                                    </Link>
 
-                                <AvatarContainer>
-                                    <Avatar
-                                        className="avatar_wrapper"
-                                        size="big"
-                                        role="owner"
-                                        userName={owner.userName}
-                                        source={owner.avatar}
-                                    />
-                                    <div className="avatar_body">
-                                        <Text
-                                            className="avatar_text"
-                                            fontSize='16px'
-                                            isBold={true}
-                                        >
-                                            {owner.displayName}
+                                    <div className="portal-owner-description">
+                                        <Heading className="portal-owner-heading" level={3} size="small" >
+                                            {t('PortalOwner')}
+                                        </Heading>
+                                        <div className="portal-owner-info">
+                                            <Link
+                                                className="avatar_text"
+                                                fontSize='13px'
+                                                fontWeight={600}
+                                                isBold={true}
+                                                color="#316DAA"
+                                                href={owner.profileUrl}
+                                            >
+                                                {owner.displayName}
+                                            </Link>
+                                            {owner.groups &&
+                                                <div className="group-wrapper">
+                                                    <Text as="span">(</Text>
+                                                    {formattedDepartments}
+                                                    <Text as="span">)</Text>
+                                                </div>
+                                            }
+                                        </div>
+                                        <Text className="PortalOwnerDescription" color="#555F65">
+                                            {t('PortalOwnerDescription')}
                                         </Text>
-                                        {owner.groups &&
-                                            owner.groups.map(group => (
-                                                <Link
-                                                    fontSize='12px'
-                                                    key={group.id}
-                                                    href={owner.profileUrl}
-                                                >
-                                                    {group.name}
-                                                </Link>
-                                            ))}
                                     </div>
-                                </AvatarContainer>
+                                </div>
 
                                 <Link
                                     className="link_style"
@@ -253,14 +287,13 @@ class AccessRights extends Component {
                                         onClick={this.onClickLink}
                                         truncate={true}
                                         href="/settings/security/access-rights/portal-admins">
-                                        {t('')}Portal admins
-                                </Link>
+                                        {t('PortalAdmins')}
+                                    </Link>
                                     <Icons.ArrowRightIcon size="small" isfill={true} color="#333333" />
                                 </div>
                                 <Text className="category-item-subheader" truncate={true}>8 employees (Test value)</Text>
                                 <Text className="category-item-description">
-                                    Have the same access rights as the portal owner, except the right to: change portal owner; deactivate or delete portal.
-                                {t('')}
+                                    {t('PortalAdminsDescription')}
                                 </Text>
                             </div>
                             <div className="category-item-wrapper">
@@ -270,14 +303,13 @@ class AccessRights extends Component {
                                         onClick={this.onClickLink}
                                         truncate={true}
                                         href="/settings/security/access-rights/people-access">
-                                        {t('')}People access
-                                </Link>
+                                        {t('PeopleAccess')}
+                                    </Link>
                                     <Icons.ArrowRightIcon size="small" isfill={true} color="#333333" />
                                 </div>
                                 <Text className="category-item-subheader" truncate={true}>12 employees (Test value)</Text>
                                 <Text className="category-item-description">
-                                    The People module will be visible in the main portal menu to all employees added to the list. The functionality of the module will correspond to the employee's status.
-                                {t('')}
+                                    {t('PeopleAccessDescription')}
                                 </Text>
                             </div>
                         </StyledWrapper>
