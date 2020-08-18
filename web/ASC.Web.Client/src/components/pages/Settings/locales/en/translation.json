@@ -1,5 +1,5 @@
 {
-    "PortalOwner": "Portal Owner",
+    "PortalOwner": "Portal owner",
     "AccessRightsOwnerCan": "Portal owner can",
     "AccessRightsOwnerOpportunities": "Do the same as module administrators|Appoint module administrators|Set modules access rights|Manage portal configuration|Manage user accounts|Change portal owner|Backup portal data|Deactivate or delete portal",
     "AdminSettings": "Administrators",
@@ -43,8 +43,8 @@
     "ThirdPartyAuthorization": "Third Party Authorization",
     "SmtpSettings": "SMTP Settings",
     "ManagementCategoryStatistic": "Statistics",
-	"LoadingProcessing": "Loading...",
-    "LoadingDescription": "Please wait...",    
+    "LoadingProcessing": "Loading...",
+    "LoadingDescription": "Please wait...",
     "GreetingSettingsTitle": "Welcome Page Settings",
     "WelcomePageTitle": "Welcome page title",
     "GreetingTitle": "Title",
@@ -71,8 +71,6 @@
     "ProductUserOpportunities": "View profiles and groups",
     "LearnMore": "Learn more...",
     "AccessRightsChangeOwnerButtonText": "Change portal owner",
-
-
     "ProjectsUserCapabilityView": "View projects and take part in discussions",
     "ProjectsUserCapabilityCreate": "Create and edit milestones, tasks, discussions, documents",
     "ProjectsUserCapabilityTrack": "Track time for tasks, generate reports",
@@ -96,13 +94,17 @@
     "SetPeopleAdmin": "Set people admin",
     "SetPortalAdmin": "Set portal admin",
     "PeopleAdmin": "People module admin",
-    "DirectionAscLabel":"A-Z",
-    "DirectionDescLabel":"Z-A",
+    "DirectionAscLabel": "A-Z",
+    "DirectionDescLabel": "Z-A",
     "MeLabel": "Me",
     "OrganizationName": "ONLYOFFICE",
     "YouHaveUnsavedChanges": "You have unsaved changes",
     "CustomTitles": "Custom titles",
     "LanguageAndTimeZoneSettingsDescription": "Language and time zone settings is a way to change the language of the whole portal for all portal users and to configure the time zone so that all the events of the portal will be shown with the correct date and time.",
-    "CustomTitlesSettingsDescription": "Custom welcome page title will be displayed on the welcome page of your portal. The same name is also used for the From field of your portal email notifications. Custom domain name is a way to set an alternative URL for your portal. Custom portal name will appear next to the onlyoffice.com/onlyoffice.eu portal address."
-
+    "CustomTitlesSettingsDescription": "Custom welcome page title will be displayed on the welcome page of your portal. The same name is also used for the From field of your portal email notifications. Custom domain name is a way to set an alternative URL for your portal. Custom portal name will appear next to the onlyoffice.com/onlyoffice.eu portal address.",
+    "PortalAdmins": "Portal admins",
+    "PeopleAccess": "People access",
+    "PortalAdminsDescription": "Have the same access rights as the portal owner, except the right to: change portal owner; deactivate or delete portal.",
+    "PeopleAccessDescription": "The People module will be visible in the main portal menu to all employees added to the list. The functionality of the module will correspond to the employee's status.",
+    "PortalOwnerDescription": "Portal owner can: do the same as module administrators; appoint module administrators; set modules access rights; manage portal configuration; manage user accounts; change portal owner; backup portal data; deactivate or delete portal."
 }
