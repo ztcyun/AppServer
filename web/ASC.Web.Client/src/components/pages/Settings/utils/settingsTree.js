@@ -50,10 +50,24 @@ export const settingsTree = [
             {
                 key: '1-0',
                 icon: '',
-                link: 'accessrights',
+                link: 'access-rights',
                 tKey: 'AccessRights',
                 isCategory: true,
-            },
+                children: [
+                    {
+                        key: '1-0-0',
+                        icon: '',
+                        link: 'portal-admins',
+                        tKey: 'PortalAdmins',
+                    },
+                    {
+                        key: '1-0-1',
+                        icon: '',
+                        link: 'people-access',
+                        tKey: 'PeopleAccess',
+                    }
+                ],
+            }
         ]
     },
 
