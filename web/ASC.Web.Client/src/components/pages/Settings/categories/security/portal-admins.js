@@ -121,18 +121,31 @@ class PortalAdmins extends Component {
     };
 
     onShowGroupSelector = () => {
+        /* console.log(
+          `onShowGroupSelector(showSelector: ${!this.state.showSelector})`
+        ); */
+
         this.setState({
             showSelector: !this.state.showSelector
         });
     };
 
     onShowFullAdminGroupSelector = () => {
+        /* console.log(
+          `onShowFullAdminGroupSelector(showFullAdminSelector: ${!this.state
+            .showFullAdminSelector})`
+        ); */
+
         this.setState({
             showFullAdminSelector: !this.state.showFullAdminSelector
         });
     };
 
     onCancelSelector = e => {
+        /* console.log(
+          `onCancelSelector(showSelector: false, showFullAdminSelector: false`,
+          e
+        ); */
 
         if (
             (this.state.showSelector &&
@@ -329,10 +342,13 @@ class PortalAdmins extends Component {
     render() {
         const { t, admins, filter, me, groupsCaption } = this.props;
         const {
+            showSelector,
             isLoading,
             showFullAdminSelector,
             showLoader
         } = this.state;
+
+        console.log("Admins render_");
 
         return (
             <>
@@ -353,6 +369,27 @@ class PortalAdmins extends Component {
 
                             <ToggleContentContainer>
                                 <div className="buttons_container">
+                                    <div className="people-admin_container">
+                                        <Button
+                                            id="people-admin-selector_button"
+                                            size="medium"
+                                            primary={true}
+                                            label={t("SetPeopleAdmin")}
+                                            isDisabled={isLoading}
+                                            onClick={this.onShowGroupSelector}
+                                        />
+                                        <PeopleSelector
+                                            id="people-admin-selector"
+                                            isOpen={showSelector}
+                                            isMultiSelect={true}
+                                            role="user"
+                                            onSelect={this.onSelect}
+                                            onCancel={this.onCancelSelector}
+                                            defaultOption={me}
+                                            defaultOptionLabel={t("MeLabel")}
+                                            groupsCaption={groupsCaption}
+                                        />
+                                    </div>
                                     <div className="full-admin_container">
                                         <Button
                                             id="full-admin-selector_button"
@@ -502,7 +539,6 @@ class PortalAdmins extends Component {
     }
 }
 
-
 function mapStateToProps(state) {
     const { admins, owner, filter } = state.settings.security.accessRight;
     const { user: me } = state.auth;
@@ -535,4 +571,3 @@ export default connect(mapStateToProps, {
     fetchPeople,
     getUpdateListAdmin
 })(withTranslation()(PortalAdmins));
-

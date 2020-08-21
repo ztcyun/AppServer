@@ -22,7 +22,8 @@ import {
     RequestLoader,
     Loader,
     EmptyScreenContainer,
-    Icons
+    Icons,
+    SearchInput
 } from "asc-web-components";
 import { FilterInput, PeopleSelector } from "asc-web-common";
 import { getUserRole } from "../../../../../store/settings/selectors";
@@ -216,6 +217,7 @@ class PeopleAccess extends Component {
 
     onAdminsFilter = () => {
         const { filter } = this.props;
+        debugger
 
         const newFilter = filter.clone();
         newFilter.page = 0;
@@ -341,14 +343,6 @@ class PeopleAccess extends Component {
                             <ToggleContentContainer>
                                 <div className="buttons_container">
                                     <div className="people-admin_container">
-                                        <Button
-                                            id="people-admin-selector_button"
-                                            size="medium"
-                                            primary={true}
-                                            label={t("SetPeopleAdmin")}
-                                            isDisabled={isLoading}
-                                            onClick={this.onShowGroupSelector}
-                                        />
                                         <PeopleSelector
                                             id="people-admin-selector"
                                             isOpen={showSelector}
@@ -363,13 +357,8 @@ class PeopleAccess extends Component {
                                     </div>
                                 </div>
 
-                                <FilterInput
+                                <SearchInput
                                     className="filter_container"
-                                    getFilterData={() => []}
-                                    getSortData={this.getSortData}
-                                    onFilter={this.onFilter}
-                                    directionAscLabel={t("DirectionAscLabel")}
-                                    directionDescLabel={t("DirectionDescLabel")}
                                 />
 
                                 {admins.length > 0 ? (
