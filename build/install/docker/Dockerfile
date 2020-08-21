@@ -39,10 +39,12 @@ RUN apt-get -y update && \
                         yarn \
                         dotnet-sdk-3.1 
 
-# RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/
-RUN git clone https://github.com/ONLYOFFICE/AppServer.git -b feature/multi-stage-docker-ForClone /app/onlyoffice/src/
+RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/ 
+    
+# RUN git clone https://github.com/ONLYOFFICE/AppServer.git -b feature/multi-stage-docker-ForClone /app/onlyoffice/src/
 
 RUN cd /app/onlyoffice/src/ && \
+    git checkout 54c8fd3e802e51bfe9c797c58c3e3b10a424b3c2 &&\
     yarn install --cwd web/ASC.Web.Components --frozen-lockfile > build/ASC.Web.Components.log && \
     yarn pack --cwd web/ASC.Web.Components
 	
@@ -109,6 +111,7 @@ RUN cd /app/onlyoffice/src/ && \
     cp -avrf DocStore /var/www/products/ASC.Files/server/ && \
     cd ../../../ && \
     cd products/ASC.Files/Service && \
+    dotnet add ASC.Files.Service.csproj reference ../../ASC.People/Server/ASC.People.csproj  ../Server/ASC.Files.csproj&& \
     dotnet -d publish -o /var/www/products/ASC.Files/service && \
     cd ../../../ && \
     cd web/ASC.Web.Api && \
@@ -221,6 +224,8 @@ ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
 COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
+COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
 COPY docker-entrypoint.sh /var/www/studio/api/
 
 RUN chown appuser:appuser /var/www -R
@@ -298,6 +303,7 @@ ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
 COPY --from=develop /var/www/services/studio.notify/  /var/www/services/studio.notify/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
 COPY docker-entrypoint.sh /var/www/services/studio.notify/
 RUN chown appuser:appuser /var/www -R
 
@@ -323,6 +329,7 @@ ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
 COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.People/server/
+COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
 COPY docker-entrypoint.sh /var/www/products/ASC.People/server/
 RUN chown appuser:appuser /var/www -R
 
@@ -347,7 +354,8 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
-COPY --from=develop /var/www/  /var/www/
+COPY --from=develop /var/www/products/ASC.Files/server/  /var/www/products/ASC.Files/server/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/server/
 RUN chown appuser:appuser /var/www -R
 
@@ -372,6 +380,7 @@ ENV DOTNET_RUN=$DOTNET_RUN
 ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
+COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.Files/service/
 COPY --from=develop /var/www/products/ASC.Files/service/  /var/www/products/ASC.Files/service/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/service/
 RUN chown appuser:appuser /var/www -R
@@ -398,6 +407,8 @@ ENV DOTNET_ENV=$DOTNET_ENV
 ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
 
 COPY --from=develop /var/www/studio/server/  /var/www/studio/server/
+COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
 COPY docker-entrypoint.sh /var/www/studio/server/
 RUN chown appuser:appuser /var/www -R
 
