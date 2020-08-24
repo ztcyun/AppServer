@@ -136,7 +136,9 @@ import OrigCheckboxIndeterminateIcon from './checkbox.indeterminate.react.svg';
 import OrigFilterViewSelectorRowIcon from './filter.view.selector.row.react.svg';
 import OrigFilterViewSelectorTileIcon from './filter.view.selector.tile.react.svg';
 import OrigSecurityIcon from './security.react.svg';
-import OrigArrowRightIcon from './arrow.right.react.svg'
+import OrigArrowRightIcon from './arrow.right.react.svg';
+import OrigActionsDocumentsSettingsIcon from './actions.documents.settings.react.svg';
+import OrigActionsFullAccessIcon from './actions.full.access.react.svg';
 
 import OrigEyeIcon from './eye.react.svg';
 import OrigEyeOffIcon from './eye.off.react.svg';
@@ -851,4 +853,12 @@ export const DownloadAsIcon = createStyledIcon(
 export const RenameIcon = createStyledIcon(
   OrigRenameIcon,
   'RenameIcon'
+);
+export const ActionsDocumentsSettingsIcon = createStyledIcon(
+  OrigActionsDocumentsSettingsIcon,
+  'ActionsDocumentsSettingsIcon'
+);
+export const ActionsFullAccessIcon = createStyledIcon(
+  OrigActionsFullAccessIcon,
+  'ActionsFullAccessIcon'
 );
