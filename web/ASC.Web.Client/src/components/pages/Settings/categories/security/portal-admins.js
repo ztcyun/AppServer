@@ -18,15 +18,32 @@ import {
     Paging,
     IconButton,
     toastr,
-    Button,
     RequestLoader,
     Loader,
     EmptyScreenContainer,
-    Icons
+    Icons,
+    SearchInput
 } from "asc-web-components";
-import { FilterInput, PeopleSelector } from "asc-web-common";
+import { constants } from 'asc-web-common';
 import { getUserRole } from "../../../../../store/settings/selectors";
 import isEmpty from "lodash/isEmpty";
+
+const { EmployeeActivationStatus, EmployeeStatus } = constants;
+
+const getUserStatus = user => {
+    if (user.status === EmployeeStatus.Active && user.activationStatus === EmployeeActivationStatus.Activated) {
+        return "normal";
+    }
+    else if (user.status === EmployeeStatus.Active && user.activationStatus === EmployeeActivationStatus.Pending) {
+        return "pending";
+    }
+    else if (user.status === EmployeeStatus.Disabled) {
+        return "disabled";
+    }
+    else {
+        return "unknown";
+    }
+};
 
 const ToggleContentContainer = styled.div`
   .buttons_container {
@@ -63,14 +80,33 @@ const ToggleContentContainer = styled.div`
     position: relative;
   }
 
-  .filter_container {
-    margin-top: 16px;
-  }
-
   *,
   *::before,
   *::after {
     box-sizing: border-box;
+  }
+  .nameAndStatus{
+    display: flex;
+    align-items: center;
+
+    .statusIcon{
+        margin-left:5px;
+    }
+  }
+
+  .rowMainContainer{
+      height:auto;
+  }
+
+  .userRole{
+      text-transform:capitalize;
+      font-size: 12px;
+      color: #D0D5DA;
+  }
+
+  .row_content{
+    justify-content: space-between;
+    align-items: center;
   }
 `;
 
@@ -121,31 +157,18 @@ class PortalAdmins extends Component {
     };
 
     onShowGroupSelector = () => {
-        /* console.log(
-          `onShowGroupSelector(showSelector: ${!this.state.showSelector})`
-        ); */
-
         this.setState({
             showSelector: !this.state.showSelector
         });
     };
 
     onShowFullAdminGroupSelector = () => {
-        /* console.log(
-          `onShowFullAdminGroupSelector(showFullAdminSelector: ${!this.state
-            .showFullAdminSelector})`
-        ); */
-
         this.setState({
             showFullAdminSelector: !this.state.showFullAdminSelector
         });
     };
 
     onCancelSelector = e => {
-        /* console.log(
-          `onCancelSelector(showSelector: false, showFullAdminSelector: false`,
-          e
-        ); */
 
         if (
             (this.state.showSelector &&
@@ -247,7 +270,7 @@ class PortalAdmins extends Component {
 
         const newFilter = filter.clone();
         newFilter.page = 0;
-        newFilter.role = "admin";
+        //newFilter.role = "admin";
 
         return newFilter;
     };
@@ -265,7 +288,7 @@ class PortalAdmins extends Component {
         newFilter.sortBy = sortBy;
         newFilter.sortOrder = sortOrder;
         newFilter.page = 0;
-        newFilter.role = "admin";
+        //newFilter.role = "admin";
         newFilter.search = search;
         this.onLoading(true);
 
@@ -342,13 +365,9 @@ class PortalAdmins extends Component {
     render() {
         const { t, admins, filter, me, groupsCaption } = this.props;
         const {
-            showSelector,
             isLoading,
-            showFullAdminSelector,
             showLoader
         } = this.state;
-
-        console.log("Admins render_");
 
         return (
             <>
@@ -368,58 +387,9 @@ class PortalAdmins extends Component {
                             />
 
                             <ToggleContentContainer>
-                                <div className="buttons_container">
-                                    <div className="people-admin_container">
-                                        <Button
-                                            id="people-admin-selector_button"
-                                            size="medium"
-                                            primary={true}
-                                            label={t("SetPeopleAdmin")}
-                                            isDisabled={isLoading}
-                                            onClick={this.onShowGroupSelector}
-                                        />
-                                        <PeopleSelector
-                                            id="people-admin-selector"
-                                            isOpen={showSelector}
-                                            isMultiSelect={true}
-                                            role="user"
-                                            onSelect={this.onSelect}
-                                            onCancel={this.onCancelSelector}
-                                            defaultOption={me}
-                                            defaultOptionLabel={t("MeLabel")}
-                                            groupsCaption={groupsCaption}
-                                        />
-                                    </div>
-                                    <div className="full-admin_container">
-                                        <Button
-                                            id="full-admin-selector_button"
-                                            size="medium"
-                                            primary={true}
-                                            label={t("SetPortalAdmin")}
-                                            isDisabled={isLoading}
-                                            onClick={this.onShowFullAdminGroupSelector}
-                                        />
-                                        <PeopleSelector
-                                            id="full-admin-selector"
-                                            isOpen={showFullAdminSelector}
-                                            isMultiSelect={true}
-                                            role="user"
-                                            onSelect={this.onSelectFullAdmin}
-                                            onCancel={this.onCancelSelector}
-                                            defaultOption={me}
-                                            defaultOptionLabel={t("MeLabel")}
-                                            groupsCaption={groupsCaption}
-                                        />
-                                    </div>
-                                </div>
-
-                                <FilterInput
+                                <SearchInput
                                     className="filter_container"
-                                    getFilterData={() => []}
-                                    getSortData={this.getSortData}
-                                    onFilter={this.onFilter}
-                                    directionAscLabel={t("DirectionAscLabel")}
-                                    directionDescLabel={t("DirectionDescLabel")}
+                                    placeholder="Search added employees"
                                 />
 
                                 {admins.length > 0 ? (
@@ -444,46 +414,33 @@ class PortalAdmins extends Component {
                                                             status={user.status}
                                                             data={user}
                                                             element={element}
+                                                            checkbox={true}
+                                                            checked={false}
+                                                            contextButtonSpacerWidth={"0px"}
                                                         >
-                                                            <RowContent disableSideInfo={true}>
-                                                                <Link
-                                                                    containerWidth='50%'
-                                                                    type="page"
-                                                                    title={user.displayName}
-                                                                    isBold={true}
-                                                                    fontSize="15px"
-                                                                    color={nameColor}
-                                                                    href={user.profileUrl}
-                                                                >
-                                                                    {user.displayName}
-                                                                </Link>
-                                                                <></>
-                                                                <Text containerWidth='10%'>
-                                                                    {user.isAdmin
-                                                                        ? t("AccessRightsFullAccess")
-                                                                        : t("PeopleAdmin")}
-                                                                </Text>
-                                                                {!user.isOwner
-                                                                    ? (
-                                                                        <IconButton
-                                                                            containerWidth='5%'
-                                                                            className="remove_icon"
-                                                                            size="16"
-                                                                            isDisabled={isLoading}
-                                                                            onClick={this.onChangeAdmin.bind(
-                                                                                this,
-                                                                                [user.id],
-                                                                                false,
-                                                                                "00000000-0000-0000-0000-000000000000"
-                                                                            )}
-                                                                            iconName={"CatalogTrashIcon"}
-                                                                            isFill={true}
-                                                                            isClickable={false}
-                                                                        />)
-                                                                    : (
-                                                                        <div containerWidth='5%' />
-                                                                    )}
-                                                            </RowContent>
+                                                            <div>
+                                                                <div className="nameAndStatus">
+                                                                    <Link
+                                                                        isTextOverflow={true}
+                                                                        type="page"
+                                                                        title={user.displayName}
+                                                                        isBold={true}
+                                                                        fontSize="15px"
+                                                                        color={nameColor}
+                                                                        href={user.profileUrl}
+                                                                    >
+                                                                        {user.displayName}
+                                                                    </Link>
+                                                                    {getUserStatus(user) === 'pending' && <Icons.SendClockIcon className="statusIcon" size='small' isfill={true} color='#3B72A7' />}
+                                                                    {getUserStatus(user) === 'disabled' && <Icons.CatalogSpamIcon className="statusIcon" size='small' isfill={true} color='#3B72A7' />}
+                                                                </div>
+                                                                <div>
+                                                                    <Text truncate={true} className="userRole">{getUserRole(user)}</Text>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <Icons.MainMenuPeopleIcon size='medium' isfill={true} color='#316DAA' />
+                                                            </div>
                                                         </Row>
                                                     );
                                                 })}
