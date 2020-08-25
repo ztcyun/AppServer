@@ -111,7 +111,7 @@ RUN cd /app/onlyoffice/src/ && \
     cp -avrf DocStore /var/www/products/ASC.Files/server/ && \
     cd ../../../ && \
     cd products/ASC.Files/Service && \
-    dotnet add ASC.Files.Service.csproj reference ../../ASC.People/Server/ASC.People.csproj  ../Server/ASC.Files.csproj&& \
+    dotnet add ASC.Files.Service.csproj reference ../../ASC.People/Server/ASC.People.csproj  ../Server/ASC.Files.csproj && \
     dotnet -d publish -o /var/www/products/ASC.Files/service && \
     cd ../../../ && \
     cd web/ASC.Web.Api && \
@@ -140,7 +140,7 @@ RUN cd /app/onlyoffice/src/ && \
     yarn install --cwd common/ASC.UrlShortener --frozen-lockfile && \
     mkdir -p /var/www/services/urlshortener/client && cp -Rf common/ASC.UrlShortener/* /var/www/services/urlshortener/client && \
     cd common/services/ASC.Studio.Notify && \
-    dotnet add ASC.Studio.Notify.csproj reference ../../../products/ASC.People/Server/ASC.People.csproj &&\
+    dotnet add ASC.Studio.Notify.csproj reference ../../../products/ASC.People/Server/ASC.People.csproj  ../../../products/ASC.Files/Server/ASC.Files.csproj &&\
     dotnet -d publish -o /var/www/services/studio.notify
 
 COPY config/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/mysql.cnf
@@ -340,6 +340,7 @@ FROM builder AS files_services
 ENV DOTNET_RUN=ASC.Files.Service.dll
 ENV DOTNET_LOG_NAME=files_services
 
+COPY --from=develop /var/www/products/ASC.Files/service/ /var/www/products/ASC.Files/service/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/service/
 RUN chown appuser:appuser /var/www -R
 
