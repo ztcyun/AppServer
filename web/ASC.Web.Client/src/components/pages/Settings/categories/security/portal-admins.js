@@ -12,7 +12,6 @@ import {
     Text,
     Avatar,
     Row,
-    RowContent,
     RowContainer,
     Link,
     Paging,
@@ -108,6 +107,37 @@ const ToggleContentContainer = styled.div`
     justify-content: space-between;
     align-items: center;
   }
+
+  .actionIconsWrapper{
+      display:flex;
+      align-items: center;
+
+      .fullAccessWrapper{
+        margin-right:20px;
+        display: flex;
+        align-items: center;
+
+        .fullAccessIcon{
+            margin-right: 4px;
+        }
+      }
+
+      .hyphen{
+            height:1px;
+            width: 8px;
+            background-color:#D0D5DA;
+            margin-right: 20px;
+        }
+
+      .iconWrapper{
+         display: inline-block; 
+         margin-right: 32px;
+
+         &:last-child{
+            margin-right:0;
+         }
+      }
+  }
 `;
 
 class PortalAdmins extends Component {
@@ -119,7 +149,8 @@ class PortalAdmins extends Component {
             showFullAdminSelector: false,
             isLoading: false,
             showLoader: true,
-            selectedOptions: []
+            selectedOptions: [],
+            users: {}
         };
     }
 
@@ -154,55 +185,6 @@ class PortalAdmins extends Component {
             .finally(() => {
                 this.onLoading(false);
             });
-    };
-
-    onShowGroupSelector = () => {
-        this.setState({
-            showSelector: !this.state.showSelector
-        });
-    };
-
-    onShowFullAdminGroupSelector = () => {
-        this.setState({
-            showFullAdminSelector: !this.state.showFullAdminSelector
-        });
-    };
-
-    onCancelSelector = e => {
-
-        if (
-            (this.state.showSelector &&
-                e.target.id === "people-admin-selector_button") ||
-            (this.state.showFullAdminSelector &&
-                e.target.id === "full-admin-selector_button")
-        ) {
-            // Skip double set of isOpen property
-            return;
-        }
-
-        this.setState({
-            showSelector: false,
-            showFullAdminSelector: false
-        });
-    };
-
-    onSelect = selected => {
-        const { productId } = this.props;
-        this.onChangeAdmin(
-            selected.map(user => user.key),
-            true,
-            productId
-        );
-        this.onShowGroupSelector();
-    };
-
-    onSelectFullAdmin = selected => {
-        this.onChangeAdmin(
-            selected.map(user => user.key),
-            true,
-            "00000000-0000-0000-0000-000000000000"
-        );
-        this.onShowFullAdminGroupSelector();
     };
 
     onChangePage = pageItem => {
@@ -275,28 +257,6 @@ class PortalAdmins extends Component {
         return newFilter;
     };
 
-    onFilter = data => {
-        const { filter, getUpdateListAdmin } = this.props;
-
-        const search = data.inputValue || null;
-        const sortBy = data.sortId;
-        const sortOrder =
-            data.sortDirection === "desc" ? "descending" : "ascending";
-
-        const newFilter = filter.clone();
-
-        newFilter.sortBy = sortBy;
-        newFilter.sortOrder = sortOrder;
-        newFilter.page = 0;
-        //newFilter.role = "admin";
-        newFilter.search = search;
-        this.onLoading(true);
-
-        getUpdateListAdmin(newFilter)
-            .catch(res => console.log(res))
-            .finally(this.onLoading(false));
-    };
-
     onResetFilter = () => {
         const { getUpdateListAdmin, filter } = this.props;
 
@@ -307,6 +267,11 @@ class PortalAdmins extends Component {
             .catch(res => console.log(res))
             .finally(() => this.onLoading(false));
     };
+
+    onModuleIconClick = (userIds, moduleName, isAdmin) => {
+        const currentModule = this.props.modules.find(module => module.title.toLowerCase() === moduleName.toLowerCase());
+        if (currentModule) this.onChangeAdmin(userIds, !isAdmin, currentModule.id)
+    }
 
     pageItems = () => {
         const { t, filter } = this.props;
@@ -353,17 +318,23 @@ class PortalAdmins extends Component {
         );
     };
 
-    getSortData = () => {
-        const { t } = this.props;
+    isModuleAdmin = (user, moduleName) => {
+        let isModuleAdmin = false;
 
-        return [
-            { key: "firstname", label: t("ByFirstNameSorting"), default: true },
-            { key: "lastname", label: t("ByLastNameSorting"), default: true }
-        ];
-    };
+        if (!user.listAdminModules) return false
+
+        for (let i = 0; i < user.listAdminModules.length; i++) {
+            if (user.listAdminModules[i] === moduleName) {
+                isModuleAdmin = true
+                break
+            }
+        }
+
+        return isModuleAdmin;
+    }
 
     render() {
-        const { t, admins, filter, me, groupsCaption } = this.props;
+        const { t, admins, filter } = this.props;
         const {
             isLoading,
             showLoader
@@ -406,7 +377,7 @@ class PortalAdmins extends Component {
                                                         />
                                                     );
                                                     const nameColor =
-                                                        user.status === "pending" ? "#A3A9AE" : "#333333";
+                                                        getUserStatus(user) === 'pending' ? "#A3A9AE" : "#333333";
 
                                                     return (
                                                         <Row
@@ -438,8 +409,49 @@ class PortalAdmins extends Component {
                                                                     <Text truncate={true} className="userRole">{getUserRole(user)}</Text>
                                                                 </div>
                                                             </div>
-                                                            <div>
-                                                                <Icons.MainMenuPeopleIcon size='medium' isfill={true} color='#316DAA' />
+                                                            <div className="actionIconsWrapper">
+                                                                <div className="fullAccessWrapper">
+                                                                    <IconButton
+                                                                        iconName="ActionsFullAccessIcon"
+                                                                        isClickable={false}
+                                                                        className="fullAccessIcon"
+                                                                        size="medium"
+                                                                        isFill={true}
+                                                                        color={getUserRole(user) === "owner" ? '#316DAA' : '#D0D5DA'}
+                                                                    />
+                                                                    <Text color={getUserRole(user) === "owner" ? '#316DAA' : '#D0D5DA'} font-size="11px" fontWeight={700}>Full access</Text>
+                                                                </div>
+                                                                <div className="hyphen"></div>
+                                                                <div>
+                                                                    <div className="iconWrapper">
+                                                                        <IconButton
+                                                                            iconName="ActionsDocumentsSettingsIcon"
+                                                                            size={14}
+                                                                            color={
+                                                                                getUserRole(user) === "owner"
+                                                                                    ? '#7A95B0'
+                                                                                    : this.isModuleAdmin(user, 'documents') ? '#316DAA' : '#D0D5DA'
+                                                                            }
+                                                                            isfill={true}
+                                                                            isClickable={false}
+                                                                            onClick={getUserRole(user) !== "owner" && this.onModuleIconClick.bind(this, [user.id], "documents", this.isModuleAdmin(user, 'documents'))}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="iconWrapper">
+                                                                        <IconButton
+                                                                            iconName="MainMenuPeopleIcon"
+                                                                            size={16}
+                                                                            color={
+                                                                                getUserRole(user) === "owner"
+                                                                                    ? '#7A95B0'
+                                                                                    : this.isModuleAdmin(user, 'people') ? '#316DAA' : '#D0D5DA'
+                                                                            }
+                                                                            isfill={true}
+                                                                            isClickable={false}
+                                                                            onClick={getUserRole(user) !== "owner" && this.onModuleIconClick.bind(this, [user.id], "people", this.isModuleAdmin(user, 'people'))}
+                                                                        />
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </Row>
                                                     );
@@ -504,6 +516,7 @@ function mapStateToProps(state) {
     return {
         admins,
         productId: state.auth.modules[0].id,
+        modules: state.auth.modules,
         owner,
         filter,
         me,

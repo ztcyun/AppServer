@@ -217,7 +217,6 @@ class PeopleAccess extends Component {
 
     onAdminsFilter = () => {
         const { filter } = this.props;
-        debugger
 
         const newFilter = filter.clone();
         newFilter.page = 0;
