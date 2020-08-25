@@ -140,6 +140,7 @@ RUN cd /app/onlyoffice/src/ && \
     yarn install --cwd common/ASC.UrlShortener --frozen-lockfile && \
     mkdir -p /var/www/services/urlshortener/client && cp -Rf common/ASC.UrlShortener/* /var/www/services/urlshortener/client && \
     cd common/services/ASC.Studio.Notify && \
+    dotnet add ASC.Studio.Notify.csproj reference ../../../ASC.People/Server/ASC.People.csproj &&\
     dotnet -d publish -o /var/www/services/studio.notify
 
 COPY config/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/mysql.cnf
@@ -160,24 +161,19 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 as builder
 USER root
 
 # set up default mysql, kafka values for docker-entrypoint.sh 
-ARG MYSQL_HOST=mysql
-ARG MYSQL_DATABASE=onlyoffice
-ARG MYSQL_USER=onlyoffice_user
-ARG MYSQL_PASSWORD=onlyoffice_pass
-ARG KAFKA_HOST=kafka
-
-ENV MYSQL_HOST=$MYSQL_HOST
-ENV MYSQL_DATABASE=$MYSQL_DATABASE
-ENV MYSQL_USER=$MYSQL_USER
-ENV MYSQL_PASSWORD=$MYSQL_PASSWORD
-ENV KAFKA_HOST=$KAFKA_HOST
+ENV MYSQL_HOST=mysql
+ENV MYSQL_DATABASE=onlyoffice
+ENV MYSQL_USER=onlyoffice_user
+ENV MYSQL_PASSWORD=onlyoffice_pass
+ENV KAFKA_HOST=kafka
+ENV DOTNET_ENV=test
 
 COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
 
 # add defualt user and group for no-root run
 RUN groupadd -g 1001 appuser && \
     useradd -r -u 1001 -g appuser appuser &&\
-    chown appuser:appuser /app/onlyoffice -R 
+    chown appuser:appuser /app/onlyoffice -R
 
 ### STAGE 3: Run ###
 
@@ -215,13 +211,8 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
 FROM builder AS api
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.Web.Api.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=api
-
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
+ENV DOTNET_RUN=ASC.Web.Api.dll
+ENV DOTNET_LOG_NAME=api
 
 COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
@@ -243,13 +234,8 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 FROM builder AS api_system
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.ApiSystem.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=api_system
-
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
+ENV DOTNET_RUN=ASC.ApiSystem.dll
+ENV DOTNET_LOG_NAME=api_system
 
 COPY --from=develop /var/www/services/apisystem/  /var/www/services/apisystem/
 COPY docker-entrypoint.sh /var/www/services/apisystem/
@@ -268,20 +254,14 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 FROM builder AS urlshortener
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.UrlShortener.Svc.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=urlshortener
-
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
+ENV DOTNET_RUN=ASC.UrlShortener.Svc.dll
+ENV DOTNET_LOG_NAME=urlshortener
 
 COPY --from=develop /services/urlshortener/service/   /services/urlshortener/service/ 
 COPY docker-entrypoint.sh /services/urlshortener/service/
 RUN chown appuser:appuser /services -R
 
 USER appuser
-
 WORKDIR /services/urlshortener/service/ 
 
 EXPOSE 5050
@@ -294,13 +274,8 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 FROM builder AS studio.notify
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.Studio.Notify.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=studio.notify
-
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
+ENV DOTNET_RUN=ASC.Studio.Notify.dll
+ENV DOTNET_LOG_NAME=studio.notify
 
 COPY --from=develop /var/www/services/studio.notify/  /var/www/services/studio.notify/
 COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
@@ -320,13 +295,8 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 FROM builder AS people.server
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.People.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=people.server
-
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
+ENV DOTNET_RUN=ASC.People.dll
+ENV DOTNET_LOG_NAME=people.server
 
 COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.People/server/
 COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
@@ -346,13 +316,8 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 FROM builder AS files
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.Files.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=files
-
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
+ENV DOTNET_RUN=ASC.Files.dll
+ENV DOTNET_LOG_NAME=files
 
 COPY --from=develop /var/www/products/ASC.Files/server/  /var/www/products/ASC.Files/server/
 COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
@@ -372,16 +337,9 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 FROM builder AS files_services
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.Files.Service.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=files_services
+ENV DOTNET_RUN=ASC.Files.Service.dll
+ENV DOTNET_LOG_NAME=files_services
 
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
-
-COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.Files/service/
-COPY --from=develop /var/www/products/ASC.Files/service/  /var/www/products/ASC.Files/service/
 COPY docker-entrypoint.sh /var/www/products/ASC.Files/service/
 RUN chown appuser:appuser /var/www -R
 
@@ -398,13 +356,8 @@ ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
 FROM builder AS studio
 
 # set up default dotnet values for docker-entrypoint.sh
-ARG DOTNET_RUN=ASC.Web.Studio.dll
-ARG DOTNET_ENV=test
-ARG DOTNET_LOG_NAME=studio
-
-ENV DOTNET_RUN=$DOTNET_RUN
-ENV DOTNET_ENV=$DOTNET_ENV
-ENV DOTNET_LOG_NAME=$DOTNET_LOG_NAME
+ENV DOTNET_RUN=ASC.Web.Studio.dll
+ENV DOTNET_LOG_NAME=studio
 
 COPY --from=develop /var/www/studio/server/  /var/www/studio/server/
 COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
