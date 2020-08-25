@@ -140,7 +140,7 @@ RUN cd /app/onlyoffice/src/ && \
     yarn install --cwd common/ASC.UrlShortener --frozen-lockfile && \
     mkdir -p /var/www/services/urlshortener/client && cp -Rf common/ASC.UrlShortener/* /var/www/services/urlshortener/client && \
     cd common/services/ASC.Studio.Notify && \
-    dotnet add ASC.Studio.Notify.csproj reference ../../../ASC.People/Server/ASC.People.csproj &&\
+    dotnet add ASC.Studio.Notify.csproj reference ../../../products/ASC.People/Server/ASC.People.csproj &&\
     dotnet -d publish -o /var/www/services/studio.notify
 
 COPY config/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/mysql.cnf
