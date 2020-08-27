@@ -143,15 +143,7 @@ RUN cd /app/onlyoffice/src/ && \
     dotnet add ASC.Studio.Notify.csproj reference ../../../products/ASC.People/Server/ASC.People.csproj  ../../../products/ASC.Files/Server/ASC.Files.csproj &&\
     dotnet -d publish -o /var/www/services/studio.notify
 
-COPY config/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/mysql.cnf
-
 RUN rm -rf /var/lib/apt/lists/*
-
-VOLUME /var/lib/mysql
-
-EXPOSE 80 443 8092 8081
-
-ENTRYPOINT ["/usr/bin/supervisord", "--"]
 
 
 ### STAGE 2: Build ###
@@ -171,14 +163,22 @@ ENV DOTNET_ENV=test
 COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
 
 # add defualt user and group for no-root run
-RUN groupadd -g 1001 appuser && \
+RUN mkdir -p /var/log/onlyoffice && \
+    mkdir -p /app/onlyoffice/data && \
+    groupadd -g 1001 appuser && \
     useradd -r -u 1001 -g appuser appuser &&\
-    chown appuser:appuser /app/onlyoffice -R
+    chown appuser:appuser /app/onlyoffice -R &&\
+    chown appuser:appuser /var/log -R 
+
+EXPOSE 5050
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
 
 ### STAGE 3: Run ###
 
-## NGINX ##
 
+## NGINX ##
 FROM nginx:stable-alpine AS web
 
 # Remove default nginx website
@@ -207,168 +207,120 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
 
 
 ## api ##
-
 FROM builder AS api
-
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.Web.Api.dll
-ENV DOTNET_LOG_NAME=api
 
 COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
 COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
 COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
-COPY docker-entrypoint.sh /var/www/studio/api/
+
+WORKDIR /var/www/studio/api/
+COPY docker-entrypoint.sh .
 
 RUN chown appuser:appuser /var/www -R
-
 USER appuser
-WORKDIR /var/www/studio/api/
 
-EXPOSE 5050
-
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+CMD ["ASC.Web.Api.dll", "api"]
 
 
 ## api_system ##
-
 FROM builder AS api_system
 
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.ApiSystem.dll
-ENV DOTNET_LOG_NAME=api_system
-
 COPY --from=develop /var/www/services/apisystem/  /var/www/services/apisystem/
-COPY docker-entrypoint.sh /var/www/services/apisystem/
-RUN chown appuser:appuser /var/www -R
 
-USER appuser
 WORKDIR /var/www/services/apisystem/
+COPY docker-entrypoint.sh .
 
-EXPOSE 5050
+RUN chown appuser:appuser /var/www -R
+USER appuser
 
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+CMD ["ASC.ApiSystem.dll", "api_system"]
 
 
 ## urlshortener ##
-
 FROM builder AS urlshortener
 
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.UrlShortener.Svc.dll
-ENV DOTNET_LOG_NAME=urlshortener
-
 COPY --from=develop /services/urlshortener/service/   /services/urlshortener/service/ 
-COPY docker-entrypoint.sh /services/urlshortener/service/
-RUN chown appuser:appuser /services -R
 
-USER appuser
 WORKDIR /services/urlshortener/service/ 
+COPY docker-entrypoint.sh .
 
-EXPOSE 5050
+RUN chown appuser:appuser /services -R
+USER appuser
 
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+CMD ["ASC.UrlShortener.Svc.dll", "urlshortener"]
 
 
 ## studio.notify ##
-
 FROM builder AS studio.notify
-
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.Studio.Notify.dll
-ENV DOTNET_LOG_NAME=studio.notify
 
 COPY --from=develop /var/www/services/studio.notify/  /var/www/services/studio.notify/
 COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-COPY docker-entrypoint.sh /var/www/services/studio.notify/
-RUN chown appuser:appuser /var/www -R
 
-USER appuser
 WORKDIR /var/www/services/studio.notify/
+COPY docker-entrypoint.sh .
 
-EXPOSE 5050
+RUN chown appuser:appuser /var/www -R
+USER appuser
 
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+CMD ["ASC.Studio.Notify.dll", "studio.notify"]
 
 
 ## people.server ##
-
 FROM builder AS people.server
-
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.People.dll
-ENV DOTNET_LOG_NAME=people.server
 
 COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.People/server/
 COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
-COPY docker-entrypoint.sh /var/www/products/ASC.People/server/
-RUN chown appuser:appuser /var/www -R
 
-USER appuser
 WORKDIR /var/www/products/ASC.People/server/
+COPY docker-entrypoint.sh .
 
-EXPOSE 5050
+RUN chown appuser:appuser /var/www -R
+USER appuser
 
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+CMD ["ASC.People.dll", "people.server"]
 
 
 ## files ##
-
 FROM builder AS files
-
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.Files.dll
-ENV DOTNET_LOG_NAME=files
 
 COPY --from=develop /var/www/products/ASC.Files/server/  /var/www/products/ASC.Files/server/
 COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-COPY docker-entrypoint.sh /var/www/products/ASC.Files/server/
-RUN chown appuser:appuser /var/www -R
 
-USER appuser
 WORKDIR /var/www/products/ASC.Files/server/
+COPY docker-entrypoint.sh .
 
-EXPOSE 5050
+RUN chown appuser:appuser /var/www -R
+USER appuser
 
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+CMD ["ASC.Files.dll", "files"]
 
 
 ## files_services ##
-
 FROM builder AS files_services
 
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.Files.Service.dll
-ENV DOTNET_LOG_NAME=files_services
-
 COPY --from=develop /var/www/products/ASC.Files/service/ /var/www/products/ASC.Files/service/
-COPY docker-entrypoint.sh /var/www/products/ASC.Files/service/
-RUN chown appuser:appuser /var/www -R
 
-USER appuser
 WORKDIR /var/www/products/ASC.Files/service/
+COPY docker-entrypoint.sh .
 
-EXPOSE 5050
+RUN chown appuser:appuser /var/www -R
+USER appuser
 
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+CMD ["ASC.Files.Service.dll", "files_services"]
 
 
 ## studio ##
-
 FROM builder AS studio
-
-# set up default dotnet values for docker-entrypoint.sh
-ENV DOTNET_RUN=ASC.Web.Studio.dll
-ENV DOTNET_LOG_NAME=studio
 
 COPY --from=develop /var/www/studio/server/  /var/www/studio/server/
 COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
 COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-COPY docker-entrypoint.sh /var/www/studio/server/
-RUN chown appuser:appuser /var/www -R
 
-USER appuser
 WORKDIR /var/www/studio/server/
+COPY docker-entrypoint.sh .
 
-EXPOSE 5050
+RUN chown appuser:appuser /var/www -R
+USER appuser
 
-ENTRYPOINT ["/bin/bash", "-c", "./docker-entrypoint.sh"]
+
+CMD ["ASC.Web.Studio.dll", "studio"]
