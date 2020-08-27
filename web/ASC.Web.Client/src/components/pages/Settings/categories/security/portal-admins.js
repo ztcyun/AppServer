@@ -142,13 +142,13 @@ const ToggleContentContainer = styled.div`
   }
 `;
 
-let adminsFromSessionStorage = {}
+let adminsFromSessionStorage = null
 
 class PortalAdmins extends Component {
     constructor(props) {
         super(props);
 
-        adminsFromSessionStorage = getFromSessionStorage("admins")
+        if (sessionStorage.getItem("admins")) adminsFromSessionStorage = getFromSessionStorage("admins");
 
         this.state = {
             showSelector: false,
@@ -182,9 +182,8 @@ class PortalAdmins extends Component {
                     this.setState({
                         showLoader: false
                     })
-                    if (adminsFromSessionStorage) {
-                        this.checkChanges()
-                    }
+
+                    this.checkChanges()
 
                     if (!adminsFromSessionStorage && this.props.admins.length > 0) {
                         this.setState({
@@ -198,9 +197,7 @@ class PortalAdmins extends Component {
     }
 
     componentDidUpdate() {
-        if (adminsFromSessionStorage) {
-            this.checkChanges()
-        }
+        this.checkChanges()
     }
 
     onChangeAdmin = (userIds, isAdmin, productId) => {
@@ -315,7 +312,7 @@ class PortalAdmins extends Component {
     }
 
     changeAdminRights = (adminIndex, moduleName, isAdmin) => {
-        const admins = Object.assign({}, this.state.admins);
+        const admins = JSON.parse(JSON.stringify(this.state.admins))
         const listAdminModules = admins[adminIndex].listAdminModules;
 
         let newListAdminModules = this.createNewListAdminModules(isAdmin, listAdminModules, moduleName)
@@ -331,18 +328,22 @@ class PortalAdmins extends Component {
         this.setState({
             admins: newAdmins
         })
+
+        this.checkChanges();
     }
 
     createNewListAdminModules = (isAdmin, listAdminModules, moduleName) => {
+
+        let newListAdminModules = listAdminModules.slice();
+
         if (!isAdmin) {
-            listAdminModules.push(moduleName);
-            return listAdminModules
+            newListAdminModules.push(moduleName);
         } else {
-            const newListAdminModules = listAdminModules.filter((module) => {
+            newListAdminModules = listAdminModules.filter((module) => {
                 return module !== moduleName
             })
-            return newListAdminModules
         }
+        return newListAdminModules
     }
 
     onSaveButtonClick = (userIds, moduleName, isAdmin) => {
@@ -351,7 +352,14 @@ class PortalAdmins extends Component {
     }
 
     onCancelClick = () => {
+        saveToSessionStorage("admins", "")
+        adminsFromSessionStorage = ""
 
+        this.setState({
+            admins: this.props.admins,
+            showReminder: false,
+            hasChanged: false
+        })
     }
 
     pageItems = () => {
@@ -415,7 +423,8 @@ class PortalAdmins extends Component {
     }
 
     checkChanges = () => {
-        let hasChanged = JSON.stringify(adminsFromSessionStorage) !== JSON.stringify(this.props.admins);
+        if (sessionStorage.getItem("admins")) adminsFromSessionStorage = getFromSessionStorage("admins")
+        let hasChanged = adminsFromSessionStorage && JSON.stringify(adminsFromSessionStorage) !== JSON.stringify(this.props.admins);
 
         if (hasChanged !== this.state.hasChanged) {
             this.setState({
