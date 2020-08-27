@@ -21,11 +21,13 @@ import {
     Loader,
     EmptyScreenContainer,
     Icons,
-    SearchInput
+    SearchInput,
+    SaveCancelButtons
 } from "asc-web-components";
 import { constants } from 'asc-web-common';
 import { getUserRole } from "../../../../../store/settings/selectors";
 import isEmpty from "lodash/isEmpty";
+import { saveToSessionStorage, getFromSessionStorage } from '../../utils';
 
 const { EmployeeActivationStatus, EmployeeStatus } = constants;
 
@@ -140,9 +142,13 @@ const ToggleContentContainer = styled.div`
   }
 `;
 
+let adminsFromSessionStorage = {}
+
 class PortalAdmins extends Component {
     constructor(props) {
         super(props);
+
+        adminsFromSessionStorage = getFromSessionStorage("admins")
 
         this.state = {
             showSelector: false,
@@ -150,12 +156,21 @@ class PortalAdmins extends Component {
             isLoading: false,
             showLoader: true,
             selectedOptions: [],
-            users: {}
+            admins: adminsFromSessionStorage || {},
+            hasChanged: false,
+            showReminder: false
         };
     }
 
     componentDidMount() {
         const { admins, fetchPeople } = this.props;
+        const { showReminder } = this.state;
+
+        if ((adminsFromSessionStorage) && !showReminder) {
+            this.setState({
+                showReminder: true
+            })
+        }
 
         if (isEmpty(admins, true)) {
             const newFilter = this.onAdminsFilter();
@@ -163,13 +178,28 @@ class PortalAdmins extends Component {
                 .catch(error => {
                     toastr.error(error);
                 })
-                .finally(() =>
+                .finally(() => {
                     this.setState({
                         showLoader: false
                     })
-                );
+                    if (adminsFromSessionStorage) {
+                        this.checkChanges()
+                    }
+
+                    if (!adminsFromSessionStorage && this.props.admins.length > 0) {
+                        this.setState({
+                            admins: this.props.admins
+                        })
+                    }
+                });
         } else {
             this.setState({ showLoader: false });
+        }
+    }
+
+    componentDidUpdate() {
+        if (adminsFromSessionStorage) {
+            this.checkChanges()
         }
     }
 
@@ -269,8 +299,59 @@ class PortalAdmins extends Component {
     };
 
     onModuleIconClick = (userIds, moduleName, isAdmin) => {
-        const currentModule = this.props.modules.find(module => module.title.toLowerCase() === moduleName.toLowerCase());
-        if (currentModule) this.onChangeAdmin(userIds, !isAdmin, currentModule.id)
+        const { admins } = this.state
+
+        if (admins.length < 1) return false
+        let adminIndex = null;
+
+        for (let i = 0; i < admins.length; i++) {
+            if (admins[i].id === userIds[0]) {
+                adminIndex = i
+                break
+            }
+        }
+
+        this.changeAdminRights(adminIndex, moduleName, isAdmin)
+    }
+
+    changeAdminRights = (adminIndex, moduleName, isAdmin) => {
+        const admins = Object.assign({}, this.state.admins);
+        const listAdminModules = admins[adminIndex].listAdminModules;
+
+        let newListAdminModules = this.createNewListAdminModules(isAdmin, listAdminModules, moduleName)
+        newListAdminModules.sort();
+
+        admins[adminIndex].listAdminModules = newListAdminModules;
+        const newAdmins = [];
+
+        for (const key in admins) {
+            newAdmins.push(admins[key])
+        }
+        saveToSessionStorage("admins", newAdmins)
+        this.setState({
+            admins: newAdmins
+        })
+    }
+
+    createNewListAdminModules = (isAdmin, listAdminModules, moduleName) => {
+        if (!isAdmin) {
+            listAdminModules.push(moduleName);
+            return listAdminModules
+        } else {
+            const newListAdminModules = listAdminModules.filter((module) => {
+                return module !== moduleName
+            })
+            return newListAdminModules
+        }
+    }
+
+    onSaveButtonClick = (userIds, moduleName, isAdmin) => {
+        /*const currentModule = this.props.modules.find(module => module.title.toLowerCase() === moduleName.toLowerCase());
+        if (currentModule) this.onChangeAdmin(userIds, !isAdmin, currentModule.id)*/
+    }
+
+    onCancelClick = () => {
+
     }
 
     pageItems = () => {
@@ -333,12 +414,19 @@ class PortalAdmins extends Component {
         return isModuleAdmin;
     }
 
+    checkChanges = () => {
+        let hasChanged = JSON.stringify(adminsFromSessionStorage) !== JSON.stringify(this.props.admins);
+
+        if (hasChanged !== this.state.hasChanged) {
+            this.setState({
+                hasChanged: hasChanged,
+            })
+        }
+    }
+
     render() {
-        const { t, admins, filter } = this.props;
-        const {
-            isLoading,
-            showLoader
-        } = this.state;
+        const { t, filter } = this.props;
+        const { isLoading, showLoader, admins, hasChanged, showReminder } = this.state;
 
         return (
             <>
@@ -476,6 +564,16 @@ class PortalAdmins extends Component {
                                                 disableNext={!filter.hasNext()}
                                             />
                                         </div>
+                                        {hasChanged &&
+                                            <SaveCancelButtons
+                                                onSaveClick={this.onSaveButtonClick}
+                                                onCancelClick={this.onCancelClick}
+                                                showReminder={showReminder}
+                                                reminderTest={t('YouHaveUnsavedChanges')}
+                                                saveButtonLabel={t('SaveButton')}
+                                                cancelButtonLabel={t('CancelButton')}
+                                            />
+                                        }
                                     </>
                                 ) : (
                                         <EmptyScreenContainer
