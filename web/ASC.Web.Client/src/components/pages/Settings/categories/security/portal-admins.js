@@ -334,7 +334,7 @@ class PortalAdmins extends Component {
 
     createNewListAdminModules = (isAdmin, listAdminModules, moduleName) => {
 
-        let newListAdminModules = listAdminModules.slice();
+        let newListAdminModules = listAdminModules ? listAdminModules.slice() : [];
 
         if (!isAdmin) {
             newListAdminModules.push(moduleName);
@@ -347,8 +347,8 @@ class PortalAdmins extends Component {
     }
 
     onSaveButtonClick = (userIds, moduleName, isAdmin) => {
-        /*const currentModule = this.props.modules.find(module => module.title.toLowerCase() === moduleName.toLowerCase());
-        if (currentModule) this.onChangeAdmin(userIds, !isAdmin, currentModule.id)*/
+        let changedAdmins = this.createChangedAdminsList();
+        this.acceptChanges(changedAdmins)
     }
 
     onCancelClick = () => {
@@ -360,6 +360,84 @@ class PortalAdmins extends Component {
             showReminder: false,
             hasChanged: false
         })
+    }
+
+    acceptChanges = (changedAdmins) => {
+        for (let i = 0; i < changedAdmins.length; i++) {
+            const adminBeforeChanges = this.getAdminById(this.props.admins, changedAdmins[i].id);
+
+            let changedAdminModules = adminBeforeChanges
+                ? this.getChangedAdminModules(adminBeforeChanges, changedAdmins[i])
+                : changedAdmins[i].listAdminModules.slice();
+
+            if (changedAdminModules.length > 0) {
+                changedAdminModules.forEach(moduleName => {
+                    const currentModule = this.props.modules.find(module => module.title.toLowerCase() === moduleName.toLowerCase());
+                    if (currentModule) this.onChangeAdmin([changedAdmins[i].id], this.isModuleAdmin(changedAdmins[i], moduleName), currentModule.id)
+                });
+            }
+
+            this.onCancelClick()
+        }
+    }
+
+    getChangedAdminModules = (adminBeforeChanges, admin) => {
+        const modulesListBeforeChanges = adminBeforeChanges.listAdminModules ? adminBeforeChanges.listAdminModules.slice() : []
+        const modulesList = admin.listAdminModules ? admin.listAdminModules.slice() : [];
+        let newListAdminModules = [];
+
+        newListAdminModules = modulesList.filter((module) => {
+            let hasModule = false
+
+            for (let i = 0; i < modulesListBeforeChanges.length; i++) {
+                if (modulesListBeforeChanges[i] === module) {
+                    hasModule = true
+                    modulesListBeforeChanges.splice(i, 1)
+                    break
+                }
+            }
+
+            return !hasModule
+        })
+
+        if (modulesListBeforeChanges.length > 0) {
+            newListAdminModules = newListAdminModules.concat(modulesListBeforeChanges).sort()
+        }
+
+        return newListAdminModules
+
+    }
+
+    createChangedAdminsList = () => {
+
+        const { admins } = this.state
+        let changedAdmins = [];
+
+        for (let i = 0; i < admins.length; i++) {
+            const adminBeforeChanges = this.getAdminById(this.props.admins, admins[i].id)
+
+            if (!this.compareObjects(admins[i], adminBeforeChanges)) {
+                changedAdmins.push(admins[i])
+            }
+        }
+
+        if (changedAdmins) return changedAdmins
+    }
+
+    getAdminById = (admins, id) => {
+        let currentAdmin
+
+        admins.findIndex((admin) => {
+            for (let key in admin) {
+                if (key === "id" && admin[key] === id) {
+                    currentAdmin = JSON.parse(JSON.stringify(admin))
+                    return true
+                }
+            }
+            return false
+        })
+
+        if (currentAdmin) return currentAdmin
     }
 
     pageItems = () => {
@@ -424,13 +502,17 @@ class PortalAdmins extends Component {
 
     checkChanges = () => {
         if (sessionStorage.getItem("admins")) adminsFromSessionStorage = getFromSessionStorage("admins")
-        let hasChanged = adminsFromSessionStorage && JSON.stringify(adminsFromSessionStorage) !== JSON.stringify(this.props.admins);
+        let hasChanged = adminsFromSessionStorage && !this.compareObjects(adminsFromSessionStorage, this.props.admins);
 
         if (hasChanged !== this.state.hasChanged) {
             this.setState({
                 hasChanged: hasChanged,
             })
         }
+    }
+
+    compareObjects = (obj1, obj2) => {
+        return JSON.stringify(obj1) === JSON.stringify(obj2)
     }
 
     render() {
