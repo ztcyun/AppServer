@@ -6,6 +6,7 @@ ARG RELEASE_DATE_SIGN=""
 ARG VERSION="8.9.0.190"
 ARG SOURCE_REPO_URL="deb http://static.teamlab.com.s3.amazonaws.com/repo/debian squeeze main"
 ARG DEBIAN_FRONTEND=noninteractive
+ARG GIT_BRANCH="05bc905831f1be9623df1510e75286e61d632665"
 
 LABEL onlyoffice.community.release-date="${RELEASE_DATE}" \
       onlyoffice.community.version="${VERSION}" \
@@ -44,7 +45,8 @@ RUN git clone https://github.com/ONLYOFFICE/AppServer.git /app/onlyoffice/src/
 # RUN git clone https://github.com/ONLYOFFICE/AppServer.git -b feature/multi-stage-docker-ForClone /app/onlyoffice/src/
 
 RUN cd /app/onlyoffice/src/ && \
-    git checkout 54c8fd3e802e51bfe9c797c58c3e3b10a424b3c2 &&\
+    # git checkout 54c8fd3e802e51bfe9c797c58c3e3b10a424b3c2 && \
+    git checkout ${GIT_BRANCH} && \
     yarn install --cwd web/ASC.Web.Components --frozen-lockfile > build/ASC.Web.Components.log && \
     yarn pack --cwd web/ASC.Web.Components
 	
