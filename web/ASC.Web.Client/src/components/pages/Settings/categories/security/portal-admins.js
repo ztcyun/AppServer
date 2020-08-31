@@ -192,7 +192,17 @@ class PortalAdmins extends Component {
                     }
                 });
         } else {
-            this.setState({ showLoader: false });
+            if (!adminsFromSessionStorage && this.props.admins.length > 0) {
+                this.setState({
+                    admins: this.props.admins,
+                    showLoader: false,
+                })
+            } else {
+                this.setState({
+                    admins: adminsFromSessionStorage || {},
+                    showLoader: false,
+                })
+            }
         }
     }
 

@@ -3,9 +3,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { withTranslation } from "react-i18next";
 import styled from "styled-components";
-import {
-    getPortalOwner
-} from "../../../../../store/settings/actions";
+import { getPortalOwner, fetchPeople } from "../../../../../store/settings/actions";
 import {
     Text,
     Avatar,
@@ -23,6 +21,7 @@ const StyledWrapper = styled.div`
     .portal-owner-description {
         margin-left: 16px;
         overflow: hidden;
+        width:100%;
     }
 
     .category-item-wrapper{
@@ -104,6 +103,11 @@ const OwnerContainer = styled.div`
     .button_offset {
         margin-right: 16px;
     }
+    .chooseOwnerWrap{
+        margin-top:16px;
+        padding-top:16px;
+        border-top: 1px solid #ECEEF1;
+    }
 `;
 
 const getFormattedDepartments = departments => {
@@ -137,7 +141,8 @@ class AccessRights extends Component {
             isLoading: false,
             showSelector: false,
             showLoader: true,
-            selectedOwner: null
+            selectedOwner: null,
+            admins: {}
         };
     }
 
@@ -145,18 +150,49 @@ class AccessRights extends Component {
         const {
             owner,
             getPortalOwner,
-            ownerId
+            ownerId,
+            admins,
+            fetchPeople
         } = this.props;
-
         if (isEmpty(owner, true)) {
             getPortalOwner(ownerId)
                 .catch(error => {
                     toastr.error(error);
                 })
                 .finally(() => this.setState({ showLoader: false }));
+        } else {
+            this.setState({ showLoader: false });
         }
-        this.setState({ showLoader: false });
+
+        if (isEmpty(admins, true)) {
+            const newFilter = this.onAdminsFilter();
+            fetchPeople(newFilter)
+                .catch(error => {
+                    toastr.error(error);
+                })
+                .finally(() => {
+                    this.setState({
+                        showLoader: false,
+                        admins: this.props.admins
+                    })
+                });
+        } else {
+            this.setState({
+                showLoader: false,
+                admins: this.props.admins
+            });
+        }
     }
+
+    onAdminsFilter = () => {
+        const { filter } = this.props;
+
+        const newFilter = filter.clone();
+        newFilter.page = 0;
+        newFilter.role = "admin";
+
+        return newFilter;
+    };
 
     onChangeOwner = () => {
         const { t, owner } = this.props;
@@ -192,7 +228,8 @@ class AccessRights extends Component {
             isLoading,
             showLoader,
             showSelector,
-            selectedOwner
+            selectedOwner,
+            admins
         } = this.state;
 
         const formattedDepartments = owner.department && getFormattedDepartments(owner.groups);
@@ -241,32 +278,35 @@ class AccessRights extends Component {
                                         <Text className="PortalOwnerDescription" color="#555F65">
                                             {t('PortalOwnerDescription')}
                                         </Text>
+                                        <div className="chooseOwnerWrap">
+                                            <Link
+                                                className="link_style"
+                                                isHovered={true}
+                                                onClick={this.onShowSelector.bind(this, !showSelector)}
+                                            >
+                                                {selectedOwner ? selectedOwner.label : t("ChooseOwner")}
+                                            </Link>
+
+                                            <Button
+                                                className="button_offset"
+                                                size="medium"
+                                                primary={true}
+                                                label={t('AccessRightsChangeOwnerButtonText')}
+                                                isDisabled={!isLoading ? selectedOwner === null : false}
+                                                onClick={this.onChangeOwner}
+                                            />
+                                            <Text
+                                                className="text-body_inline"
+                                                fontSize='12px'
+                                                color="#A3A9AE"
+                                            >
+                                                {t("AccessRightsChangeOwnerConfirmText")}
+                                            </Text>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <Link
-                                    className="link_style"
-                                    isHovered={true}
-                                    onClick={this.onShowSelector.bind(this, !showSelector)}
-                                >
-                                    {selectedOwner ? selectedOwner.label : t("ChooseOwner")}
-                                </Link>
 
-                                <Button
-                                    className="button_offset"
-                                    size="medium"
-                                    primary={true}
-                                    label={t('AccessRightsChangeOwnerButtonText')}
-                                    isDisabled={!isLoading ? selectedOwner === null : false}
-                                    onClick={this.onChangeOwner}
-                                />
-                                <Text
-                                    className="text-body_inline"
-                                    fontSize='12px'
-                                    color="#A3A9AE"
-                                >
-                                    {t("AccessRightsChangeOwnerConfirmText")}
-                                </Text>
 
                                 <div className="advanced-selector">
                                     <PeopleSelector
@@ -291,25 +331,10 @@ class AccessRights extends Component {
                                     </Link>
                                     <Icons.ArrowRightIcon size="small" isfill={true} color="#333333" />
                                 </div>
-                                <Text className="category-item-subheader" truncate={true}>8 employees (Test value)</Text>
+                                {admins.length > 0 && <Text className="category-item-subheader" truncate={true}>{admins.length} {t('Employees')}</Text>}
+
                                 <Text className="category-item-description">
                                     {t('PortalAdminsDescription')}
-                                </Text>
-                            </div>
-                            <div className="category-item-wrapper">
-                                <div className="category-item-heading">
-                                    <Link
-                                        className='inherit-title-link header'
-                                        onClick={this.onClickLink}
-                                        truncate={true}
-                                        href="/settings/security/access-rights/people-access">
-                                        {t('PeopleAccess')}
-                                    </Link>
-                                    <Icons.ArrowRightIcon size="small" isfill={true} color="#333333" />
-                                </div>
-                                <Text className="category-item-subheader" truncate={true}>12 employees (Test value)</Text>
-                                <Text className="category-item-description">
-                                    {t('PeopleAccessDescription')}
                                 </Text>
                             </div>
                         </StyledWrapper>
@@ -320,15 +345,17 @@ class AccessRights extends Component {
 }
 
 function mapStateToProps(state) {
-    const { owner } = state.settings.security.accessRight;
+    const { owner, admins, filter } = state.settings.security.accessRight;
     const { user: me } = state.auth;
     const groupsCaption = state.auth.settings.customNames.groupsCaption;
 
     return {
+        admins,
         ownerId: state.auth.settings.ownerId,
         owner,
         me,
-        groupsCaption
+        groupsCaption,
+        filter
     };
 }
 
@@ -340,6 +367,6 @@ AccessRights.propTypes = {
     owner: PropTypes.object
 };
 
-export default connect(mapStateToProps, { getPortalOwner })(
+export default connect(mapStateToProps, { getPortalOwner, fetchPeople })(
     withTranslation()(AccessRights)
 );
