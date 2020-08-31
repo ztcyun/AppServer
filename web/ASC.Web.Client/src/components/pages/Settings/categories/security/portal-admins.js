@@ -196,7 +196,20 @@ class PortalAdmins extends Component {
         }
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
+        const { newAdmins } = this.props
+
+        if (!this.compareObjects(prevProps.newAdmins, newAdmins)) {
+
+            if (newAdmins.length > 0) {
+                let admins = JSON.parse(JSON.stringify(this.state.admins))
+                const updatedAdmins = admins.concat(newAdmins)
+                this.setState({
+                    admins: updatedAdmins
+                })
+            }
+        }
+
         this.checkChanges()
     }
 
@@ -279,7 +292,7 @@ class PortalAdmins extends Component {
 
         const newFilter = filter.clone();
         newFilter.page = 0;
-        //newFilter.role = "admin";
+        newFilter.role = "admin";
 
         return newFilter;
     };
@@ -346,7 +359,7 @@ class PortalAdmins extends Component {
         return newListAdminModules
     }
 
-    onSaveButtonClick = (userIds, moduleName, isAdmin) => {
+    onSaveButtonClick = () => {
         let changedAdmins = this.createChangedAdminsList();
         this.acceptChanges(changedAdmins)
     }
@@ -698,12 +711,13 @@ class PortalAdmins extends Component {
 }
 
 function mapStateToProps(state) {
-    const { admins, owner, filter } = state.settings.security.accessRight;
+    const { admins, newAdmins, owner, filter } = state.settings.security.accessRight;
     const { user: me } = state.auth;
     const groupsCaption = state.auth.settings.customNames.groupsCaption;
 
     return {
         admins,
+        newAdmins,
         productId: state.auth.modules[0].id,
         modules: state.auth.modules,
         owner,

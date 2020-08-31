@@ -1,10 +1,14 @@
 import React from "react";
+import { connect } from "react-redux";
 import styled from "styled-components";
 import { withRouter } from "react-router";
-import { Headline } from 'asc-web-common';
+import { Headline, PeopleSelector } from 'asc-web-common';
 import { IconButton, utils } from "asc-web-components";
 import { withTranslation } from 'react-i18next';
 import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink } from '../../../utils';
+import {
+  getNewAdminsByKeys
+} from "../../../../../../store/settings/actions";
 
 const { tablet } = utils.device;
 
@@ -13,6 +17,11 @@ const HeaderContainer = styled.div`
     display: flex;
     align-items: center;
     max-width: calc(100vw - 32px);
+
+    .add-button{
+      margin-left: 15px;
+      cursor: pointer;
+    }
 
     .arrow-button {
       margin-right: 16px;
@@ -45,16 +54,16 @@ class SectionHeaderContent extends React.Component {
     this.state = {
       header,
       isCategoryOrHeader: isCategory || isHeader,
+      showSelector: false
     };
   }
 
   componentDidUpdate() {
-    
     const arrayOfParams = this.getArrayOfParams()
 
     const key = getKeyByLink(arrayOfParams, settingsTree);
     const header = getTKeyByKey(key, settingsTree);
-    const isCategory = checkPropertyByLink(arrayOfParams,settingsTree, "isCategory");
+    const isCategory = checkPropertyByLink(arrayOfParams, settingsTree, "isCategory");
     const isHeader = checkPropertyByLink(arrayOfParams, settingsTree, "isHeader");
     const isCategoryOrHeader = isCategory || isHeader;
 
@@ -69,6 +78,10 @@ class SectionHeaderContent extends React.Component {
     this.props.history.push(newPath);
   }
 
+  onPlusButtonClick = () => {
+    this.onShowGroupSelector();
+  }
+
   getArrayOfParams = () => {
     const { match, location } = this.props;
     const fullSettingsUrl = match.url;
@@ -81,14 +94,31 @@ class SectionHeaderContent extends React.Component {
     return arrayOfParams;
   }
 
+  onSelect = selected => {
+
+    const { getNewAdminsByKeys } = this.props
+
+    getNewAdminsByKeys(
+      selected.map(user => user.key),
+    );
+
+    this.onShowGroupSelector();
+  };
+
+  onShowGroupSelector = () => {
+    this.setState({
+      showSelector: !this.state.showSelector
+    });
+  };
+
   render() {
-    const { t } = this.props;
-    const { header, isCategoryOrHeader } = this.state;
+    const { t, groupsCaption, me } = this.props;
+    const { header, isCategoryOrHeader, showSelector } = this.state;
     const arrayOfParams = this.getArrayOfParams();
 
     return (
       <HeaderContainer>
-        {!isCategoryOrHeader && arrayOfParams[0] &&(
+        {!isCategoryOrHeader && arrayOfParams[0] && (
           <IconButton
             iconName="ArrowPathIcon"
             size="17"
@@ -102,9 +132,38 @@ class SectionHeaderContent extends React.Component {
         <Headline type='content' truncate={true}>
           {t(header)}
         </Headline>
+        <IconButton
+          color="#657077"
+          className="add-button"
+          size={17}
+          iconName="PlusIcon"
+          isFill={false}
+          onClick={this.onPlusButtonClick}
+        />
+        <PeopleSelector
+          id="people-admin-selector"
+          isOpen={showSelector}
+          isMultiSelect={true}
+          role="user"
+          onSelect={this.onSelect}
+          onCancel={this.onCancelSelector}
+          defaultOption={me}
+          defaultOptionLabel={t("MeLabel")}
+          groupsCaption={groupsCaption}
+        />
       </HeaderContainer>
     );
   }
 };
 
-export default withRouter(withTranslation()(SectionHeaderContent));
+function mapStateToProps(state) {
+  const { user: me } = state.auth;
+  const groupsCaption = state.auth.settings.customNames.groupsCaption;
+
+  return {
+    me,
+    groupsCaption
+  };
+}
+
+export default connect(mapStateToProps, { getNewAdminsByKeys })(withRouter(withTranslation()(SectionHeaderContent)));

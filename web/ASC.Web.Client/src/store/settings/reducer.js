@@ -1,5 +1,5 @@
 
-import { SET_USERS, SET_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS } from "./actions";
+import { SET_USERS, SET_ADMINS, SET_NEW_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS } from "./actions";
 import { api } from "asc-web-common";
 const { Filter } = api;
 
@@ -16,6 +16,7 @@ const initialState = {
       options: [],
       users: [],
       admins: [],
+      newAdmins: [],
       owner: {},
       filter: Filter.getDefault()
     }
@@ -45,6 +46,14 @@ const peopleReducer = (state = initialState, action) => {
         security: Object.assign({}, state.security, {
           accessRight: Object.assign({}, state.security.accessRight, {
             admins: action.admins
+          })
+        })
+      });
+    case SET_NEW_ADMINS:
+      return Object.assign({}, state, {
+        security: Object.assign({}, state.security, {
+          accessRight: Object.assign({}, state.security.accessRight, {
+            newAdmins: action.newAdmins
           })
         })
       });

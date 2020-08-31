@@ -5,6 +5,7 @@ const { setPortalLanguageAndTime, setTimezones, setGreetingSettings } = store.au
 
 export const SET_USERS = "SET_USERS";
 export const SET_ADMINS = "SET_ADMINS";
+export const SET_NEW_ADMINS = "SET_NEW_ADMINS";
 export const SET_OWNER = "SET_OWNER";
 export const SET_OPTIONS = "SET_OPTIONS";
 export const SET_FILTER = "SET_FILTER";
@@ -30,6 +31,13 @@ export function setAdmins(admins) {
   return {
     type: SET_ADMINS,
     admins
+  };
+}
+
+export function setNewAdmins(newAdmins) {
+  return {
+    type: SET_NEW_ADMINS,
+    newAdmins
   };
 }
 
@@ -95,6 +103,19 @@ export function getPortalOwner(userId) {
   };
 }
 
+export function getNewAdminsByKeys(adminKeys) {
+  return async dispatch => {
+    let newAdmins = [];
+
+    for (const key of adminKeys) {
+      let newAdmin = await api.people.getUserById(key)
+      newAdmins.push(newAdmin)
+    }
+
+    return dispatch(setNewAdmins(newAdmins))
+  };
+}
+
 export function fetchPeople(filter) {
   let filterData = filter && filter.clone();
   if (!filterData) {
@@ -129,27 +150,27 @@ export function getUpdateListAdmin(filter) {
 export function getWhiteLabelLogoText() {
   return dispatch => {
     return api.settings.getLogoText()
-    .then(res => {
-      dispatch(setLogoText(res));
-    });
+      .then(res => {
+        dispatch(setLogoText(res));
+      });
   };
 }
 
 export function getWhiteLabelLogoSizes() {
   return dispatch => {
     return api.settings.getLogoSizes()
-    .then(res => {
-      dispatch(setLogoSizes(res));
-    });
+      .then(res => {
+        dispatch(setLogoSizes(res));
+      });
   };
 }
 
 export function getWhiteLabelLogoUrls() {
   return dispatch => {
     return api.settings.getLogoUrls()
-    .then(res => {
-      dispatch(setLogoUrls(Object.values(res)));
-    });
+      .then(res => {
+        dispatch(setLogoUrls(Object.values(res)));
+      });
   };
 }
 
@@ -180,7 +201,7 @@ export function setGreetingTitle(greetingTitle) {
 export function restoreGreetingTitle() {
   return dispatch => {
     return api.settings.restoreGreetingSettings().then(res => {
-      if(res) dispatch(setGreetingSettings(res.Content));
+      if (res) dispatch(setGreetingSettings(res.Content));
     });
   };
 }
