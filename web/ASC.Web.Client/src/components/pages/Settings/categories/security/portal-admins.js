@@ -568,7 +568,7 @@ class PortalAdmins extends Component {
                                 {admins.length > 0 ? (
                                     <>
                                         <div className="wrapper">
-                                            <RowContainer manualHeight={`${admins.length * 50}px`}>
+                                            <RowContainer useReactWindow={false}>
                                                 {admins.map(user => {
                                                     const element = (
                                                         <Avatar
@@ -659,24 +659,6 @@ class PortalAdmins extends Component {
                                                     );
                                                 })}
                                             </RowContainer>
-                                        </div>
-                                        <div className="wrapper">
-                                            <Paging
-                                                previousLabel={t("PreviousPage")}
-                                                nextLabel={t("NextPage")}
-                                                openDirection="top"
-                                                countItems={this.countItems()}
-                                                pageItems={this.pageItems()}
-                                                displayItems={false}
-                                                selectedPageItem={this.selectedPageItem()}
-                                                selectedCountItem={this.selectedCountItem()}
-                                                onSelectPage={this.onChangePage}
-                                                onSelectCount={this.onChangePageSize}
-                                                previousAction={this.onPrevClick}
-                                                nextAction={this.onNextClick}
-                                                disablePrevious={!filter.hasPrev()}
-                                                disableNext={!filter.hasNext()}
-                                            />
                                         </div>
                                         {hasChanged &&
                                             <SaveCancelButtons
