@@ -209,15 +209,14 @@ class PortalAdmins extends Component {
     componentDidUpdate(prevProps) {
         const { newAdmins } = this.props
 
-        if (!this.compareObjects(prevProps.newAdmins, newAdmins)) {
+        if (newAdmins.length > 0 && !this.compareObjects(prevProps.newAdmins, newAdmins)) {
+            const admins = JSON.parse(JSON.stringify(this.state.admins))
+            const updatedAdmins = admins.concat(newAdmins)
 
-            if (newAdmins.length > 0) {
-                let admins = JSON.parse(JSON.stringify(this.state.admins))
-                const updatedAdmins = admins.concat(newAdmins)
-                this.setState({
-                    admins: updatedAdmins
-                })
-            }
+            saveToSessionStorage("admins", updatedAdmins)
+            this.setState({
+                admins: updatedAdmins
+            })
         }
 
         this.checkChanges()
@@ -539,7 +538,7 @@ class PortalAdmins extends Component {
     }
 
     render() {
-        const { t, filter } = this.props;
+        const { t } = this.props;
         const { isLoading, showLoader, admins, hasChanged, showReminder } = this.state;
 
         return (
