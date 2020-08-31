@@ -54,11 +54,12 @@ class SectionHeaderContent extends React.Component {
     this.state = {
       header,
       isCategoryOrHeader: isCategory || isHeader,
-      showSelector: false
+      showSelector: false,
+      showAddButton: header === "PortalAdmins"
     };
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps, prevState) {
     const arrayOfParams = this.getArrayOfParams()
 
     const key = getKeyByLink(arrayOfParams, settingsTree);
@@ -66,7 +67,9 @@ class SectionHeaderContent extends React.Component {
     const isCategory = checkPropertyByLink(arrayOfParams, settingsTree, "isCategory");
     const isHeader = checkPropertyByLink(arrayOfParams, settingsTree, "isHeader");
     const isCategoryOrHeader = isCategory || isHeader;
+    const showAddButton = header === "PortalAdmins"
 
+    prevState.showAddButton !== showAddButton && this.setState({ showAddButton })
     header !== this.state.header && this.setState({ header });
     isCategoryOrHeader !== this.state.isCategoryOrHeader && this.setState({ isCategoryOrHeader });
   }
@@ -113,7 +116,7 @@ class SectionHeaderContent extends React.Component {
 
   render() {
     const { t, groupsCaption, me } = this.props;
-    const { header, isCategoryOrHeader, showSelector } = this.state;
+    const { header, isCategoryOrHeader, showSelector, showAddButton } = this.state;
     const arrayOfParams = this.getArrayOfParams();
 
     return (
@@ -132,25 +135,29 @@ class SectionHeaderContent extends React.Component {
         <Headline type='content' truncate={true}>
           {t(header)}
         </Headline>
-        <IconButton
-          color="#657077"
-          className="add-button"
-          size={17}
-          iconName="PlusIcon"
-          isFill={false}
-          onClick={this.onPlusButtonClick}
-        />
-        <PeopleSelector
-          id="people-admin-selector"
-          isOpen={showSelector}
-          isMultiSelect={true}
-          role="user"
-          onSelect={this.onSelect}
-          onCancel={this.onCancelSelector}
-          defaultOption={me}
-          defaultOptionLabel={t("MeLabel")}
-          groupsCaption={groupsCaption}
-        />
+        {showAddButton &&
+          <>
+            <IconButton
+              color="#657077"
+              className="add-button"
+              size={17}
+              iconName="PlusIcon"
+              isFill={false}
+              onClick={this.onPlusButtonClick}
+            />
+            <PeopleSelector
+              id="people-admin-selector"
+              isOpen={showSelector}
+              isMultiSelect={true}
+              role="user"
+              onSelect={this.onSelect}
+              onCancel={this.onCancelSelector}
+              defaultOption={me}
+              defaultOptionLabel={t("MeLabel")}
+              groupsCaption={groupsCaption}
+            />
+          </>
+        }
       </HeaderContainer>
     );
   }
