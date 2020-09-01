@@ -1,16 +1,14 @@
 import React from "react";
 import { connect } from "react-redux";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { withRouter } from "react-router";
 import { Headline, PeopleSelector } from 'asc-web-common';
-import { IconButton, utils } from "asc-web-components";
+import { IconButton, utils, GroupButtonsMenu, DropDownItem } from "asc-web-components";
 import { withTranslation } from 'react-i18next';
 import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink, getFromSessionStorage } from '../../../utils';
-import {
-  getNewAdminsByKeys
-} from "../../../../../../store/settings/actions";
+import { getNewAdminsByKeys, setSelected } from "../../../../../../store/settings/actions";
 
-const { tablet } = utils.device;
+const { tablet, desktop } = utils.device;
 
 const HeaderContainer = styled.div`
   position: relative;
@@ -33,12 +31,45 @@ const HeaderContainer = styled.div`
     }
 `;
 
+const StyledContainer = styled.div`
+  @media ${desktop} {
+    ${props =>
+    props.isHeaderVisible &&
+    css`
+        width: calc(100% + 76px);
+      `}
+  }
+
+  .group-button-menu-container {
+    margin: 0 -16px;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    padding-bottom: 56px;
+
+    @media ${tablet} {
+      & > div:first-child {
+        ${props =>
+    props.isArticlePinned &&
+    css`
+            width: calc(100% - 240px);
+          `}
+        position: absolute;
+        top: 56px;
+        z-index: 180;
+      }
+    }
+
+    @media ${desktop} {
+      margin: 0 -24px;
+    }
+  }
+`
+
 class SectionHeaderContent extends React.Component {
 
   constructor(props) {
     super(props);
 
-    const { match, location } = props;
+    const { match, location, t } = props;
     const fullSettingsUrl = match.url;
     const locationPathname = location.pathname;
 
@@ -55,8 +86,32 @@ class SectionHeaderContent extends React.Component {
       header,
       isCategoryOrHeader: isCategory || isHeader,
       showSelector: false,
-      showAddButton: header === "PortalAdmins"
+      showAddButton: header === "PortalAdmins",
+      isHeaderVisible: false,
+      isHeaderIndeterminate: false,
+      isHeaderChecked: false
     };
+
+    this.menuItems = [
+      {
+        label: t("LblSelect"),
+        isDropdown: true,
+        isSeparator: true,
+        isSelect: true,
+        fontWeight: "bold",
+        children: [
+          <DropDownItem key="active" label={t("LblActive")} data-index={0} />,
+          <DropDownItem key="disabled" label={t("LblTerminated")} data-index={1} />,
+          <DropDownItem key="invited" label={t("LblInvited")} data-index={2} />
+        ],
+        onSelect: this.onSelectorSelect
+      },
+      {
+        label: t("Remove"),
+        disabled: false,
+        onClick: this.removeAdmin
+      }
+    ];
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -72,11 +127,20 @@ class SectionHeaderContent extends React.Component {
     prevState.showAddButton !== showAddButton && this.setState({ showAddButton })
     header !== this.state.header && this.setState({ header });
     isCategoryOrHeader !== this.state.isCategoryOrHeader && this.setState({ isCategoryOrHeader });
+    if (this.props.selection !== prevProps.selection) this.renderGroupButtonMenu();
   }
 
   compareObjects = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2)
   }
+
+  removeAdmin = () => {
+    console.log("remove")
+  }
+
+  onSelectorSelect = selected => {
+    this.props.setSelected(selected);
+  };
 
   onBackToParent = () => {
     let newArrayOfParams = this.getArrayOfParams();
@@ -131,71 +195,125 @@ class SectionHeaderContent extends React.Component {
     });
   }
 
+  renderGroupButtonMenu = () => {
+    const { admins, selection, selected, setSelected } = this.props;
+
+    const headerVisible = selection.length > 0;
+    const headerIndeterminate =
+      headerVisible && selection.length > 0 && selection.length < admins.length;
+    const headerChecked = headerVisible && selection.length === admins.length;
+
+    let newState = {};
+
+    if (headerVisible || selected === "close") {
+      newState.isHeaderVisible = headerVisible;
+      if (selected === "close") {
+        setSelected("none");
+      }
+    }
+
+    newState.isHeaderIndeterminate = headerIndeterminate;
+    newState.isHeaderChecked = headerChecked;
+
+    this.setState(newState);
+  };
+
   onShowGroupSelector = () => {
     this.setState({
       showSelector: !this.state.showSelector
     });
   };
 
+  onClose = () => {
+    const { setSelected } = this.props;
+    setSelected("none");
+    this.setState({ isHeaderVisible: false });
+  };
+
+  onCheck = checked => {
+    this.props.setSelected(checked ? "all" : "none");
+  }
+
   render() {
     const { t, groupsCaption, me } = this.props;
-    const { header, isCategoryOrHeader, showSelector, showAddButton } = this.state;
+    const { header, isCategoryOrHeader, showSelector, showAddButton, isHeaderVisible, isHeaderChecked, isHeaderIndeterminate } = this.state;
     const arrayOfParams = this.getArrayOfParams();
 
     return (
-      <HeaderContainer>
-        {!isCategoryOrHeader && arrayOfParams[0] && (
-          <IconButton
-            iconName="ArrowPathIcon"
-            size="17"
-            color="#A3A9AE"
-            hoverColor="#657077"
-            isFill={true}
-            onClick={this.onBackToParent}
-            className="arrow-button"
-          />
-        )}
-        <Headline type='content' truncate={true}>
-          {t(header)}
-        </Headline>
-        {showAddButton &&
-          <>
-            <IconButton
-              color="#657077"
-              className="add-button"
-              size={17}
-              iconName="PlusIcon"
-              isFill={false}
-              onClick={this.onPlusButtonClick}
+      <StyledContainer isHeaderVisible={isHeaderVisible}>
+
+        {isHeaderVisible ? (
+          <div className="group-button-menu-container">
+            <GroupButtonsMenu
+              checked={isHeaderChecked}
+              isIndeterminate={isHeaderIndeterminate}
+              onChange={this.onCheck}
+              menuItems={this.menuItems}
+              visible={isHeaderVisible}
+              moreLabel={t("More")}
+              closeTitle={t("CloseButton")}
+              onClose={this.onClose}
+              selected={this.menuItems[0].label}
             />
-            <PeopleSelector
-              id="people-admin-selector"
-              isOpen={showSelector}
-              isMultiSelect={true}
-              role="user"
-              onSelect={this.onSelect}
-              onCancel={this.onCancelSelector}
-              defaultOption={me}
-              defaultOptionLabel={t("MeLabel")}
-              groupsCaption={groupsCaption}
-            />
-          </>
-        }
-      </HeaderContainer>
+          </div>
+        ) : (
+            <HeaderContainer>
+              {!isCategoryOrHeader && arrayOfParams[0] && (
+                <IconButton
+                  iconName="ArrowPathIcon"
+                  size="17"
+                  color="#A3A9AE"
+                  hoverColor="#657077"
+                  isFill={true}
+                  onClick={this.onBackToParent}
+                  className="arrow-button"
+                />
+              )}
+              <Headline type='content' truncate={true}>
+                {t(header)}
+              </Headline>
+              {showAddButton &&
+                <>
+                  <IconButton
+                    color="#657077"
+                    className="add-button"
+                    size={17}
+                    iconName="PlusIcon"
+                    isFill={false}
+                    onClick={this.onPlusButtonClick}
+                  />
+                  <PeopleSelector
+                    id="people-admin-selector"
+                    isOpen={showSelector}
+                    isMultiSelect={true}
+                    role="user"
+                    onSelect={this.onSelect}
+                    onCancel={this.onCancelSelector}
+                    defaultOption={me}
+                    defaultOptionLabel={t("MeLabel")}
+                    groupsCaption={groupsCaption}
+                  />
+                </>
+              }
+            </HeaderContainer>
+          )}
+      </StyledContainer>
     );
   }
 };
 
 function mapStateToProps(state) {
   const { user: me } = state.auth;
-  const { admins } = state.settings.security.accessRight;
+  const { admins, selection, selected } = state.settings.security.accessRight;
   const groupsCaption = state.auth.settings.customNames.groupsCaption;
 
   return {
     me,
     groupsCaption,
-    admins
+    admins,
+    selection,
+    selected
   };
 }
 
-export default connect(mapStateToProps, { getNewAdminsByKeys })(withRouter(withTranslation()(SectionHeaderContent)));
+export default connect(mapStateToProps, { getNewAdminsByKeys, setSelected })(withRouter(withTranslation()(SectionHeaderContent)));

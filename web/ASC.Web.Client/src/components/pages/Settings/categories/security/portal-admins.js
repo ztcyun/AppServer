@@ -401,7 +401,6 @@ class PortalAdmins extends Component {
     }
 
     onContentRowSelect = (checked, user) => {
-        //console.log("ContentRow onSelect", checked, user);
         if (checked) {
             this.props.selectUser(user);
         } else {

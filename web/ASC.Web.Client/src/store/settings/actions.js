@@ -12,6 +12,7 @@ export const SET_FILTER = "SET_FILTER";
 export const SET_LOGO_TEXT = "SET_LOGO_TEXT";
 export const SET_LOGO_SIZES = "SET_LOGO_SIZES";
 export const SET_LOGO_URLS = "SET_LOGO_URLS";
+export const SET_SELECTED = "SET_SELECTED";
 export const SELECT_USER = "SELECT_USER";
 export const DESELECT_USER = "DESELECT_USER";
 
@@ -61,6 +62,13 @@ export function selectUser(user) {
   return {
     type: SELECT_USER,
     user
+  };
+}
+
+export function setSelected(selected) {
+  return {
+    type: SET_SELECTED,
+    selected
   };
 }
 
