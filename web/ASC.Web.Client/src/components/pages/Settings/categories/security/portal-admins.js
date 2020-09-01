@@ -206,17 +206,20 @@ class PortalAdmins extends Component {
         }
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
         const { newAdmins } = this.props
+        const { admins } = this.state
 
-        if (newAdmins.length > 0 && !this.compareObjects(prevProps.newAdmins, newAdmins)) {
-            const admins = JSON.parse(JSON.stringify(this.state.admins))
+        if (newAdmins.length > 0) {
+            this.filterNewAdmins(admins, newAdmins)
+
             const updatedAdmins = admins.concat(newAdmins)
-
-            saveToSessionStorage("admins", updatedAdmins)
-            this.setState({
-                admins: updatedAdmins
-            })
+            if (!this.compareObjects(updatedAdmins, admins)) {
+                saveToSessionStorage("admins", updatedAdmins)
+                this.setState({
+                    admins: updatedAdmins
+                })
+            }
         }
 
         this.checkChanges()
@@ -333,6 +336,17 @@ class PortalAdmins extends Component {
         this.changeAdminRights(adminIndex, moduleName, isAdmin)
     }
 
+    filterNewAdmins = (admins, newAdmins) => {
+        admins.forEach(admin => {
+            for (let t = 0; t < newAdmins.length; t++) {
+                if (admin.id === newAdmins[t].id) {
+                    newAdmins.splice(t, 1);
+                    break;
+                }
+            }
+        });
+    }
+
     changeAdminRights = (adminIndex, moduleName, isAdmin) => {
         const admins = JSON.parse(JSON.stringify(this.state.admins))
         const listAdminModules = admins[adminIndex].listAdminModules;
@@ -390,9 +404,9 @@ class PortalAdmins extends Component {
 
             let changedAdminModules = adminBeforeChanges
                 ? this.getChangedAdminModules(adminBeforeChanges, changedAdmins[i])
-                : changedAdmins[i].listAdminModules.slice();
+                : changedAdmins[i].listAdminModules && changedAdmins[i].listAdminModules.slice();
 
-            if (changedAdminModules.length > 0) {
+            if (changedAdminModules && changedAdminModules.length > 0) {
                 changedAdminModules.forEach(moduleName => {
                     const currentModule = this.props.modules.find(module => module.title.toLowerCase() === moduleName.toLowerCase());
                     if (currentModule) this.onChangeAdmin([changedAdmins[i].id], this.isModuleAdmin(changedAdmins[i], moduleName), currentModule.id)

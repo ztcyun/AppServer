@@ -5,7 +5,7 @@ import { withRouter } from "react-router";
 import { Headline, PeopleSelector } from 'asc-web-common';
 import { IconButton, utils } from "asc-web-components";
 import { withTranslation } from 'react-i18next';
-import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink } from '../../../utils';
+import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink, getFromSessionStorage } from '../../../utils';
 import {
   getNewAdminsByKeys
 } from "../../../../../../store/settings/actions";
@@ -74,6 +74,10 @@ class SectionHeaderContent extends React.Component {
     isCategoryOrHeader !== this.state.isCategoryOrHeader && this.setState({ isCategoryOrHeader });
   }
 
+  compareObjects = (obj1, obj2) => {
+    return JSON.stringify(obj1) === JSON.stringify(obj2)
+  }
+
   onBackToParent = () => {
     let newArrayOfParams = this.getArrayOfParams();
     newArrayOfParams.splice(-1, 1);
@@ -97,16 +101,35 @@ class SectionHeaderContent extends React.Component {
     return arrayOfParams;
   }
 
-  onSelect = selected => {
+  onSelect = selectedUsers => {
 
     const { getNewAdminsByKeys } = this.props
+    const currentAdmins = (sessionStorage.getItem("admins") && getFromSessionStorage("admins").length) > 0
+      ? getFromSessionStorage("admins")
+      : this.props.admins
+
+    if (!currentAdmins || selectedUsers.length < 1) return false
+
+    this.filterSelectedUsers(selectedUsers, currentAdmins)
 
     getNewAdminsByKeys(
-      selected.map(user => user.key),
+      selectedUsers.map(user => user.key),
     );
 
     this.onShowGroupSelector();
   };
+
+  filterSelectedUsers = (selectedUsers, currentAdmins) => {
+
+    currentAdmins.forEach(admin => {
+      for (let t = 0; t < selectedUsers.length; t++) {
+        if (admin.id === selectedUsers[t].key) {
+          selectedUsers.splice(t, 1);
+          break;
+        }
+      }
+    });
+  }
 
   onShowGroupSelector = () => {
     this.setState({
@@ -165,11 +188,13 @@ class SectionHeaderContent extends React.Component {
 
 function mapStateToProps(state) {
   const { user: me } = state.auth;
+  const { admins } = state.settings.security.accessRight;
   const groupsCaption = state.auth.settings.customNames.groupsCaption;
 
   return {
     me,
-    groupsCaption
+    groupsCaption,
+    admins
   };
 }
 
