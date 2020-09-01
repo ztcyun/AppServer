@@ -6,7 +6,9 @@ import styled from "styled-components";
 import {
     changeAdmins,
     getUpdateListAdmin,
-    fetchPeople
+    fetchPeople,
+    selectUser,
+    deselectUser
 } from "../../../../../store/settings/actions";
 import {
     Text,
@@ -25,7 +27,7 @@ import {
     SaveCancelButtons
 } from "asc-web-components";
 import { constants } from 'asc-web-common';
-import { getUserRole } from "../../../../../store/settings/selectors";
+import { getUserRole, isUserSelected } from "../../../../../store/settings/selectors";
 import isEmpty from "lodash/isEmpty";
 import { saveToSessionStorage, getFromSessionStorage } from '../../utils';
 
@@ -398,6 +400,15 @@ class PortalAdmins extends Component {
         })
     }
 
+    onContentRowSelect = (checked, user) => {
+        //console.log("ContentRow onSelect", checked, user);
+        if (checked) {
+            this.props.selectUser(user);
+        } else {
+            this.props.deselectUser(user);
+        }
+    };
+
     acceptChanges = (changedAdmins) => {
         for (let i = 0; i < changedAdmins.length; i++) {
             const adminBeforeChanges = this.getAdminById(this.props.admins, changedAdmins[i].id);
@@ -552,7 +563,7 @@ class PortalAdmins extends Component {
     }
 
     render() {
-        const { t } = this.props;
+        const { t, selection } = this.props;
         const { isLoading, showLoader, admins, hasChanged, showReminder } = this.state;
 
         return (
@@ -591,17 +602,19 @@ class PortalAdmins extends Component {
                                                             source={user.avatar}
                                                         />
                                                     );
-                                                    const nameColor =
-                                                        getUserStatus(user) === 'pending' ? "#A3A9AE" : "#333333";
+
+                                                    const nameColor = getUserStatus(user) === 'pending' ? "#A3A9AE" : "#333333";
+                                                    const checked = isUserSelected(selection, user.id);
 
                                                     return (
                                                         <Row
                                                             key={user.id}
                                                             status={user.status}
+                                                            onSelect={this.onContentRowSelect}
                                                             data={user}
                                                             element={element}
                                                             checkbox={true}
-                                                            checked={false}
+                                                            checked={checked}
                                                             contextButtonSpacerWidth={"0px"}
                                                         >
                                                             <div>
@@ -716,7 +729,7 @@ class PortalAdmins extends Component {
 }
 
 function mapStateToProps(state) {
-    const { admins, newAdmins, owner, filter } = state.settings.security.accessRight;
+    const { admins, newAdmins, owner, filter, selection } = state.settings.security.accessRight;
     const { user: me } = state.auth;
     const groupsCaption = state.auth.settings.customNames.groupsCaption;
 
@@ -728,7 +741,8 @@ function mapStateToProps(state) {
         owner,
         filter,
         me,
-        groupsCaption
+        groupsCaption,
+        selection
     };
 }
 
@@ -747,5 +761,7 @@ PortalAdmins.propTypes = {
 export default connect(mapStateToProps, {
     changeAdmins,
     fetchPeople,
-    getUpdateListAdmin
+    getUpdateListAdmin,
+    selectUser,
+    deselectUser,
 })(withTranslation()(PortalAdmins));

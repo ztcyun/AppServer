@@ -1,6 +1,7 @@
 
-import { SET_USERS, SET_ADMINS, SET_NEW_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS } from "./actions";
+import { SET_USERS, SET_ADMINS, SET_NEW_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS, SELECT_USER, DESELECT_USER } from "./actions";
 import { api } from "asc-web-common";
+import { isUserSelected, skipUser } from "./selectors";
 const { Filter } = api;
 
 const initialState = {
@@ -18,7 +19,8 @@ const initialState = {
       admins: [],
       newAdmins: [],
       owner: {},
-      filter: Filter.getDefault()
+      filter: Filter.getDefault(),
+      selection: []
     }
   },
 };
@@ -94,6 +96,28 @@ const peopleReducer = (state = initialState, action) => {
           ...state.common, whiteLabel: { ...state.common.whiteLabel, logoUrls: action.urls }
         }
       });
+
+    case SELECT_USER:
+      if (!isUserSelected(state.security.accessRight.selection, action.user.id)) {
+        return Object.assign({}, state, {
+          security: Object.assign({}, state.security, {
+            accessRight: Object.assign({}, state.security.accessRight, {
+              selection: [...state.security.accessRight.selection, action.user]
+            })
+          })
+        });
+      } else return state;
+
+    case DESELECT_USER:
+      if (isUserSelected(state.security.accessRight.selection, action.user.id)) {
+        return Object.assign({}, state, {
+          security: Object.assign({}, state.security, {
+            accessRight: Object.assign({}, state.security.accessRight, {
+              selection: skipUser(state.security.accessRight.selection, action.user.id)
+            })
+          })
+        });
+      } else return state;
 
     default:
       return state;

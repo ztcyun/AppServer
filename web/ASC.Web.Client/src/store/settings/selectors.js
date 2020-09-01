@@ -1,3 +1,4 @@
+import { find, filter } from "lodash";
 export const getUserRole = user => {
   if (user.isOwner) return "owner";
   else if (user.isAdmin) return "admin";
@@ -8,4 +9,20 @@ export const getUserRole = user => {
     return "admin";
   else if (user.isVisitor) return "guest";
   else return "user";
+};
+
+export function getSelectedUser(selection, userId) {
+  return find(selection, function (obj) {
+    return obj.id === userId;
+  });
+};
+
+export function isUserSelected(selection, userId) {
+  return getSelectedUser(selection, userId) !== undefined;
+};
+
+export function skipUser(selection, userId) {
+  return filter(selection, function (obj) {
+    return obj.id !== userId;
+  });
 };

@@ -12,6 +12,8 @@ export const SET_FILTER = "SET_FILTER";
 export const SET_LOGO_TEXT = "SET_LOGO_TEXT";
 export const SET_LOGO_SIZES = "SET_LOGO_SIZES";
 export const SET_LOGO_URLS = "SET_LOGO_URLS";
+export const SELECT_USER = "SELECT_USER";
+export const DESELECT_USER = "DESELECT_USER";
 
 export function setOptions(options) {
   return {
@@ -52,6 +54,20 @@ export function setFilter(filter) {
   return {
     type: SET_FILTER,
     filter
+  };
+}
+
+export function selectUser(user) {
+  return {
+    type: SELECT_USER,
+    user
+  };
+}
+
+export function deselectUser(user) {
+  return {
+    type: DESELECT_USER,
+    user
   };
 }
 
