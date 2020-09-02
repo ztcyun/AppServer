@@ -203,6 +203,7 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
     sed -i 's/localhost:5004/service_people.server/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5007/service_files/' /etc/nginx/conf.d/onlyoffice.conf && \
     sed -i 's/localhost:5003/service_studio/' /etc/nginx/conf.d/onlyoffice.conf && \
+    sed -i 's/localhost:5012/service_backup/' /etc/nginx/conf.d/onlyoffice.conf && \
     # configute the image nginx whith less privileged https://hub.docker.com/_/nginx
     sed -i 's/pid.*nginx.pid;/pid \/tmp\/nginx.pid;/' /etc/nginx/nginx.conf && \
     sed -i 's/http.*{/http {\n client_body_temp_path \/tmp\/client_temp;\n proxy_temp_path \/tmp\/proxy_temp_path;\n fastcgi_temp_path \/tmp\/fastcgi_temp;\n uwsgi_temp_path \/tmp\/uwsgi_temp;\n scgi_temp_path  \/tmp\/scgi_temp;/' /etc/nginx/nginx.conf
@@ -324,5 +325,18 @@ COPY docker-entrypoint.sh .
 RUN chown appuser:appuser /var/www -R
 USER appuser
 
-
 CMD ["ASC.Web.Studio.dll", "studio"]
+
+## backup ##
+FROM builder AS backup
+
+COPY --from=develop /var/www/services/backup/  /var/www/services/backup/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
+COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
+WORKDIR /var/www/services/backup/
+COPY docker-entrypoint.sh .
+
+RUN chown appuser:appuser /var/www -R
+USER appuser
+
+CMD ["ASC.Data.Backup.dll", "backup", "--core:products:folder=/var/www/products/", "--core:products:subfolder=server"]

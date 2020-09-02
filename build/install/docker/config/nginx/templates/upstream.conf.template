@@ -35,3 +35,8 @@ upstream  service_files_services {
 upstream  service_studio {
   server $SERVICE_STUDIO;
 }
+
+
+upstream  service_backup {
+  server $SERVICE_BACKUP;
+}

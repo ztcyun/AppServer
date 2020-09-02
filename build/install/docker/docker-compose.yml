@@ -251,6 +251,29 @@ services:
       KAFKA_HOST: ${KAFKA_HOST}
     volumes:
     - app_data:/app/onlyoffice/data/
+
+  backup:
+    build:
+      context: .
+      target: backup
+    image: backup
+    container_name: backup
+    hostname: backup
+    restart: always
+    depends_on:
+    - mysql
+    - api
+    expose:
+    - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
+    volumes:
+    - app_data:/app/onlyoffice/data/
   
   nginx:
     build:
@@ -271,6 +294,7 @@ services:
       - files
       - files_services
       - studio
+      - backup
       - mysql
     environment:
       - SERVICE_API="api:${SERVICE_PORT}"
@@ -281,6 +305,7 @@ services:
       - SERVICE_FILES="files:${SERVICE_PORT}"
       - SERVICE_FILES_SERVICES="files_services:${SERVICE_PORT}"
       - SERVICE_STUDIO="studio:${SERVICE_PORT}"
+      - SERVICE_BACKUP="backup:${SERVICE_PORT}"
       - SERVICE_PORT=${SERVICE_PORT}
     volumes:
       - nginx_log:/var/log/nginx
