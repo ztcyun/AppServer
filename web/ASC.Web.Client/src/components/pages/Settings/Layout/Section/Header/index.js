@@ -94,16 +94,11 @@ class SectionHeaderContent extends React.Component {
 
     this.menuItems = [
       {
-        label: t("LblSelect"),
+        label: t("Select all"),
         isDropdown: true,
         isSeparator: true,
         isSelect: true,
         fontWeight: "bold",
-        children: [
-          <DropDownItem key="active" label={t("LblActive")} data-index={0} />,
-          <DropDownItem key="disabled" label={t("LblTerminated")} data-index={1} />,
-          <DropDownItem key="invited" label={t("LblInvited")} data-index={2} />
-        ],
         onSelect: this.onSelectorSelect
       },
       {
@@ -138,8 +133,8 @@ class SectionHeaderContent extends React.Component {
     console.log("remove")
   }
 
-  onSelectorSelect = selected => {
-    this.props.setSelected(selected);
+  onSelectorSelect = () => {
+    this.props.setSelected("all");
   };
 
   onBackToParent = () => {

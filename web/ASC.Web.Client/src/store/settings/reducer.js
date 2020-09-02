@@ -99,8 +99,12 @@ const peopleReducer = (state = initialState, action) => {
       });
     case SET_SELECTED:
       return Object.assign({}, state, {
-        selected: action.selected,
-        selection: getUsersBySelected(state.security.accessRight.admins, action.selected)
+        security: Object.assign({}, state.security, {
+          accessRight: Object.assign({}, state.security.accessRight, {
+            selected: action.selected,
+            selection: getUsersBySelected(state.security.accessRight.admins, action.selected)
+          })
+        })
       });
 
     case SELECT_USER:
