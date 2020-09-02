@@ -40,8 +40,8 @@ using ASC.Common.Threading;
 using ASC.Core;
 using ASC.Core.Tenants;
 using ASC.Files.Core;
-using ASC.Files.Core.Security;
 using ASC.Files.Core.Resources;
+using ASC.Files.Core.Security;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -257,7 +257,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
 
         protected List<TId> Files { get; private set; }
 
-        public IServiceProvider ServiceProvider { get; }
+        private IServiceProvider ServiceProvider { get; }
 
         protected FileOperation(IServiceProvider serviceProvider, T fileOperationData) : base(serviceProvider)
         {

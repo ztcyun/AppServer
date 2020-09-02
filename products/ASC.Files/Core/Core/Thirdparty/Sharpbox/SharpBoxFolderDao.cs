@@ -41,9 +41,9 @@ using ASC.Core.Common.EF;
 using ASC.Core.Tenants;
 using ASC.Files.Core;
 using ASC.Files.Core.EF;
+using ASC.Files.Core.Resources;
 using ASC.Files.Core.Security;
 using ASC.Files.Core.Thirdparty;
-using ASC.Files.Core.Resources;
 using ASC.Web.Core.Files;
 using ASC.Web.Studio.Core;
 
@@ -53,10 +53,10 @@ namespace ASC.Files.Thirdparty.Sharpbox
 {
     internal class SharpBoxFolderDao : SharpBoxDaoBase, IFolderDao<string>
     {
-        public CrossDao CrossDao { get; }
-        public SharpBoxDaoSelector SharpBoxDaoSelector { get; }
-        public IFileDao<int> FileDao { get; }
-        public IFolderDao<int> FolderDao { get; }
+        private CrossDao CrossDao { get; }
+        private SharpBoxDaoSelector SharpBoxDaoSelector { get; }
+        private IFileDao<int> FileDao { get; }
+        private IFolderDao<int> FolderDao { get; }
 
         public SharpBoxFolderDao(
             IServiceProvider serviceProvider,

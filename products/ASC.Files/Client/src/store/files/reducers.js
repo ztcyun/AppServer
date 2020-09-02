@@ -19,7 +19,13 @@ import {
   SET_PROGRESS_BAR_DATA,
   SET_CONVERT_DIALOG_VISIBLE,
   SET_NEW_TREE_FILES,
-  SET_NEW_ROW_ITEMS
+  SET_NEW_ROW_ITEMS,
+  SET_SELECTED_NODE,
+  SET_EXPAND_SETTINGS_TREE,
+  SET_IS_LOADING,
+  SET_THIRD_PARTY,
+  SET_FILES_SETTINGS,
+  SET_FILES_SETTING
 } from "./actions";
 import { api } from "asc-web-common";
 import { isFileSelected, skipFile, getFilesBySelected } from "./selectors";
@@ -43,7 +49,19 @@ const initialState = {
   progressData: { percent: 0, label: "", visible: false },
   convertDialogVisible: false,
   updateTreeNew: false,
-  newRowItems: []
+  newRowItems: [],
+  selectedTreeNode: [],
+  isLoading: false,
+  settingsTree: {
+    expandedSetting: [],
+    storeOriginalFiles: false,
+    confirmDelete: false,
+    updateIfExist: false,
+    forceSave: false,
+    storeForceSave: false,
+    enableThirdParty: false,
+  }
+  
 };
 
 const filesReducer = (state = initialState, action) => {
@@ -141,6 +159,53 @@ const filesReducer = (state = initialState, action) => {
       return Object.assign({}, state, {
         newRowItems: action.newRowItems
       });
+    case SET_SELECTED_NODE: 
+      if ( action.node[0] ) {
+        return Object.assign({}, state, {
+          selectedTreeNode: action.node
+        }) 
+      } else {
+        return state;
+      }
+    case SET_EXPAND_SETTINGS_TREE:
+      return Object.assign({}, state, {
+        settingsTree: { ...state.settingsTree , expandedSetting: action.setting }
+      })
+    case SET_IS_LOADING:
+      return Object.assign({}, state, {
+        isLoading: action.isLoading
+      })
+    case SET_THIRD_PARTY:
+      return Object.assign({}, state, {
+        settingsTree: { ...state.settingsTree, thirdParty: action.data }
+      })
+    case SET_FILES_SETTINGS:
+      const { 
+        storeOriginalFiles,
+        confirmDelete,
+        updateIfExist,
+        forcesave,
+        storeForcesave,
+        enableThirdParty
+      } = action.settings
+      return Object.assign({}, state, {
+        settingsTree: { ...state.settingsTree, 
+          storeOriginalFiles,
+          confirmDelete,
+          updateIfExist,
+          forceSave: forcesave,
+          storeForceSave: storeForcesave,
+          enableThirdParty
+        }
+      })
+    case SET_FILES_SETTING:
+      const { setting, val } = action;
+      return Object.assign({}, state, {
+        settingsTree: { 
+          ...state.settingsTree, 
+          [setting]: val
+        }
+      })
     default:
       return state;
   }

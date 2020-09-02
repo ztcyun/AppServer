@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import { Loader } from "asc-web-components";
@@ -14,8 +14,12 @@ import {
   UpdateUserForm
 } from "./Section";
 import { fetchProfile } from "../../../store/profile/actions";
-import i18n from "./i18n";
 import { I18nextProvider, withTranslation } from "react-i18next";
+import { createI18N } from "../../../helpers/i18n";
+const i18n = createI18N({
+  page: "ProfileAction",
+  localesPath: "pages/ProfileAction"
+});
 const { changeLanguage } = utils;
 
 class ProfileAction extends React.Component {
@@ -24,6 +28,8 @@ class ProfileAction extends React.Component {
     const { userId } = match.params;
 
     document.title = `${t("ProfileAction")} – ${t("People")}`;
+
+    changeLanguage(i18n);
 
     if (userId) {
       fetchProfile(userId);
@@ -47,14 +53,11 @@ class ProfileAction extends React.Component {
     const { profile, isVisitor, match } = this.props;
     const { userId, type } = match.params;
 
-    changeLanguage(i18n);
-
     if (type) {
       loaded = true;
     } else if (profile) {
       loaded = profile.userName === userId || profile.id === userId;
     }
-
 
     return (
       <I18nextProvider i18n={i18n}>
@@ -86,11 +89,11 @@ class ProfileAction extends React.Component {
               type ? (
                 <CreateUserForm />
               ) : (
-                  <UpdateUserForm />
-                )
+                <UpdateUserForm />
+              )
             ) : (
-                <Loader className="pageLoader" type="rombs" size="40px" />
-              )}
+              <Loader className="pageLoader" type="rombs" size="40px" />
+            )}
           </PageLayout.SectionBody>
         </PageLayout>
       </I18nextProvider>
@@ -107,7 +110,9 @@ ProfileAction.propTypes = {
 const ProfileActionTranslate = withTranslation()(ProfileAction);
 
 const ProfileActionContainer = props => {
-  changeLanguage(i18n);
+  useEffect(() => {
+    changeLanguage(i18n);
+  }, []);
 
   return (
     <I18nextProvider i18n={i18n}>
@@ -123,4 +128,7 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProfile })(ProfileActionContainer);
+export default connect(
+  mapStateToProps,
+  { fetchProfile }
+)(ProfileActionContainer);

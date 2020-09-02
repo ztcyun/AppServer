@@ -37,9 +37,9 @@ using ASC.Core.Common.Settings;
 using ASC.Core.Tenants;
 using ASC.ElasticSearch;
 using ASC.Files.Core.EF;
+using ASC.Files.Core.Resources;
 using ASC.Files.Core.Security;
 using ASC.Files.Core.Thirdparty;
-using ASC.Files.Core.Resources;
 using ASC.Files.Thirdparty.ProviderDao;
 using ASC.Web.Files.Classes;
 using ASC.Web.Studio.Core;
@@ -60,11 +60,11 @@ namespace ASC.Files.Core.Data
         private const string trash = "trash";
         private const string projects = "projects";
 
-        public FactoryIndexer<DbFolder> FactoryIndexer { get; }
-        public GlobalSpace GlobalSpace { get; }
-        public IDaoFactory DaoFactory { get; }
-        public ProviderFolderDao ProviderFolderDao { get; }
-        public CrossDao CrossDao { get; }
+        private FactoryIndexer<DbFolder> FactoryIndexer { get; }
+        private GlobalSpace GlobalSpace { get; }
+        private IDaoFactory DaoFactory { get; }
+        private ProviderFolderDao ProviderFolderDao { get; }
+        private CrossDao CrossDao { get; }
 
         public FolderDao(
             FactoryIndexer<DbFolder> factoryIndexer,
@@ -1068,7 +1068,7 @@ namespace ASC.Files.Core.Data
                     {
                         result.Title = GetProjectTitle(result.ID);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         //Global.Logger.Error(e);
                     }

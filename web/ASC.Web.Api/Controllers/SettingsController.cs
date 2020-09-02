@@ -100,54 +100,55 @@ namespace ASC.Api.Settings
         //private static DistributedTaskQueue SMTPTasks { get; } = new DistributedTaskQueue("smtpOperations");
         public Tenant Tenant { get { return ApiContext.Tenant; } }
         public ApiContext ApiContext { get; }
-        public MessageService MessageService { get; }
-        public StudioNotifyService StudioNotifyService { get; }
-        public IWebHostEnvironment WebHostEnvironment { get; }
-        public IServiceProvider ServiceProvider { get; }
-        public EmployeeWraperHelper EmployeeWraperHelper { get; }
-        public ConsumerFactory ConsumerFactory { get; }
-        public SmsProviderManager SmsProviderManager { get; }
-        public TimeZoneConverter TimeZoneConverter { get; }
-        public CustomNamingPeople CustomNamingPeople { get; }
-        public IPSecurity.IPSecurity IpSecurity { get; }
-        public IMemoryCache MemoryCache { get; }
-        public ProviderManager ProviderManager { get; }
-        public MobileDetector MobileDetector { get; }
-        public IOptionsSnapshot<AccountLinker> AccountLinker { get; }
-        public FirstTimeTenantSettings FirstTimeTenantSettings { get; }
-        public UserManager UserManager { get; }
-        public TenantManager TenantManager { get; }
-        public TenantExtra TenantExtra { get; }
-        public TenantStatisticsProvider TenantStatisticsProvider { get; }
-        public AuthContext AuthContext { get; }
-        public CookiesManager CookiesManager { get; }
-        public WebItemSecurity WebItemSecurity { get; }
-        public StudioNotifyHelper StudioNotifyHelper { get; }
-        public LicenseReader LicenseReader { get; }
-        public PermissionContext PermissionContext { get; }
-        public SettingsManager SettingsManager { get; }
-        public TfaManager TfaManager { get; }
-        public WebItemManager WebItemManager { get; }
-        public WebItemManagerSecurity WebItemManagerSecurity { get; }
-        public TenantInfoSettingsHelper TenantInfoSettingsHelper { get; }
-        public TenantWhiteLabelSettingsHelper TenantWhiteLabelSettingsHelper { get; }
-        public StorageHelper StorageHelper { get; }
-        public TenantLogoManager TenantLogoManager { get; }
-        public TenantUtil TenantUtil { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public CommonLinkUtility CommonLinkUtility { get; }
-        public ColorThemesSettingsHelper ColorThemesSettingsHelper { get; }
-        public IConfiguration Configuration { get; }
-        public SetupInfo SetupInfo { get; }
-        public BuildVersion BuildVersion { get; }
-        public DisplayUserSettingsHelper DisplayUserSettingsHelper { get; }
-        public StatisticManager StatisticManager { get; }
-        public IPRestrictionsService IPRestrictionsService { get; }
-        public CoreConfiguration CoreConfiguration { get; }
-        public MessageTarget MessageTarget { get; }
-        public StudioSmsNotificationSettingsHelper StudioSmsNotificationSettingsHelper { get; }
-        public CoreSettings CoreSettings { get; }
-        public StorageSettingsHelper StorageSettingsHelper { get; }
+        private MessageService MessageService { get; }
+        private StudioNotifyService StudioNotifyService { get; }
+        private IWebHostEnvironment WebHostEnvironment { get; }
+        private IServiceProvider ServiceProvider { get; }
+        private EmployeeWraperHelper EmployeeWraperHelper { get; }
+        private ConsumerFactory ConsumerFactory { get; }
+        private SmsProviderManager SmsProviderManager { get; }
+        private TimeZoneConverter TimeZoneConverter { get; }
+        private CustomNamingPeople CustomNamingPeople { get; }
+        private IPSecurity.IPSecurity IpSecurity { get; }
+        private IMemoryCache MemoryCache { get; }
+        private ProviderManager ProviderManager { get; }
+        private MobileDetector MobileDetector { get; }
+        private IOptionsSnapshot<AccountLinker> AccountLinker { get; }
+        private FirstTimeTenantSettings FirstTimeTenantSettings { get; }
+        private UserManager UserManager { get; }
+        private TenantManager TenantManager { get; }
+        private TenantExtra TenantExtra { get; }
+        private TenantStatisticsProvider TenantStatisticsProvider { get; }
+        private AuthContext AuthContext { get; }
+        private CookiesManager CookiesManager { get; }
+        private WebItemSecurity WebItemSecurity { get; }
+        private StudioNotifyHelper StudioNotifyHelper { get; }
+        private LicenseReader LicenseReader { get; }
+        private PermissionContext PermissionContext { get; }
+        private SettingsManager SettingsManager { get; }
+        private TfaManager TfaManager { get; }
+        private WebItemManager WebItemManager { get; }
+        private WebItemManagerSecurity WebItemManagerSecurity { get; }
+        private TenantInfoSettingsHelper TenantInfoSettingsHelper { get; }
+        private TenantWhiteLabelSettingsHelper TenantWhiteLabelSettingsHelper { get; }
+        private StorageHelper StorageHelper { get; }
+        private TenantLogoManager TenantLogoManager { get; }
+        private TenantUtil TenantUtil { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
+        private CommonLinkUtility CommonLinkUtility { get; }
+        private ColorThemesSettingsHelper ColorThemesSettingsHelper { get; }
+        private IConfiguration Configuration { get; }
+        private SetupInfo SetupInfo { get; }
+        private BuildVersion BuildVersion { get; }
+        private DisplayUserSettingsHelper DisplayUserSettingsHelper { get; }
+        private StatisticManager StatisticManager { get; }
+        private IPRestrictionsService IPRestrictionsService { get; }
+        private CoreConfiguration CoreConfiguration { get; }
+        private MessageTarget MessageTarget { get; }
+        private StudioSmsNotificationSettingsHelper StudioSmsNotificationSettingsHelper { get; }
+        private CoreSettings CoreSettings { get; }
+        private StorageSettingsHelper StorageSettingsHelper { get; }
+        private ServiceClient ServiceClient { get; }
         public ILog Log { get; set; }
 
         public SettingsController(
@@ -200,7 +201,8 @@ namespace ASC.Api.Settings
             ProviderManager providerManager,
             MobileDetector mobileDetector,
             IOptionsSnapshot<AccountLinker> accountLinker,
-            FirstTimeTenantSettings firstTimeTenantSettings)
+            FirstTimeTenantSettings firstTimeTenantSettings,
+            ServiceClient serviceClient)
         {
             Log = option.Get("ASC.Api");
             WebHostEnvironment = webHostEnvironment;
@@ -252,6 +254,7 @@ namespace ASC.Api.Settings
             StudioSmsNotificationSettingsHelper = studioSmsNotificationSettingsHelper;
             CoreSettings = coreSettings;
             StorageSettingsHelper = storageSettingsHelper;
+            ServiceClient = serviceClient;
         }
 
         [Read("", Check = false)]
@@ -1354,7 +1357,7 @@ namespace ASC.Api.Settings
 
         [Create("license", Check = false)]
         [Authorize(AuthenticationSchemes = "confirm", Roles = "Wizard")]
-        public object UploadLicense([FromForm]UploadLicenseModel model)
+        public object UploadLicense([FromForm] UploadLicenseModel model)
         {
             try
             {
@@ -1602,8 +1605,7 @@ namespace ASC.Api.Settings
 
             if (!CoreBaseSettings.Standalone) return -1;
 
-            using var migrateClient = new ServiceClient();
-            return migrateClient.GetProgress(Tenant.TenantId);
+            return ServiceClient.GetProgress(Tenant.TenantId);
         }
 
         [Update("storage")]
@@ -1686,8 +1688,7 @@ namespace ASC.Api.Settings
 
             try
             {
-                using var migrateClient = new ServiceClient();
-                migrateClient.UploadCdn(Tenant.TenantId, "/", WebHostEnvironment.ContentRootPath, settings);
+                ServiceClient.UploadCdn(Tenant.TenantId, "/", WebHostEnvironment.ContentRootPath, settings);
             }
             catch (Exception e)
             {
@@ -1730,10 +1731,7 @@ namespace ASC.Api.Settings
 
         private void StartMigrate(StorageSettings settings)
         {
-            using (var migrateClient = new ServiceClient())
-            {
-                migrateClient.Migrate(Tenant.TenantId, settings);
-            }
+            ServiceClient.Migrate(Tenant.TenantId, settings);
 
             Tenant.SetStatus(TenantStatus.Migrating);
             TenantManager.SaveTenant(Tenant);
@@ -1754,6 +1752,68 @@ namespace ASC.Api.Settings
             return new { Url = hubUrl };
         }
 
+
+        [Read("authservice")]
+        public IEnumerable<AuthServiceModel> GetAuthServices()
+        {
+            return ConsumerFactory.GetAll<Consumer>()
+                .Where(consumer => consumer.ManagedKeys.Any())
+                .OrderBy(services => services.Order)
+                .Select(r => new AuthServiceModel(r))
+                .ToList();
+        }
+
+        [Create("authservice")]
+        public bool SaveAuthKeys(AuthServiceModel model)
+        {
+            PermissionContext.DemandPermissions(SecutiryConstants.EditPortalSettings);
+            if (!SetupInfo.IsVisibleSettings(ManagementType.ThirdPartyAuthorization.ToString()))
+                throw new BillingException(Resource.ErrorNotAllowedOption, "ThirdPartyAuthorization");
+
+            var changed = false;
+            var consumer = ConsumerFactory.GetByKey<Consumer>(model.Name);
+
+            var validateKeyProvider = (IValidateKeysProvider)ConsumerFactory.GetAll<Consumer>().FirstOrDefault(r => r.Name == consumer.Name && r is IValidateKeysProvider);
+            if (validateKeyProvider != null)
+            {
+                try
+                {
+                    if (validateKeyProvider is TwilioProvider twilioLoginProvider)
+                    {
+                        twilioLoginProvider.ClearOldNumbers();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e);
+                }
+            }
+
+            if (model.Props.All(r => string.IsNullOrEmpty(r.Value)))
+            {
+                consumer.Clear();
+                changed = true;
+            }
+            else
+            {
+                foreach (var authKey in model.Props.Where(authKey => consumer[authKey.Name] != authKey.Value))
+                {
+                    consumer[authKey.Name] = authKey.Value;
+                    changed = true;
+                }
+            }
+
+            if (validateKeyProvider != null && !validateKeyProvider.ValidateKeys() && !consumer.All(r => string.IsNullOrEmpty(r.Value)))
+            {
+                consumer.Clear();
+                throw new ArgumentException(Resource.ErrorBadKeys);
+            }
+
+            if (changed)
+                MessageService.Send(MessageAction.AuthorizationKeysSetting);
+
+            return changed;
+        }
 
         private readonly int maxCount = 10;
         private readonly int expirationMinutes = 2;
@@ -1821,7 +1881,9 @@ namespace ASC.Api.Settings
                 .AddProviderManagerService()
                 .AddAccountLinker()
                 .AddMobileDetectorService()
-                .AddFirstTimeTenantSettings();
+                .AddFirstTimeTenantSettings()
+                .AddServiceClient()
+                .AddTwilioProviderService();
         }
     }
 }

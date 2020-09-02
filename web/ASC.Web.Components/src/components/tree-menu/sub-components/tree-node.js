@@ -14,6 +14,7 @@ var checkboxIcon,
     checkboxCheckedHoverIcon,
     checkboxIndeterminateDisabledIcon,
     checkboxIndeterminateHoverIcon,
+    // eslint-disable-next-line no-unused-vars
     treeIcon;
 
 (function(){
@@ -83,15 +84,15 @@ const TreeNodeMenu = styled(TreeNode)`
     .rc-tree-node-content-wrapper {
         width: ${props => props.disableSwitch ? "90%" : "108%"};
         display: inline-block;
-        padding: 1px 8px 0 8px;
-        min-width: ${props => props.disableSwitch ? "160px" : "190px"};
+        position: relative;
+        /*min-width: ${props => props.disableSwitch ? "160px" : "190px"};*/
+        overflow: hidden;
         
         cursor: pointer;
         height: 24px;
         text-decoration: none;
         vertical-align: top;
 
-        position: absolute;
         left: 0;
         background: ${props => props.dragging ? "#F8F7BF" : "none"};
 
@@ -132,8 +133,8 @@ const TreeNodeMenu = styled(TreeNode)`
         width: 17px;
     }
     span.rc-tree-switcher{
-        margin: 9px 4px 0 4px;
-        height: 8px;
+        margin: 0px 4px;
+        height: 24px;
         width: 8px;
     }
     span.rc-tree-switcher.rc-tree-icon__customize,
@@ -214,7 +215,7 @@ const TreeNodeMenu = styled(TreeNode)`
     span.rc-tree-title{
         display: inline-block;
         width: ${props => !props.disableSwitch 
-            ? props.icon ? 'calc(100% - 36px)' : 'calc(100% - 20px)'
+            ? props.icon ? 'calc(100% - 44px)' : 'calc(100% - 20px)'
             : '100%'};
         white-space: nowrap;
         overflow: hidden;

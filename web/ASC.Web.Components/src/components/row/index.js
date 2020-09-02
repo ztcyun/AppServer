@@ -59,8 +59,12 @@ const StyledOptionButton = styled.div`
 `;
 
 class Row extends React.Component {
+  constructor(props){
+    super(props);
 
-  rowRef = React.createRef();
+    this.rowRef = React.createRef();
+  }
+
   shouldComponentUpdate(nextProps) {
     if (this.props.needForUpdate) {
       return this.props.needForUpdate(this.props, nextProps);
@@ -126,7 +130,7 @@ class Row extends React.Component {
         <StyledContent className="row_content">{children}</StyledContent>
         <StyledOptionButton className="row_context-menu-wrapper" spacerWidth={contextButtonSpacerWidth}>
           {renderContext
-            ? (<ContextMenuButton onClick={selectItem} className="expandButton" directionX="right" getData={getOptions} />)
+            ? (<ContextMenuButton isFill color='#A3A9AE' hoverColor='#657077' onClick={selectItem} className="expandButton" directionX="right" getData={getOptions} />)
             : (<div className="expandButton">{' '}</div>)}
         </StyledOptionButton>
       </StyledRow>
@@ -146,6 +150,7 @@ Row.propTypes = {
   indeterminate: PropTypes.bool,
   needForUpdate: PropTypes.func,
   onSelect: PropTypes.func,
+  selectItem: PropTypes.func,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
 };
 

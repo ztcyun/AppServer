@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { Loader } from "asc-web-components";
 import { PageLayout, utils } from "asc-web-common";
@@ -6,20 +6,25 @@ import {
   ArticleHeaderContent,
   ArticleMainButtonContent,
   ArticleBodyContent
-} from '../../Article';
-import { SectionHeaderContent, SectionBodyContent } from './Section';
-import i18n from "./i18n";
+} from "../../Article";
+import { SectionHeaderContent, SectionBodyContent } from "./Section";
 import { I18nextProvider, withTranslation } from "react-i18next";
 import { fetchGroup, resetGroup } from "../../../store/group/actions";
+import { createI18N } from "../../../helpers/i18n";
+const i18n = createI18N({
+  page: "GroupAction",
+  localesPath: "pages/GroupAction"
+});
 const { changeLanguage } = utils;
 
 class GroupAction extends React.Component {
-
   componentDidMount() {
     const { match, fetchGroup, t } = this.props;
     const { groupId } = match.params;
 
     document.title = `${t("GroupAction")} – ${t("People")}`;
+
+    changeLanguage(i18n);
 
     if (groupId) {
       fetchGroup(groupId);
@@ -37,11 +42,9 @@ class GroupAction extends React.Component {
   }
 
   render() {
-    console.log("GroupAction render")
+    console.log("GroupAction render");
 
     const { group, match } = this.props;
-
-    changeLanguage(i18n);
 
     return (
       <I18nextProvider i18n={i18n}>
@@ -68,24 +71,24 @@ class GroupAction extends React.Component {
             </PageLayout.SectionBody>
           </PageLayout>
         ) : (
-            <PageLayout>
-              <PageLayout.ArticleHeader>
-                <ArticleHeaderContent />
-              </PageLayout.ArticleHeader>
+          <PageLayout>
+            <PageLayout.ArticleHeader>
+              <ArticleHeaderContent />
+            </PageLayout.ArticleHeader>
 
-              <PageLayout.ArticleMainButton>
-                <ArticleMainButtonContent />
-              </PageLayout.ArticleMainButton>
+            <PageLayout.ArticleMainButton>
+              <ArticleMainButtonContent />
+            </PageLayout.ArticleMainButton>
 
-              <PageLayout.ArticleBody>
-                <ArticleBodyContent />
-              </PageLayout.ArticleBody>
+            <PageLayout.ArticleBody>
+              <ArticleBodyContent />
+            </PageLayout.ArticleBody>
 
-              <PageLayout.SectionBody>
-                <Loader className="pageLoader" type="rombs" size="40px" />
-              </PageLayout.SectionBody>
-            </PageLayout>
-          )}
+            <PageLayout.SectionBody>
+              <Loader className="pageLoader" type="rombs" size="40px" />
+            </PageLayout.SectionBody>
+          </PageLayout>
+        )}
       </I18nextProvider>
     );
   }
@@ -94,7 +97,9 @@ class GroupAction extends React.Component {
 const GroupActionWrapper = withTranslation()(GroupAction);
 
 const GroupActionContainer = props => {
-  changeLanguage(i18n);
+  useEffect(() => {
+    changeLanguage(i18n);
+  }, []);
   return (
     <I18nextProvider i18n={i18n}>
       <GroupActionWrapper {...props} />
@@ -109,8 +114,10 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps,
+export default connect(
+  mapStateToProps,
   {
     fetchGroup,
     resetGroup
-  })(GroupActionContainer);
+  }
+)(GroupActionContainer);
