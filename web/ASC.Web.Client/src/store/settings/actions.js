@@ -16,6 +16,7 @@ export const SET_SELECTED = "SET_SELECTED";
 export const SELECT_USER = "SELECT_USER";
 export const DESELECT_USER = "DESELECT_USER";
 export const ADD_ADMINS = "ADD_ADMINS"
+export const REMOVE_ADMINS = "REMOVE_ADMINS"
 
 export function setOptions(options) {
   return {
@@ -105,6 +106,13 @@ export function addAdmins(admins) {
   return {
     type: ADD_ADMINS,
     admins
+  };
+}
+
+export function removeAdmins(adminsId) {
+  return {
+    type: REMOVE_ADMINS,
+    adminsId
   };
 }
 

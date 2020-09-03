@@ -43,6 +43,21 @@ export function combineAdmins(admins, newAdmins) {
   return admins.concat(newAdmins)
 }
 
+export function removeAdmins(admins, ids) {
+  return (admins.filter(admin => {
+    let isDeletedAdmin = false
+
+    for (let i = 0; i < ids.length; i++) {
+      if (admin.id === ids[i]) {
+        isDeletedAdmin = true
+        break
+      }
+    }
+
+    return !isDeletedAdmin
+  }))
+}
+
 export function getUsersBySelected(users, selected) {
   let newSelection = [];
   users.forEach(user => {

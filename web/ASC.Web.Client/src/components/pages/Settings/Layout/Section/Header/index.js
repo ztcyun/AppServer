@@ -3,10 +3,10 @@ import { connect } from "react-redux";
 import styled, { css } from "styled-components";
 import { withRouter } from "react-router";
 import { Headline, PeopleSelector, api } from 'asc-web-common';
-import { IconButton, utils, GroupButtonsMenu, DropDownItem } from "asc-web-components";
+import { IconButton, utils, GroupButtonsMenu } from "asc-web-components";
 import { withTranslation } from 'react-i18next';
-import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink, getFromSessionStorage } from '../../../utils';
-import { addAdmins, setSelected } from "../../../../../../store/settings/actions";
+import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink } from '../../../utils';
+import { addAdmins, removeAdmins, setSelected } from "../../../../../../store/settings/actions";
 
 const { tablet, desktop } = utils.device;
 
@@ -115,8 +115,13 @@ class SectionHeaderContent extends React.Component {
   }
 
   removeAdmins = () => {
-    const { selection } = this.props
-    console.log("remove")
+    const { selection, removeAdmins } = this.props
+    debugger
+    const adminsId = selection.map(admin => {
+      if (!admin.isOwner) return admin.id
+    })
+
+    if (adminsId.length > 0) removeAdmins(adminsId)
   }
 
   onSelectorSelect = () => {
@@ -334,4 +339,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { addAdmins, setSelected })(withRouter(withTranslation()(SectionHeaderContent)));
+export default connect(mapStateToProps, { addAdmins, setSelected, removeAdmins })(withRouter(withTranslation()(SectionHeaderContent)));

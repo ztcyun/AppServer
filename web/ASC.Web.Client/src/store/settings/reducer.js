@@ -1,7 +1,7 @@
 
-import { SET_USERS, SET_ADMINS, SET_NEW_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS, SELECT_USER, DESELECT_USER, SET_SELECTED, ADD_ADMINS } from "./actions";
+import { SET_USERS, SET_ADMINS, SET_NEW_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS, SELECT_USER, DESELECT_USER, SET_SELECTED, ADD_ADMINS, REMOVE_ADMINS } from "./actions";
 import { api } from "asc-web-common";
-import { isUserSelected, skipUser, getUsersBySelected, combineAdmins } from "./selectors";
+import { isUserSelected, skipUser, getUsersBySelected, combineAdmins, removeAdmins } from "./selectors";
 const { Filter } = api;
 
 const initialState = {
@@ -61,6 +61,15 @@ const peopleReducer = (state = initialState, action) => {
         security: Object.assign({}, state.security, {
           accessRight: Object.assign({}, state.security.accessRight, {
             newAdmins: combineAdmins(currentAdmins, action.admins)
+          })
+        })
+      });
+
+    case REMOVE_ADMINS:
+      return Object.assign({}, state, {
+        security: Object.assign({}, state.security, {
+          accessRight: Object.assign({}, state.security.accessRight, {
+            newAdmins: removeAdmins(currentAdmins, action.adminsId)
           })
         })
       });
