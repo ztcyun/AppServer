@@ -89,24 +89,9 @@ class SectionHeaderContent extends React.Component {
       showAddButton: header === "PortalAdmins",
       isHeaderVisible: false,
       isHeaderIndeterminate: false,
-      isHeaderChecked: false
+      isHeaderChecked: false,
+      disableRemove: true
     };
-
-    this.menuItems = [
-      {
-        label: t("Select all"),
-        isDropdown: true,
-        isSeparator: true,
-        isSelect: true,
-        fontWeight: "bold",
-        onSelect: this.onSelectorSelect
-      },
-      {
-        label: t("Remove"),
-        disabled: false,
-        onClick: this.removeAdmin
-      }
-    ];
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -129,7 +114,8 @@ class SectionHeaderContent extends React.Component {
     return JSON.stringify(obj1) === JSON.stringify(obj2)
   }
 
-  removeAdmin = () => {
+  removeAdmins = () => {
+    const { selection } = this.props
     console.log("remove")
   }
 
@@ -209,6 +195,15 @@ class SectionHeaderContent extends React.Component {
     const headerChecked = headerVisible && selection.length === currentAdmins.length;
 
     let newState = {};
+    let disableRemove = true
+
+    if (selection.length > 0) {
+      selection.forEach(admin => {
+        if (!admin.isOwner) disableRemove = false
+      });
+    }
+
+    if (disableRemove !== this.state.disableRemove) this.setState({ disableRemove })
 
     if (headerVisible || selected === "close") {
       newState.isHeaderVisible = headerVisible;
@@ -241,8 +236,25 @@ class SectionHeaderContent extends React.Component {
 
   render() {
     const { t, groupsCaption, me } = this.props;
+    const { disableRemove } = this.state
     const { header, isCategoryOrHeader, showSelector, showAddButton, isHeaderVisible, isHeaderChecked, isHeaderIndeterminate } = this.state;
     const arrayOfParams = this.getArrayOfParams();
+
+    const menuItems = [
+      {
+        label: t("Select all"),
+        isDropdown: true,
+        isSeparator: true,
+        isSelect: true,
+        fontWeight: "bold",
+        onSelect: this.onSelectorSelect
+      },
+      {
+        label: t("Remove"),
+        disabled: disableRemove,
+        onClick: this.removeAdmins
+      }
+    ];
 
     return (
       <StyledContainer isHeaderVisible={isHeaderVisible}>
@@ -253,12 +265,12 @@ class SectionHeaderContent extends React.Component {
               checked={isHeaderChecked}
               isIndeterminate={isHeaderIndeterminate}
               onChange={this.onCheck}
-              menuItems={this.menuItems}
+              menuItems={menuItems}
               visible={isHeaderVisible}
               moreLabel={t("More")}
               closeTitle={t("CloseButton")}
               onClose={this.onClose}
-              selected={this.menuItems[0].label}
+              selected={menuItems[0].label}
             />
           </div>
         ) : (
