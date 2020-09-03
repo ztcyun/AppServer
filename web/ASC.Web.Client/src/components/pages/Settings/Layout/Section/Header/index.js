@@ -2,11 +2,11 @@ import React from "react";
 import { connect } from "react-redux";
 import styled, { css } from "styled-components";
 import { withRouter } from "react-router";
-import { Headline, PeopleSelector } from 'asc-web-common';
+import { Headline, PeopleSelector, api } from 'asc-web-common';
 import { IconButton, utils, GroupButtonsMenu, DropDownItem } from "asc-web-components";
 import { withTranslation } from 'react-i18next';
 import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink, getFromSessionStorage } from '../../../utils';
-import { getNewAdminsByKeys, setSelected } from "../../../../../../store/settings/actions";
+import { addAdmins, setSelected } from "../../../../../../store/settings/actions";
 
 const { tablet, desktop } = utils.device;
 
@@ -161,19 +161,15 @@ class SectionHeaderContent extends React.Component {
   }
 
   onSelect = selectedUsers => {
+    const { addAdmins } = this.props
 
-    const { getNewAdminsByKeys } = this.props
-    const currentAdmins = (sessionStorage.getItem("admins") && getFromSessionStorage("admins").length) > 0
-      ? getFromSessionStorage("admins")
-      : this.props.admins
+    if (selectedUsers.length < 1) return false
 
-    if (!currentAdmins || selectedUsers.length < 1) return false
-
-    this.filterSelectedUsers(selectedUsers, currentAdmins)
-
-    getNewAdminsByKeys(
+    this.getNewAdminsByKeys(
       selectedUsers.map(user => user.key),
-    );
+    ).then(admins => {
+      addAdmins(admins)
+    })
 
     this.onShowGroupSelector();
   };
@@ -190,13 +186,27 @@ class SectionHeaderContent extends React.Component {
     });
   }
 
+  async getNewAdminsByKeys(adminKeys) {
+    let newAdmins = [];
+
+    for (const key of adminKeys) {
+      let newAdmin = await api.people.getUserById(key)
+      newAdmins.push(newAdmin)
+    }
+
+    return newAdmins
+  }
+
   renderGroupButtonMenu = () => {
-    const { admins, selection, selected, setSelected } = this.props;
+    const { admins, newAdmins, selection, selected, setSelected } = this.props;
+    const currentAdmins = newAdmins && newAdmins.length > 0
+      ? newAdmins
+      : admins
 
     const headerVisible = selection.length > 0;
     const headerIndeterminate =
-      headerVisible && selection.length > 0 && selection.length < admins.length;
-    const headerChecked = headerVisible && selection.length === admins.length;
+      headerVisible && selection.length > 0 && selection.length < currentAdmins.length;
+    const headerChecked = headerVisible && selection.length === currentAdmins.length;
 
     let newState = {};
 
@@ -299,16 +309,17 @@ class SectionHeaderContent extends React.Component {
 
 function mapStateToProps(state) {
   const { user: me } = state.auth;
-  const { admins, selection, selected } = state.settings.security.accessRight;
+  const { admins, selection, selected, newAdmins } = state.settings.security.accessRight;
   const groupsCaption = state.auth.settings.customNames.groupsCaption;
 
   return {
     me,
     groupsCaption,
     admins,
+    newAdmins,
     selection,
     selected
   };
 }
 
-export default connect(mapStateToProps, { getNewAdminsByKeys, setSelected })(withRouter(withTranslation()(SectionHeaderContent)));
+export default connect(mapStateToProps, { addAdmins, setSelected })(withRouter(withTranslation()(SectionHeaderContent)));

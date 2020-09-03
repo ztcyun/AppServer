@@ -8,7 +8,8 @@ import {
     getUpdateListAdmin,
     fetchPeople,
     selectUser,
-    deselectUser
+    deselectUser,
+    setNewAdmins
 } from "../../../../../store/settings/actions";
 import {
     Text,
@@ -149,7 +150,6 @@ let adminsFromSessionStorage = null
 class PortalAdmins extends Component {
     constructor(props) {
         super(props);
-
         if (sessionStorage.getItem("admins")) adminsFromSessionStorage = getFromSessionStorage("admins");
 
         this.state = {
@@ -165,7 +165,7 @@ class PortalAdmins extends Component {
     }
 
     componentDidMount() {
-        const { admins, fetchPeople } = this.props;
+        const { admins, fetchPeople, setNewAdmins } = this.props;
         const { showReminder } = this.state;
 
         if ((adminsFromSessionStorage) && !showReminder) {
@@ -173,6 +173,7 @@ class PortalAdmins extends Component {
                 showReminder: true
             })
         }
+        if (adminsFromSessionStorage && adminsFromSessionStorage.length > 0) setNewAdmins(adminsFromSessionStorage)
 
         if (isEmpty(admins, true)) {
             const newFilter = this.onAdminsFilter();
@@ -208,23 +209,21 @@ class PortalAdmins extends Component {
         }
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         const { newAdmins } = this.props
         const { admins } = this.state
 
-        if (newAdmins.length > 0) {
-            this.filterNewAdmins(admins, newAdmins)
 
-            const updatedAdmins = admins.concat(newAdmins)
-            if (!this.compareObjects(updatedAdmins, admins)) {
-                saveToSessionStorage("admins", updatedAdmins)
+        if (newAdmins.length > 0 && !this.compareObjects(prevProps.newAdmins, newAdmins)) {
+            if (!this.compareObjects(newAdmins, admins)) {
+                saveToSessionStorage("admins", newAdmins)
                 this.setState({
-                    admins: updatedAdmins
+                    admins: newAdmins
                 })
             }
-        }
+        } else
 
-        this.checkChanges()
+            this.checkChanges()
     }
 
     onChangeAdmin = (userIds, isAdmin, productId) => {
@@ -350,6 +349,7 @@ class PortalAdmins extends Component {
     }
 
     changeAdminRights = (adminIndex, moduleName, isAdmin) => {
+        const { setNewAdmins } = this.props
         const admins = JSON.parse(JSON.stringify(this.state.admins))
         const listAdminModules = admins[adminIndex].listAdminModules;
 
@@ -366,6 +366,7 @@ class PortalAdmins extends Component {
         this.setState({
             admins: newAdmins
         })
+        setNewAdmins(newAdmins)
 
         this.checkChanges();
     }
@@ -385,11 +386,14 @@ class PortalAdmins extends Component {
     }
 
     onSaveButtonClick = () => {
+        const { setNewAdmins } = this.props
         let changedAdmins = this.createChangedAdminsList();
         this.acceptChanges(changedAdmins)
+        setNewAdmins("")
     }
 
     onCancelClick = () => {
+        const { setNewAdmins } = this.props
         saveToSessionStorage("admins", "")
         adminsFromSessionStorage = ""
 
@@ -398,6 +402,7 @@ class PortalAdmins extends Component {
             showReminder: false,
             hasChanged: false
         })
+        setNewAdmins("")
     }
 
     onContentRowSelect = (checked, user) => {
@@ -763,4 +768,5 @@ export default connect(mapStateToProps, {
     getUpdateListAdmin,
     selectUser,
     deselectUser,
+    setNewAdmins
 })(withTranslation()(PortalAdmins));

@@ -29,6 +29,20 @@ export function skipUser(selection, userId) {
   });
 };
 
+export function combineAdmins(admins, newAdmins) {
+
+  admins.forEach(admin => {
+    for (let i = 0; i < newAdmins.length; i++) {
+      if (admin.id === newAdmins[i].id) {
+        newAdmins.splice(i, 1);
+        break;
+      }
+    }
+  });
+
+  return admins.concat(newAdmins)
+}
+
 export function getUsersBySelected(users, selected) {
   let newSelection = [];
   users.forEach(user => {

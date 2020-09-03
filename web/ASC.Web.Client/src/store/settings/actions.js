@@ -15,6 +15,7 @@ export const SET_LOGO_URLS = "SET_LOGO_URLS";
 export const SET_SELECTED = "SET_SELECTED";
 export const SELECT_USER = "SELECT_USER";
 export const DESELECT_USER = "DESELECT_USER";
+export const ADD_ADMINS = "ADD_ADMINS"
 
 export function setOptions(options) {
   return {
@@ -100,6 +101,13 @@ export function setLogoUrls(urls) {
   };
 }
 
+export function addAdmins(admins) {
+  return {
+    type: ADD_ADMINS,
+    admins
+  };
+}
+
 export function changeAdmins(userIds, productId, isAdmin, filter) {
   let filterData = filter && filter.clone();
   if (!filterData) {
@@ -124,19 +132,6 @@ export function changeAdmins(userIds, productId, isAdmin, filter) {
 export function getPortalOwner(userId) {
   return dispatch => {
     return api.people.getUserById(userId).then(owner => dispatch(setOwner(owner)));
-  };
-}
-
-export function getNewAdminsByKeys(adminKeys) {
-  return async dispatch => {
-    let newAdmins = [];
-
-    for (const key of adminKeys) {
-      let newAdmin = await api.people.getUserById(key)
-      newAdmins.push(newAdmin)
-    }
-
-    return dispatch(setNewAdmins(newAdmins))
   };
 }
 

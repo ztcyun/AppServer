@@ -1,7 +1,7 @@
 
-import { SET_USERS, SET_ADMINS, SET_NEW_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS, SELECT_USER, DESELECT_USER, SET_SELECTED } from "./actions";
+import { SET_USERS, SET_ADMINS, SET_NEW_ADMINS, SET_OWNER, SET_OPTIONS, SET_FILTER, SET_LOGO_TEXT, SET_LOGO_SIZES, SET_LOGO_URLS, SELECT_USER, DESELECT_USER, SET_SELECTED, ADD_ADMINS } from "./actions";
 import { api } from "asc-web-common";
-import { isUserSelected, skipUser, getUsersBySelected } from "./selectors";
+import { isUserSelected, skipUser, getUsersBySelected, combineAdmins } from "./selectors";
 const { Filter } = api;
 
 const initialState = {
@@ -27,6 +27,10 @@ const initialState = {
 };
 
 const peopleReducer = (state = initialState, action) => {
+  const currentAdmins = state.security.accessRight.newAdmins && state.security.accessRight.newAdmins.length > 0
+    ? state.security.accessRight.newAdmins
+    : state.security.accessRight.admins
+
   switch (action.type) {
     case SET_OPTIONS:
       return Object.assign({}, state, {
@@ -52,6 +56,15 @@ const peopleReducer = (state = initialState, action) => {
           })
         })
       });
+    case ADD_ADMINS:
+      return Object.assign({}, state, {
+        security: Object.assign({}, state.security, {
+          accessRight: Object.assign({}, state.security.accessRight, {
+            newAdmins: combineAdmins(currentAdmins, action.admins)
+          })
+        })
+      });
+
     case SET_NEW_ADMINS:
       return Object.assign({}, state, {
         security: Object.assign({}, state.security, {
@@ -102,7 +115,7 @@ const peopleReducer = (state = initialState, action) => {
         security: Object.assign({}, state.security, {
           accessRight: Object.assign({}, state.security.accessRight, {
             selected: action.selected,
-            selection: getUsersBySelected(state.security.accessRight.admins, action.selected)
+            selection: getUsersBySelected(currentAdmins, action.selected)
           })
         })
       });
