@@ -388,7 +388,8 @@ class PortalAdmins extends Component {
     onSaveButtonClick = () => {
         const { setNewAdmins } = this.props
         let changedAdmins = this.createChangedAdminsList();
-        this.acceptChanges(changedAdmins)
+        let deletedAdmins = this.createDeletedAdminsList();
+        this.acceptChanges(changedAdmins, deletedAdmins)
         setNewAdmins("")
     }
 
@@ -413,7 +414,7 @@ class PortalAdmins extends Component {
         }
     };
 
-    acceptChanges = (changedAdmins) => {
+    acceptChanges = (changedAdmins, deletedAdmins) => {
         for (let i = 0; i < changedAdmins.length; i++) {
             const adminBeforeChanges = this.getAdminById(this.props.admins, changedAdmins[i].id);
 
@@ -427,9 +428,15 @@ class PortalAdmins extends Component {
                     if (currentModule) this.onChangeAdmin([changedAdmins[i].id], this.isModuleAdmin(changedAdmins[i], moduleName), currentModule.id)
                 });
             }
-
-            this.onCancelClick()
         }
+        for (let i = 0; i < deletedAdmins.length; i++) {
+            this.props.modules.forEach(module => {
+                this.onChangeAdmin([deletedAdmins[i].id], false, module.id)
+            });
+
+        }
+
+        this.onCancelClick()
     }
 
     getChangedAdminModules = (adminBeforeChanges, admin) => {
@@ -473,6 +480,20 @@ class PortalAdmins extends Component {
         }
 
         if (changedAdmins) return changedAdmins
+    }
+
+    createDeletedAdminsList = () => {
+        const { admins } = this.props
+        let deletedAdmins = [];
+
+        if (!admins && admins.length < 1) return deletedAdmins
+
+        for (let i = 0; i < admins.length; i++) {
+            const adminAfterChanges = this.getAdminById(this.state.admins, admins[i].id)
+            if (!adminAfterChanges) deletedAdmins.push(admins[i])
+        }
+
+        return deletedAdmins
     }
 
     getAdminById = (admins, id) => {
