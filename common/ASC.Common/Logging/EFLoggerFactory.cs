@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -31,7 +32,7 @@ namespace ASC.Common.Logging
 
     public class EFLoggerProvider : ILoggerProvider
     {
-        public IOptionsMonitor<ILog> Option { get; }
+        private IOptionsMonitor<ILog> Option { get; }
 
         public EFLoggerProvider(IOptionsMonitor<ILog> option)
         {
@@ -118,8 +119,10 @@ namespace ASC.Common.Logging
     {
         public static DIHelper AddLoggerService(this DIHelper services)
         {
-            services.TryAddScoped<EFLoggerFactory>();
-            services.TryAddScoped<EFLoggerProvider>();
+            if (services.TryAddScoped<EFLoggerFactory>())
+            {
+                services.TryAddScoped<EFLoggerProvider>();
+            }
 
             return services;
         }

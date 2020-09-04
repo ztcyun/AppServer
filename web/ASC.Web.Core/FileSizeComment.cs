@@ -35,8 +35,8 @@ namespace ASC.Web.Studio.Core
 {
     public class FileSizeComment
     {
-        public TenantExtra TenantExtra { get; }
-        public SetupInfo SetupInfo { get; }
+        private TenantExtra TenantExtra { get; }
+        private SetupInfo SetupInfo { get; }
 
         public FileSizeComment(TenantExtra tenantExtra, SetupInfo setupInfo)
         {
@@ -164,11 +164,14 @@ namespace ASC.Web.Studio.Core
     {
         public static DIHelper AddFileSizeCommentService(this DIHelper services)
         {
-            services.TryAddScoped<FileSizeComment>();
+            if (services.TryAddScoped<FileSizeComment>())
+            {
+                return services
+                    .AddTenantExtraService()
+                    .AddSetupInfo();
+            }
 
-            return services
-                .AddTenantExtraService()
-                .AddSetupInfo();
+            return services;
         }
     }
 }

@@ -29,8 +29,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -43,6 +43,7 @@ using ASC.Core.Users;
 using ASC.FederatedLogin.Helpers;
 using ASC.FederatedLogin.LoginProviders;
 using ASC.Files.Core;
+using ASC.Files.Core.Model;
 using ASC.Files.Helpers;
 using ASC.Files.Model;
 using ASC.MessagingSystem;
@@ -65,7 +66,6 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Newtonsoft.Json.Linq;
 
 using FileShare = ASC.Files.Core.Security.FileShare;
-using SortedByType = ASC.Files.Core.SortedByType;
 
 namespace ASC.Api.Documents
 {
@@ -79,33 +79,33 @@ namespace ASC.Api.Documents
         private readonly ApiContext ApiContext;
         private readonly FileStorageService<string> FileStorageService;
 
-        public FilesControllerHelper<string> FilesControllerHelperString { get; }
-        public FilesControllerHelper<int> FilesControllerHelperInt { get; }
-        public FileStorageService<int> FileStorageServiceInt { get; }
-        public GlobalFolderHelper GlobalFolderHelper { get; }
-        public FilesSettingsHelper FilesSettingsHelper { get; }
-        public FilesLinkUtility FilesLinkUtility { get; }
-        public SecurityContext SecurityContext { get; }
-        public FolderWrapperHelper FolderWrapperHelper { get; }
-        public FileOperationWraperHelper FileOperationWraperHelper { get; }
-        public EntryManager EntryManager { get; }
-        public UserManager UserManager { get; }
-        public WebItemSecurity WebItemSecurity { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public ThirdpartyConfiguration ThirdpartyConfiguration { get; }
-        public BoxLoginProvider BoxLoginProvider { get; }
-        public DropboxLoginProvider DropboxLoginProvider { get; }
-        public GoogleLoginProvider GoogleLoginProvider { get; }
-        public OneDriveLoginProvider OneDriveLoginProvider { get; }
-        public MessageService MessageService { get; }
-        public CommonLinkUtility CommonLinkUtility { get; }
-        public DocumentServiceConnector DocumentServiceConnector { get; }
-        public FolderContentWrapperHelper FolderContentWrapperHelper { get; }
-        public WordpressToken WordpressToken { get; }
-        public WordpressHelper WordpressHelper { get; }
-        public ConsumerFactory ConsumerFactory { get; }
-        public EasyBibHelper EasyBibHelper { get; }
-        public ProductEntryPoint ProductEntryPoint { get; }
+        private FilesControllerHelper<string> FilesControllerHelperString { get; }
+        private FilesControllerHelper<int> FilesControllerHelperInt { get; }
+        private FileStorageService<int> FileStorageServiceInt { get; }
+        private GlobalFolderHelper GlobalFolderHelper { get; }
+        private FilesSettingsHelper FilesSettingsHelper { get; }
+        private FilesLinkUtility FilesLinkUtility { get; }
+        private SecurityContext SecurityContext { get; }
+        private FolderWrapperHelper FolderWrapperHelper { get; }
+        private FileOperationWraperHelper FileOperationWraperHelper { get; }
+        private EntryManager EntryManager { get; }
+        private UserManager UserManager { get; }
+        private WebItemSecurity WebItemSecurity { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
+        private ThirdpartyConfiguration ThirdpartyConfiguration { get; }
+        private BoxLoginProvider BoxLoginProvider { get; }
+        private DropboxLoginProvider DropboxLoginProvider { get; }
+        private GoogleLoginProvider GoogleLoginProvider { get; }
+        private OneDriveLoginProvider OneDriveLoginProvider { get; }
+        private MessageService MessageService { get; }
+        private CommonLinkUtility CommonLinkUtility { get; }
+        private DocumentServiceConnector DocumentServiceConnector { get; }
+        private FolderContentWrapperHelper FolderContentWrapperHelper { get; }
+        private WordpressToken WordpressToken { get; }
+        private WordpressHelper WordpressHelper { get; }
+        private ConsumerFactory ConsumerFactory { get; }
+        private EasyBibHelper EasyBibHelper { get; }
+        private ProductEntryPoint ProductEntryPoint { get; }
 
         /// <summary>
         /// </summary>
@@ -187,7 +187,7 @@ namespace ASC.Api.Documents
         [Read("@my")]
         public async Task<FolderContentWrapper<int>> GetMyFolder(Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
         {
-            return await ToFolderContentWrapper(await GlobalFolderHelper.FolderMy, userIdOrGroupId, filterType, withsubfolders);
+            return await FilesControllerHelperInt.GetFolder(await GlobalFolderHelper.FolderMy, userIdOrGroupId, filterType, withsubfolders);
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace ASC.Api.Documents
         [Read("@projects")]
         public async Task<FolderContentWrapper<string>> GetProjectsFolder(Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
         {
-            return await ToFolderContentWrapper(await GlobalFolderHelper.GetFolderProjects<string>(), userIdOrGroupId, filterType, withsubfolders);
+            return await FilesControllerHelperString.GetFolder(await GlobalFolderHelper.GetFolderProjects<string>(), userIdOrGroupId, filterType, withsubfolders);
         }
 
 
@@ -216,7 +216,7 @@ namespace ASC.Api.Documents
         [Read("@common")]
         public async Task<FolderContentWrapper<int>> GetCommonFolder(Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
         {
-            return await ToFolderContentWrapper(await GlobalFolderHelper.FolderCommon, userIdOrGroupId, filterType, withsubfolders);
+            return await FilesControllerHelperInt.GetFolder(await GlobalFolderHelper.FolderCommon, userIdOrGroupId, filterType, withsubfolders);
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace ASC.Api.Documents
         [Read("@share")]
         public async Task<FolderContentWrapper<int>> GetShareFolder(Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
         {
-            return await ToFolderContentWrapper(await GlobalFolderHelper.FolderShare, userIdOrGroupId, filterType, withsubfolders);
+            return await FilesControllerHelperInt.GetFolder(await GlobalFolderHelper.FolderShare, userIdOrGroupId, filterType, withsubfolders);
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace ASC.Api.Documents
         [Read("@trash")]
         public async Task<FolderContentWrapper<int>> GetTrashFolder(Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
         {
-            return await ToFolderContentWrapper(Convert.ToInt32(GlobalFolderHelper.FolderTrash), userIdOrGroupId, filterType, withsubfolders);
+            return await FilesControllerHelperInt.GetFolder(Convert.ToInt32(GlobalFolderHelper.FolderTrash), userIdOrGroupId, filterType, withsubfolders);
         }
 
         /// <summary>
@@ -268,6 +268,18 @@ namespace ASC.Api.Documents
         public async Task<FolderContentWrapper<int>> GetFolder(int folderId, Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
         {
             return await FilesControllerHelperInt.GetFolder(folderId, userIdOrGroupId, filterType, withsubfolders);
+        }
+
+        [Read("{folderId}/news")]
+        public async Task<List<FileEntryWrapper>> GetNewItems(string folderId)
+        {
+            return await FilesControllerHelperString.GetNewItems(folderId);
+        }
+
+        [Read("{folderId:int}/news")]
+        public async Task<List<FileEntryWrapper>> GetNewItems(int folderId)
+        {
+            return await FilesControllerHelperInt.GetNewItems(folderId);
         }
 
         /// <summary>
@@ -802,15 +814,15 @@ namespace ASC.Api.Documents
         /// <param name="lastVersion">File last version number</param>
         /// <returns>File info</returns>
         [Update("file/{fileId}", DisableFormat = true)]
-        public async Task<FileWrapper<string>> UpdateFile(string fileId, string title, int lastVersion)
+        public async Task<FileWrapper<string>> UpdateFile(string fileId, UpdateFileModel model)
         {
-            return await FilesControllerHelperString.UpdateFile(fileId, title, lastVersion);
+            return await FilesControllerHelperString.UpdateFile(fileId, model.Title, model.LastVersion);
         }
 
         [Update("file/{fileId:int}")]
-        public async Task<FileWrapper<int>> UpdateFile(int fileId, string title, int lastVersion)
+        public async Task<FileWrapper<int>> UpdateFile(int fileId, UpdateFileModel model)
         {
-            return await FilesControllerHelperInt.UpdateFile(fileId, title, lastVersion);
+            return await FilesControllerHelperInt.UpdateFile(fileId, model.Title, model.LastVersion);
         }
 
         /// <summary>
@@ -949,7 +961,7 @@ namespace ASC.Api.Documents
         /// <category>File operations</category>
         /// <returns>Operation result</returns>
         [Update("fileops/markasread")]
-        public async Task<IEnumerable<FileOperationWraper>> MarkAsRead(BaseBatchModel<object> model)
+        public async Task<IEnumerable<FileOperationWraper>> MarkAsRead(BaseBatchModel<JsonElement> model)
         {
             return await FilesControllerHelperString.MarkAsRead(model);
         }
@@ -1052,15 +1064,39 @@ namespace ASC.Api.Documents
         /// <category>Files</category>
         /// <returns></returns>
         [Update("file/{fileId}/history", DisableFormat = true)]
-        public async Task<IEnumerable<FileWrapper<string>>> ChangeHistory(string fileId, int version, bool continueVersion)
+        public async Task<IEnumerable<FileWrapper<string>>> ChangeHistory(string fileId, ChangeHistoryModel model)
         {
-            return await FilesControllerHelperString.ChangeHistory(fileId, version, continueVersion);
+            return await FilesControllerHelperString.ChangeHistory(fileId, model.Version, model.ContinueVersion);
         }
 
         [Update("file/{fileId:int}/history")]
-        public async Task<IEnumerable<FileWrapper<int>>> ChangeHistory(int fileId, int version, bool continueVersion)
+        public async Task<IEnumerable<FileWrapper<int>>> ChangeHistory(int fileId, ChangeHistoryModel model)
         {
-            return await FilesControllerHelperInt.ChangeHistory(fileId, version, continueVersion);
+            return await FilesControllerHelperInt.ChangeHistory(fileId, model.Version, model.ContinueVersion);
+        }
+
+        [Update("file/{fileId}/lock", DisableFormat = true)]
+        public async Task<FileWrapper<string>> LockFile(string fileId, LockFileModel model)
+        {
+            return await FilesControllerHelperString.LockFile(fileId, model.LockFile);
+        }
+
+        [Update("file/{fileId:int}/lock")]
+        public async Task<FileWrapper<int>> LockFile(int fileId, LockFileModel model)
+        {
+            return await FilesControllerHelperInt.LockFile(fileId, model.LockFile);
+        }
+
+        [Update("file/{fileId}/comment", DisableFormat = true)]
+        public object UpdateComment(string fileId, UpdateCommentModel model)
+        {
+            return FilesControllerHelperString.UpdateComment(fileId, model.Version, model.Comment);
+        }
+
+        [Update("file/{fileId:int}/comment")]
+        public object UpdateComment(int fileId, UpdateCommentModel model)
+        {
+            return FilesControllerHelperInt.UpdateComment(fileId, model.Version, model.Comment);
         }
 
         /// <summary>
@@ -1308,10 +1344,17 @@ namespace ASC.Api.Documents
         /// <short>Get third party folder</short>
         /// <returns>Connected providers folder</returns>
         [Read("thirdparty/common")]
-        public async Task<IEnumerable<Folder<string>>> GetCommonThirdPartyFolders()
+        public async Task<IEnumerable<FolderWrapper<string>>> GetCommonThirdPartyFolders()
         {
             var parent = await FileStorageServiceInt.GetFolder(await GlobalFolderHelper.FolderCommon);
-            return await EntryManager.GetThirpartyFolders(parent);
+            var folders = await EntryManager.GetThirpartyFolders(parent);
+            var result = new List<FolderWrapper<string>>();
+            foreach (var r in folders)
+            {
+                result.Add(await FolderWrapperHelper.Get(r));
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1353,9 +1396,27 @@ namespace ASC.Api.Documents
         /// <param name="set"></param>
         /// <returns></returns>
         [Update(@"storeoriginal")]
-        public bool StoreOriginal(bool set)
+        public bool StoreOriginal(SettingsModel model)
         {
-            return FileStorageService.StoreOriginal(set);
+            return FileStorageService.StoreOriginal(model.Set);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [Read(@"settings")]
+        public object GetFilesSettings()
+        {
+            return new
+            {
+                FilesSettingsHelper.StoreOriginalFiles,
+                FilesSettingsHelper.ConfirmDelete,
+                FilesSettingsHelper.UpdateIfExist,
+                FilesSettingsHelper.Forcesave,
+                FilesSettingsHelper.StoreForcesave,
+                FilesSettingsHelper.EnableThirdParty
+            };
         }
 
         /// <summary>
@@ -1370,15 +1431,60 @@ namespace ASC.Api.Documents
             return FileStorageService.HideConfirmConvert(save);
         }
 
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="set"></param>
         /// <returns></returns>
         [Update(@"updateifexist")]
-        public bool UpdateIfExist(bool set)
+        public bool UpdateIfExist(SettingsModel model)
         {
-            return FileStorageService.UpdateIfExist(set);
+            return FileStorageService.UpdateIfExist(model.Set);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="set"></param>
+        /// <returns></returns>
+        [Update(@"changedeleteconfrim")]
+        public bool ChangeDeleteConfrim(SettingsModel model)
+        {
+            return FileStorageService.ChangeDeleteConfrim(model.Set);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="set"></param>
+        /// <returns></returns>
+        [Update(@"storeforcesave")]
+        public bool StoreForcesave(SettingsModel model)
+        {
+            return FileStorageService.StoreForcesave(model.Set);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="set"></param>
+        /// <returns></returns>
+        [Update(@"forcesave")]
+        public bool Forcesave(SettingsModel model)
+        {
+            return FileStorageService.Forcesave(model.Set);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="set"></param>
+        /// <returns></returns>
+        [Update(@"thirdparty")]
+        public bool ChangeAccessToThirdparty(SettingsModel model)
+        {
+            return FileStorageService.ChangeAccessToThirdparty(model.Set);
         }
 
         /// <summary>
@@ -1431,51 +1537,6 @@ namespace ASC.Api.Documents
                 version = dsVersion,
                 docServiceUrlApi = url,
             };
-        }
-
-
-        private async Task<FolderContentWrapper<string>> ToFolderContentWrapper(string folderId, Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
-        {
-            if (!Enum.TryParse(ApiContext.SortBy, true, out SortedByType sortBy))
-            {
-                sortBy = SortedByType.AZ;
-            }
-
-            var startIndex = Convert.ToInt32(ApiContext.StartIndex);
-            return await FolderContentWrapperHelper.Get(await FileStorageService.GetFolderItems(folderId.ToString(),
-                                                                               startIndex,
-                                                                               Convert.ToInt32(ApiContext.Count), //NOTE: last value: Convert.ToInt32(ApiContext.Count) - 1; in ApiContext +1
-                                                                               filterType,
-                                                                               filterType == FilterType.ByUser,
-                                                                               userIdOrGroupId.ToString(),
-                                                                               ApiContext.FilterValue,
-                                                                               false,
-                                                                               withsubfolders,
-                                                                               new OrderBy(sortBy, !ApiContext.SortDescending)),
-                                            startIndex);
-        }
-
-        private async Task<FolderContentWrapper<int>> ToFolderContentWrapper(int folderId, Guid userIdOrGroupId, FilterType filterType, bool withsubfolders)
-        {
-            if (!Enum.TryParse(ApiContext.SortBy, true, out SortedByType sortBy))
-            {
-                sortBy = SortedByType.AZ;
-            }
-
-            var startIndex = Convert.ToInt32(ApiContext.StartIndex);
-            var items = await FileStorageServiceInt.GetFolderItems(
-                folderId,
-                startIndex,
-                Convert.ToInt32(ApiContext.Count) - 1, //NOTE: in ApiContext +1
-                filterType,
-                filterType == FilterType.ByUser,
-                userIdOrGroupId.ToString(),
-                ApiContext.FilterValue,
-                false,
-                false,
-                new OrderBy(sortBy, !ApiContext.SortDescending));
-
-            return await FolderContentWrapperHelper.Get(items, startIndex);
         }
 
         #region wordpress
@@ -1679,49 +1740,43 @@ namespace ASC.Api.Documents
         /// <summary>
         /// Result of file conversation operation.
         /// </summary>
-        [DataContract(Name = "operation_result", Namespace = "")]
         public class ConversationResult<T>
         {
             /// <summary>
             /// Operation Id.
             /// </summary>
-            [DataMember(Name = "id")]
             public string Id { get; set; }
 
             /// <summary>
             /// Operation type.
             /// </summary>
-            [DataMember(Name = "operation")]
+            [JsonPropertyName("Operation")]
             public FileOperationType OperationType { get; set; }
 
             /// <summary>
             /// Operation progress.
             /// </summary>
-            [DataMember(Name = "progress")]
             public int Progress { get; set; }
 
             /// <summary>
             /// Source files for operation.
             /// </summary>
-            [DataMember(Name = "source")]
             public string Source { get; set; }
 
             /// <summary>
             /// Result file of operation.
             /// </summary>
-            [DataMember(Name = "result")]
+            [JsonPropertyName("result")]
             public FileWrapper<T> File { get; set; }
 
             /// <summary>
             /// Error during conversation.
             /// </summary>
-            [DataMember(Name = "error")]
             public string Error { get; set; }
 
             /// <summary>
             /// Is operation processed.
             /// </summary>
-            [DataMember(Name = "processed")]
             public string Processed { get; set; }
         }
     }

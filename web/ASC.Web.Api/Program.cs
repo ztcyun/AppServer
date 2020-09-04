@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
+
 namespace ASC.Web.Api
 {
     public class Program
@@ -40,7 +41,8 @@ namespace ASC.Web.Api
                     .AddJsonFile("storage.json")
                     .AddJsonFile("kafka.json")
                     .AddJsonFile($"kafka.{hostingContext.HostingEnvironment.EnvironmentName}.json", true)
-                    .AddEnvironmentVariables();
+                    .AddEnvironmentVariables()
+                    .AddCommandLine(args);
             });
     }
 }

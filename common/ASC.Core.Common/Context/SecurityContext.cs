@@ -72,7 +72,7 @@ namespace ASC.Core
         private TenantManager TenantManager { get; }
         private UserFormatter UserFormatter { get; }
         private CookieStorage CookieStorage { get; }
-        public TenantCookieSettingsHelper TenantCookieSettingsHelper { get; }
+        private TenantCookieSettingsHelper TenantCookieSettingsHelper { get; }
         private IHttpContextAccessor HttpContextAccessor { get; }
 
         public SecurityContext(
@@ -288,8 +288,8 @@ namespace ASC.Core
 
     public class PermissionContext
     {
-        public IPermissionResolver PermissionResolver { get; private set; }
-        public AuthContext AuthContext { get; }
+        public IPermissionResolver PermissionResolver { get; set; }
+        private AuthContext AuthContext { get; }
 
         public PermissionContext(IPermissionResolver permissionResolver, AuthContext authContext)
         {
@@ -372,16 +372,19 @@ namespace ASC.Core
     {
         public static DIHelper AddSecurityContextService(this DIHelper services)
         {
-            services.TryAddScoped<SecurityContext>();
+            if (services.TryAddScoped<SecurityContext>())
+            {
+                return services
+                    .AddCookieStorageService()
+                    .AddTenantCookieSettingsService()
+                    .AddAuthManager()
+                    .AddUserFormatter()
+                    .AddAuthContextService()
+                    .AddUserManagerService()
+                    .AddTenantManagerService();
+            }
 
-            return services
-                .AddCookieStorageService()
-                .AddTenantCookieSettingsService()
-                .AddAuthManager()
-                .AddUserFormatter()
-                .AddAuthContextService()
-                .AddUserManagerService()
-                .AddTenantManagerService();
+            return services;
         }
         public static DIHelper AddAuthContextService(this DIHelper services)
         {
@@ -391,11 +394,14 @@ namespace ASC.Core
 
         public static DIHelper AddPermissionContextService(this DIHelper services)
         {
-            services.TryAddScoped<PermissionContext>();
+            if (services.TryAddScoped<PermissionContext>())
+            {
+                return services
+                    .AddAuthContextService()
+                    .AddPermissionResolverService();
+            }
 
-            return services
-                .AddAuthContextService()
-                .AddPermissionResolverService();
+            return services;
         }
     }
 }

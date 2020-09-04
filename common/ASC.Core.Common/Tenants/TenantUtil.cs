@@ -28,14 +28,15 @@ using System;
 
 using ASC.Common;
 using ASC.Common.Utils;
+
 using Microsoft.Extensions.Options;
 
 namespace ASC.Core.Tenants
 {
     class ConfigureTenantUtil : IConfigureNamedOptions<TenantUtil>
     {
-        public IOptionsSnapshot<TenantManager> TenantManager { get; }
-        public TimeZoneConverter TimeZoneConverter { get; }
+        private IOptionsSnapshot<TenantManager> TenantManager { get; }
+        private TimeZoneConverter TimeZoneConverter { get; }
 
         public ConfigureTenantUtil(
             IOptionsSnapshot<TenantManager> tenantManager,
@@ -150,10 +151,13 @@ namespace ASC.Core.Tenants
     {
         public static DIHelper AddTenantUtilService(this DIHelper services)
         {
-            services.TryAddScoped<TenantUtil>();
-            services.TryAddScoped<IConfigureOptions<TenantUtil>, ConfigureTenantUtil>();
+            if (services.TryAddScoped<TenantUtil>())
+            {
+                services.TryAddScoped<IConfigureOptions<TenantUtil>, ConfigureTenantUtil>();
+                return services.AddTenantManagerService();
+            }
 
-            return services.AddTenantManagerService();
+            return services;
         }
     }
 }

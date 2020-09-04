@@ -28,7 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -47,13 +46,11 @@ using Google.Authenticator;
 namespace ASC.Web.Studio.Core.TFA
 {
     [Serializable]
-    [DataContract]
     public class BackupCode
     {
-        [DataMember(Name = "Code")]
         private string code;
 
-        public Signature Signature { get; }
+        private Signature Signature { get; }
 
         public string Code
         {
@@ -61,7 +58,6 @@ namespace ASC.Web.Studio.Core.TFA
             set { code = Signature.Create(value); }
         }
 
-        [DataMember(Name = "IsUsed")]
         public bool IsUsed { get; set; }
 
         public BackupCode(Signature signature, string code)
@@ -77,11 +73,11 @@ namespace ASC.Web.Studio.Core.TFA
         private static readonly TwoFactorAuthenticator Tfa = new TwoFactorAuthenticator();
         private static readonly ICache Cache = AscCache.Memory;
 
-        public SettingsManager SettingsManager { get; }
-        public SecurityContext SecurityContext { get; }
-        public CookiesManager CookiesManager { get; }
-        public SetupInfo SetupInfo { get; }
-        public Signature Signature { get; }
+        private SettingsManager SettingsManager { get; }
+        private SecurityContext SecurityContext { get; }
+        private CookiesManager CookiesManager { get; }
+        private SetupInfo SetupInfo { get; }
+        private Signature Signature { get; }
 
         public TfaManager(
             SettingsManager settingsManager,
@@ -195,14 +191,18 @@ namespace ASC.Web.Studio.Core.TFA
     {
         public static DIHelper AddTfaManagerService(this DIHelper services)
         {
-            services.TryAddScoped<TfaManager>();
+            if (services.TryAddScoped<TfaManager>())
+            {
 
-            return services
-                .AddSettingsManagerService()
-                .AddSetupInfo()
-                .AddSignatureService()
-                .AddCookiesManagerService()
-                .AddSecurityContextService();
+                return services
+                    .AddSettingsManagerService()
+                    .AddSetupInfo()
+                    .AddSignatureService()
+                    .AddCookiesManagerService()
+                    .AddSecurityContextService();
+            }
+
+            return services;
         }
     }
 }

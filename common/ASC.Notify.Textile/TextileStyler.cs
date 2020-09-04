@@ -52,10 +52,10 @@ namespace ASC.Notify.Textile
     {
         private static readonly Regex VelocityArguments = new Regex(NVelocityPatternFormatter.NoStylePreffix + "(?<arg>.*?)" + NVelocityPatternFormatter.NoStyleSuffix, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public IConfiguration Configuration { get; }
-        public InstanceCrypto InstanceCrypto { get; }
-        public MailWhiteLabelSettingsHelper MailWhiteLabelSettingsHelper { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
+        private IConfiguration Configuration { get; }
+        private InstanceCrypto InstanceCrypto { get; }
+        private MailWhiteLabelSettingsHelper MailWhiteLabelSettingsHelper { get; }
 
         static TextileStyler()
         {
@@ -330,8 +330,12 @@ namespace ASC.Notify.Textile
     {
         public static DIHelper AddTextileStylerService(this DIHelper services)
         {
-            services.TryAddScoped<TextileStyler>();
-            return services.AddStylerService();
+            if (services.TryAddScoped<TextileStyler>())
+            {
+                return services.AddStylerService();
+            }
+
+            return services;
         }
     }
 }

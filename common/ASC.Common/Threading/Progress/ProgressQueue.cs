@@ -26,8 +26,10 @@
 
 using System;
 using System.Linq;
+
 using ASC.Common.Logging;
 using ASC.Common.Threading.Workers;
+
 using Microsoft.Extensions.Options;
 
 namespace ASC.Common.Threading.Progress
@@ -39,16 +41,16 @@ namespace ASC.Common.Threading.Progress
         }
     }
 
-    public class ConfigureProgressQueue<T> : IConfigureOptions<ProgressQueue<T>> where T : class, IProgressItem
+    public class ConfigureProgressQueue<T> : IPostConfigureOptions<ProgressQueue<T>> where T : class, IProgressItem
     {
         public ConfigureProgressQueue(IOptionsMonitor<ILog> log)
         {
             Log = log;
         }
 
-        public IOptionsMonitor<ILog> Log { get; }
+        private IOptionsMonitor<ILog> Log { get; }
 
-        public void Configure(ProgressQueue<T> queue)
+        public void PostConfigure(string name, ProgressQueue<T> queue)
         {
             queue.log = Log.Get("ASC.WorkerQueue");
             queue.Start(x => x.RunJob());

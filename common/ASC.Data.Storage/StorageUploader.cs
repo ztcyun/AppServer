@@ -27,17 +27,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ASC.Common.Caching;
 using ASC.Common.Logging;
-using ASC.Common.Threading;
 using ASC.Common.Threading.Progress;
 using ASC.Core;
 using ASC.Core.Common.Settings;
 using ASC.Core.Tenants;
 using ASC.Data.Storage.Configuration;
+using ASC.Migration;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -51,19 +52,21 @@ namespace ASC.Data.Storage
         private static readonly ICache Cache;
         private static readonly object Locker;
 
-        public IServiceProvider ServiceProvider { get; }
+        private IServiceProvider ServiceProvider { get; }
+        private ICacheNotify<MigrationProgress> CacheMigrationNotify { get; }
 
         static StorageUploader()
         {
-            Scheduler = new LimitedConcurrencyLevelTaskScheduler(4);
+            Scheduler = new ConcurrentExclusiveSchedulerPair(TaskScheduler.Default, 4).ConcurrentScheduler;
             TokenSource = new CancellationTokenSource();
             Cache = AscCache.Memory;
             Locker = new object();
         }
 
-        public StorageUploader(IServiceProvider serviceProvider)
+        public StorageUploader(IServiceProvider serviceProvider, ICacheNotify<MigrationProgress> cacheMigrationNotify)
         {
             ServiceProvider = serviceProvider;
+            CacheMigrationNotify = cacheMigrationNotify;
         }
 
         public void Start(int tenantId, StorageSettings newStorageSettings, StorageFactoryConfig storageFactoryConfig)
@@ -77,7 +80,7 @@ namespace ASC.Data.Storage
                 migrateOperation = Cache.Get<MigrateOperation>(GetCacheKey(tenantId));
                 if (migrateOperation != null) return;
 
-                migrateOperation = new MigrateOperation(ServiceProvider, tenantId, newStorageSettings, storageFactoryConfig);
+                migrateOperation = new MigrateOperation(ServiceProvider, CacheMigrationNotify, tenantId, newStorageSettings, storageFactoryConfig);
                 Cache.Insert(GetCacheKey(tenantId), migrateOperation, DateTime.MaxValue);
             }
 
@@ -115,7 +118,6 @@ namespace ASC.Data.Storage
         }
     }
 
-    [DataContract]
     public class MigrateOperation : ProgressBase
     {
         private readonly ILog Log;
@@ -129,9 +131,10 @@ namespace ASC.Data.Storage
             ConfigPath = "";
         }
 
-        public MigrateOperation(IServiceProvider serviceProvider, int tenantId, StorageSettings settings, StorageFactoryConfig storageFactoryConfig)
+        public MigrateOperation(IServiceProvider serviceProvider, ICacheNotify<MigrationProgress> cacheMigrationNotify, int tenantId, StorageSettings settings, StorageFactoryConfig storageFactoryConfig)
         {
             ServiceProvider = serviceProvider;
+            CacheMigrationNotify = cacheMigrationNotify;
             this.tenantId = tenantId;
             this.settings = settings;
             StorageFactoryConfig = storageFactoryConfig;
@@ -140,8 +143,9 @@ namespace ASC.Data.Storage
             Log = serviceProvider.GetService<IOptionsMonitor<ILog>>().CurrentValue;
         }
 
-        public IServiceProvider ServiceProvider { get; }
-        public StorageFactoryConfig StorageFactoryConfig { get; }
+        private IServiceProvider ServiceProvider { get; }
+        private StorageFactoryConfig StorageFactoryConfig { get; }
+        private ICacheNotify<MigrationProgress> CacheMigrationNotify { get; }
 
         protected override void DoJob()
         {
@@ -196,6 +200,8 @@ namespace ASC.Data.Storage
                     }
 
                     StepDone();
+
+                    MigrationPublish();
                 }
 
                 settingsManager.Save(settings);
@@ -207,6 +213,20 @@ namespace ASC.Data.Storage
                 Error = e;
                 Log.Error(e);
             }
+
+            MigrationPublish();
+        }
+
+        private void MigrationPublish()
+        {
+            CacheMigrationNotify.Publish(new MigrationProgress
+            {
+                TenantId = tenantId,
+                Progress = Percentage,
+                Error = Error.ToString(),
+                IsCompleted = IsCompleted
+            },
+            CacheNotifyAction.Insert);
         }
     }
 }

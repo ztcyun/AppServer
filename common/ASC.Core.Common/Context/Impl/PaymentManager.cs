@@ -52,8 +52,8 @@ namespace ASC.Core
         private readonly string partnerUrl;
         private readonly string partnerKey;
 
-        public TenantManager TenantManager { get; }
-        public IConfiguration Configuration { get; }
+        private TenantManager TenantManager { get; }
+        private IConfiguration Configuration { get; }
 
         public PaymentManager(TenantManager tenantManager, ITariffService tariffService, IConfiguration configuration)
         {
@@ -182,12 +182,15 @@ namespace ASC.Core
     {
         public static DIHelper AddPaymentManagerService(this DIHelper services)
         {
-            services.TryAddScoped<PaymentManager>();
+            if (services.TryAddScoped<PaymentManager>())
+            {
+                return services
+                    .AddTenantManagerService()
+                    .AddQuotaService()
+                    .AddTariffService();
+            }
 
-            return services
-                .AddTenantManagerService()
-                .AddQuotaService()
-                .AddTariffService();
+            return services;
         }
     }
 }

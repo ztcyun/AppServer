@@ -27,9 +27,11 @@
 using System;
 using System.Linq;
 using System.Threading;
+
 using ASC.Common.Threading;
 using ASC.Core;
 using ASC.Data.Storage;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ASC.Web.Studio.Core.Quota
@@ -39,7 +41,7 @@ namespace ASC.Web.Studio.Core.Quota
         public const string TenantIdKey = "tenantID";
         protected DistributedTask TaskInfo { get; private set; }
         private int TenantId { get; set; }
-        public IServiceProvider ServiceProvider { get; }
+        private IServiceProvider ServiceProvider { get; }
 
         public QuotaSync(int tenantId, IServiceProvider serviceProvider)
         {

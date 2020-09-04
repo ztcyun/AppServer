@@ -33,7 +33,7 @@ namespace ASC.Web.Core.Utility
                     {
                         _instance = new BitLyShortener(ConsumerFactory);
                     }
-                    else if (!string.IsNullOrEmpty(Configuration["web:url-shortener"]))
+                    else if (!string.IsNullOrEmpty(Configuration["web:url-shortener:value"]))
                     {
                         _instance = new OnlyoShortener(Configuration, CommonLinkUtility);
                     }
@@ -47,9 +47,9 @@ namespace ASC.Web.Core.Utility
             }
         }
 
-        public IConfiguration Configuration { get; }
-        public ConsumerFactory ConsumerFactory { get; }
-        public CommonLinkUtility CommonLinkUtility { get; }
+        private IConfiguration Configuration { get; }
+        private ConsumerFactory ConsumerFactory { get; }
+        private CommonLinkUtility CommonLinkUtility { get; }
 
         public UrlShortener(IConfiguration configuration, ConsumerFactory consumerFactory, CommonLinkUtility commonLinkUtility)
         {
@@ -66,7 +66,7 @@ namespace ASC.Web.Core.Utility
             ConsumerFactory = consumerFactory;
         }
 
-        public ConsumerFactory ConsumerFactory { get; }
+        private ConsumerFactory ConsumerFactory { get; }
 
         public string GetShortenLink(string shareLink)
         {
@@ -82,16 +82,16 @@ namespace ASC.Web.Core.Utility
 
         public OnlyoShortener(IConfiguration configuration, CommonLinkUtility commonLinkUtility)
         {
-            url = configuration["web.url-shortener"];
-            internalUrl = configuration["web.url-shortener.internal"];
-            sKey = configuration["core.machinekey"];
+            url = configuration["web:url-shortener:value"];
+            internalUrl = configuration["web:url-shortener:internal"];
+            sKey = configuration["core:machinekey"];
 
             if (!url.EndsWith("/"))
                 url += '/';
             CommonLinkUtility = commonLinkUtility;
         }
 
-        public CommonLinkUtility CommonLinkUtility { get; }
+        private CommonLinkUtility CommonLinkUtility { get; }
 
         public string GetShortenLink(string shareLink)
         {
@@ -121,10 +121,14 @@ namespace ASC.Web.Core.Utility
     {
         public static DIHelper AddUrlShortener(this DIHelper services)
         {
-            services.TryAddScoped<UrlShortener>();
-            return services
-                .AddConsumerFactoryService()
-                .AddCommonLinkUtilityService();
+            if (services.TryAddScoped<UrlShortener>())
+            {
+                return services
+                    .AddConsumerFactoryService()
+                    .AddCommonLinkUtilityService();
+            }
+
+            return services;
         }
     }
 }

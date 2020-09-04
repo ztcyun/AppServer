@@ -26,7 +26,9 @@
 
 using System;
 using System.Text;
+
 using ASC.Core;
+
 using Microsoft.AspNetCore.Http;
 
 namespace ASC.Web.Core.Helpers
@@ -40,9 +42,9 @@ namespace ASC.Web.Core.Helpers
             SecurityContext = securityContext;
         }
 
-        public IHttpContextAccessor HttpContextAccessor { get; }
-        public UserManager UserManager { get; }
-        public SecurityContext SecurityContext { get; }
+        private IHttpContextAccessor HttpContextAccessor { get; }
+        private UserManager UserManager { get; }
+        private SecurityContext SecurityContext { get; }
 
         public bool ProcessBasicAuthorization(out string authCookie)
         {

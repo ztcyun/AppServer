@@ -29,13 +29,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text.RegularExpressions;
+
 using Google.Protobuf;
 
 namespace ASC.Common.Caching
 {
     public class AscCacheNotify
     {
-        public ICacheNotify<AscCacheItem> CacheNotify { get; }
+        private ICacheNotify<AscCacheItem> CacheNotify { get; }
 
         public AscCacheNotify(ICacheNotify<AscCacheItem> cacheNotify)
         {
@@ -49,7 +50,7 @@ namespace ASC.Common.Caching
             CacheNotify.Publish(new AscCacheItem { Id = ByteString.CopyFrom(Guid.NewGuid().ToByteArray()) }, CacheNotifyAction.Any);
         }
 
-        private static void OnClearCache()
+        public static void OnClearCache()
         {
             var keys = MemoryCache.Default.Select(r => r.Key).ToList();
 

@@ -28,7 +28,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+
 using ASC.Common.Logging;
+
 using Microsoft.Extensions.Options;
 
 namespace ASC.Common.Threading.Workers
@@ -47,7 +49,7 @@ namespace ASC.Common.Threading.Workers
             Log = log;
         }
 
-        public IOptionsMonitor<ILog> Log { get; }
+        private IOptionsMonitor<ILog> Log { get; }
 
         public void Configure(Workers.WorkerQueue<T> queue)
         {

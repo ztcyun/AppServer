@@ -35,7 +35,6 @@ using System.Threading.Tasks;
 using ASC.Common;
 using ASC.Common.Caching;
 using ASC.Common.Logging;
-using ASC.Common.Threading;
 using ASC.Core;
 using ASC.Core.Tenants;
 using ASC.ElasticSearch.Core;
@@ -79,15 +78,15 @@ namespace ASC.ElasticSearch
 
     public class FactoryIndexer<T> : IFactoryIndexer where T : class, ISearchItem
     {
-        private static readonly TaskScheduler Scheduler = new LimitedConcurrencyLevelTaskScheduler(10);
+        private static readonly TaskScheduler Scheduler = new ConcurrentExclusiveSchedulerPair(TaskScheduler.Default, 10).ConcurrentScheduler;
 
         public ILog Logger { get; }
 
-        public TenantManager TenantManager { get; }
-        public SearchSettingsHelper SearchSettingsHelper { get; }
-        public FactoryIndexer FactoryIndexerCommon { get; }
-        public BaseIndexer<T> Indexer { get; }
-        public IServiceProvider ServiceProvider { get; }
+        protected TenantManager TenantManager { get; }
+        private SearchSettingsHelper SearchSettingsHelper { get; }
+        private FactoryIndexer FactoryIndexerCommon { get; }
+        protected BaseIndexer<T> Indexer { get; }
+        private IServiceProvider ServiceProvider { get; }
         public string IndexName { get => Indexer.IndexName; }
 
         public ICache Cache { get; }
@@ -450,12 +449,12 @@ namespace ASC.ElasticSearch
     {
         private static ICache cache = AscCache.Memory;
 
-        public FactoryIndexerHelper FactoryIndexerHelper { get; }
+        private FactoryIndexerHelper FactoryIndexerHelper { get; }
         internal ILifetimeScope Builder { get; set; }
         internal static bool Init { get; set; }
         public ILog Log { get; }
-        public Client Client { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
+        private Client Client { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
 
         public FactoryIndexer(
             ILifetimeScope container,
@@ -593,11 +592,15 @@ namespace ASC.ElasticSearch
     {
         public static DIHelper AddFactoryIndexerService(this DIHelper services)
         {
-            services.TryAddSingleton<FactoryIndexerHelper>();
-            services.TryAddScoped<FactoryIndexer>();
-            return services
-                .AddClientService()
-                .AddCoreBaseSettingsService();
+            if (services.TryAddScoped<FactoryIndexer>())
+            {
+                services.TryAddSingleton<FactoryIndexerHelper>();
+                return services
+                    .AddClientService()
+                    .AddCoreBaseSettingsService();
+            }
+
+            return services;
         }
 
         public static DIHelper AddFactoryIndexerService<T>(this DIHelper services, bool addBase = true) where T : class, ISearchItem
@@ -607,14 +610,17 @@ namespace ASC.ElasticSearch
                 services.TryAddScoped<FactoryIndexer<T>>();
             }
 
-            services.TryAddScoped<Selector<T>>();
+            if (services.TryAddScoped<Selector<T>>())
+            {
+                return services
+                    .AddTenantManagerService()
+                    .AddFactoryIndexerService()
+                    .AddClientService()
+                    .AddSearchSettingsHelperService()
+                    .AddBaseIndexerService<T>();
+            }
 
-            return services
-                .AddTenantManagerService()
-                .AddFactoryIndexerService()
-                .AddClientService()
-                .AddSearchSettingsHelperService()
-                .AddBaseIndexerService<T>();
+            return services;
         }
     }
 }

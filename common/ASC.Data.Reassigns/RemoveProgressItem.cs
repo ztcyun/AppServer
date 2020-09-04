@@ -46,12 +46,13 @@ using ASC.Web.Studio.Core.Notify;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace ASC.Data.Reassigns
 {
     public class RemoveProgressItem : IProgressItem
     {
-        private readonly Dictionary<string, string> _httpHeaders;
+        private readonly IDictionary<string, StringValues> _httpHeaders;
 
         private readonly int _tenantId;
         private readonly Guid _currentUserId;
@@ -66,7 +67,7 @@ namespace ASC.Data.Reassigns
         public double Percentage { get; set; }
         public bool IsCompleted { get; set; }
         public Guid FromUser { get; }
-        public IServiceProvider ServiceProvider { get; }
+        private IServiceProvider ServiceProvider { get; }
         public UserInfo User { get; }
 
         public RemoveProgressItem(
@@ -260,7 +261,7 @@ namespace ASC.Data.Reassigns
 
             services.TryAddSingleton<ProgressQueueOptionsManager<RemoveProgressItem>>();
             services.TryAddSingleton<ProgressQueue<RemoveProgressItem>>();
-            services.AddSingleton<IConfigureOptions<ProgressQueue<RemoveProgressItem>>, ConfigureProgressQueue<RemoveProgressItem>>();
+            services.AddSingleton<IPostConfigureOptions<ProgressQueue<RemoveProgressItem>>, ConfigureProgressQueue<RemoveProgressItem>>();
             return services;
         }
     }

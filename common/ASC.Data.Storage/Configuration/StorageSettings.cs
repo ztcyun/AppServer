@@ -26,7 +26,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 using ASC.Common;
 using ASC.Common.Caching;
@@ -68,29 +67,25 @@ namespace ASC.Data.Storage.Configuration
             }, CacheNotifyAction.Remove);
         }
 
-        public IServiceProvider ServiceProvider { get; }
+        private IServiceProvider ServiceProvider { get; }
     }
 
     [Serializable]
-    [DataContract]
     public abstract class BaseStorageSettings<T> : ISettings where T : class, ISettings, new()
     {
-        [DataMember(Name = "Module")]
         public string Module { get; set; }
 
-        [DataMember(Name = "Props")]
         public Dictionary<string, string> Props { get; set; }
 
         public ISettings GetDefault(IServiceProvider serviceProvider) => new T();
         public virtual Func<DataStoreConsumer, DataStoreConsumer> Switch { get { return d => d; } }
 
-        public ICacheNotify<DataStoreCacheItem> Cache { get; internal set; }
+        internal ICacheNotify<DataStoreCacheItem> Cache { get; set; }
 
         public abstract Guid ID { get; }
     }
 
     [Serializable]
-    [DataContract]
     public class StorageSettings : BaseStorageSettings<StorageSettings>
     {
         public override Guid ID
@@ -100,7 +95,6 @@ namespace ASC.Data.Storage.Configuration
     }
 
     [Serializable]
-    [DataContract]
     public class CdnStorageSettings : BaseStorageSettings<CdnStorageSettings>
     {
         public override Guid ID
@@ -113,16 +107,16 @@ namespace ASC.Data.Storage.Configuration
 
     public class StorageSettingsHelper
     {
-        public BaseStorageSettingsListener BaseStorageSettingsListener { get; }
-        public StorageFactoryConfig StorageFactoryConfig { get; }
-        public PathUtils PathUtils { get; }
-        public EmailValidationKeyProvider EmailValidationKeyProvider { get; }
-        public ICacheNotify<DataStoreCacheItem> Cache { get; }
-        public IOptionsMonitor<ILog> Options { get; }
-        public TenantManager TenantManager { get; }
-        public SettingsManager SettingsManager { get; }
-        public IHttpContextAccessor HttpContextAccessor { get; }
-        public ConsumerFactory ConsumerFactory { get; }
+        private BaseStorageSettingsListener BaseStorageSettingsListener { get; }
+        private StorageFactoryConfig StorageFactoryConfig { get; }
+        private PathUtils PathUtils { get; }
+        private EmailValidationKeyProvider EmailValidationKeyProvider { get; }
+        private ICacheNotify<DataStoreCacheItem> Cache { get; }
+        private IOptionsMonitor<ILog> Options { get; }
+        private TenantManager TenantManager { get; }
+        private SettingsManager SettingsManager { get; }
+        private IHttpContextAccessor HttpContextAccessor { get; }
+        private ConsumerFactory ConsumerFactory { get; }
 
         public StorageSettingsHelper(
             BaseStorageSettingsListener baseStorageSettingsListener,
@@ -232,22 +226,28 @@ namespace ASC.Data.Storage.Configuration
 
         public static DIHelper AddCdnStorageSettingsService(this DIHelper services)
         {
-            services.TryAddScoped<StorageSettingsHelper>();
+            if (services.TryAddScoped<StorageSettingsHelper>())
+            {
+                return services
+                    .AddSettingsManagerService()
+                    .AddBaseStorageSettingsService()
+                    .AddConsumerFactoryService();
+            }
 
-            return services
-                .AddSettingsManagerService()
-                .AddBaseStorageSettingsService()
-                .AddConsumerFactoryService();
+            return services;
         }
 
         public static DIHelper AddStorageSettingsService(this DIHelper services)
         {
-            services.TryAddScoped<StorageSettingsHelper>();
+            if (services.TryAddScoped<StorageSettingsHelper>())
+            {
+                return services
+                    .AddSettingsManagerService()
+                    .AddBaseStorageSettingsService()
+                    .AddConsumerFactoryService();
+            }
 
-            return services
-                .AddSettingsManagerService()
-                .AddBaseStorageSettingsService()
-                .AddConsumerFactoryService();
+            return services;
         }
     }
 }

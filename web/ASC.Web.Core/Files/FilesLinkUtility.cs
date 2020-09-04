@@ -42,14 +42,14 @@ namespace ASC.Web.Core.Files
     public class FilesLinkUtility
     {
         public const string FilesBaseVirtualPath = "~/products/files/";
-        public const string EditorPage = "doceditor.aspx";
+        public const string EditorPage = "doceditor";
         private readonly string FilesUploaderURL;
-        public CommonLinkUtility CommonLinkUtility { get; set; }
-        public BaseCommonLinkUtility BaseCommonLinkUtility { get; }
-        public CoreBaseSettings CoreBaseSettings { get; set; }
-        public CoreSettings CoreSettings { get; set; }
-        public IConfiguration Configuration { get; }
-        public InstanceCrypto InstanceCrypto { get; }
+        private CommonLinkUtility CommonLinkUtility { get; set; }
+        private BaseCommonLinkUtility BaseCommonLinkUtility { get; }
+        private CoreBaseSettings CoreBaseSettings { get; set; }
+        private CoreSettings CoreSettings { get; set; }
+        private IConfiguration Configuration { get; }
+        private InstanceCrypto InstanceCrypto { get; }
 
         public FilesLinkUtility(
             CommonLinkUtility commonLinkUtility,
@@ -73,7 +73,7 @@ namespace ASC.Web.Core.Files
             get { return BaseCommonLinkUtility.ToAbsolute(FilesBaseVirtualPath); }
         }
 
-        public const string FileId = "fileid";
+        public const string FileId = "fileId";
         public const string FolderId = "folderid";
         public const string Version = "version";
         public const string FileUri = "fileuri";
@@ -435,14 +435,17 @@ namespace ASC.Web.Core.Files
     {
         public static DIHelper AddFilesLinkUtilityService(this DIHelper services)
         {
-            services.TryAddScoped<FilesLinkUtility>();
+            if (services.TryAddScoped<FilesLinkUtility>())
+            {
+                return services
+                    .AddCommonLinkUtilityService()
+                    .AddBaseCommonLinkUtilityService()
+                    .AddCoreBaseSettingsService()
+                    .AddCoreSettingsService()
+                    .AddInstanceCryptoService();
+            }
 
-            return services
-                .AddCommonLinkUtilityService()
-                .AddBaseCommonLinkUtilityService()
-                .AddCoreBaseSettingsService()
-                .AddCoreSettingsService()
-                .AddInstanceCryptoService();
+            return services;
         }
     }
 }

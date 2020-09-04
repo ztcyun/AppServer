@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -13,6 +14,7 @@ using ASC.Api.Core;
 using ASC.Api.Documents;
 using ASC.Api.Utils;
 using ASC.Common;
+using ASC.Common.Logging;
 using ASC.Common.Web;
 using ASC.Core;
 using ASC.Core.Common.Configuration;
@@ -33,6 +35,7 @@ using ASC.Web.Files.Utils;
 using ASC.Web.Studio.Utility;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 using Newtonsoft.Json.Linq;
 
@@ -49,37 +52,38 @@ namespace ASC.Files.Helpers
         private readonly ApiContext ApiContext;
         private readonly FileStorageService<T> FileStorageService;
 
-        public GlobalFolderHelper GlobalFolderHelper { get; }
-        public FileWrapperHelper FileWrapperHelper { get; }
-        public FilesSettingsHelper FilesSettingsHelper { get; }
-        public FilesLinkUtility FilesLinkUtility { get; }
-        public FileUploader FileUploader { get; }
-        public DocumentServiceHelper DocumentServiceHelper { get; }
-        public TenantManager TenantManager { get; }
-        public SecurityContext SecurityContext { get; }
-        public FolderWrapperHelper FolderWrapperHelper { get; }
-        public FileOperationWraperHelper FileOperationWraperHelper { get; }
-        public FileShareWrapperHelper FileShareWrapperHelper { get; }
-        public FileShareParamsHelper FileShareParamsHelper { get; }
-        public EntryManager EntryManager { get; }
-        public UserManager UserManager { get; }
-        public WebItemSecurity WebItemSecurity { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public ThirdpartyConfiguration ThirdpartyConfiguration { get; }
-        public BoxLoginProvider BoxLoginProvider { get; }
-        public DropboxLoginProvider DropboxLoginProvider { get; }
-        public GoogleLoginProvider GoogleLoginProvider { get; }
-        public OneDriveLoginProvider OneDriveLoginProvider { get; }
-        public MessageService MessageService { get; }
-        public CommonLinkUtility CommonLinkUtility { get; }
-        public DocumentServiceConnector DocumentServiceConnector { get; }
-        public FolderContentWrapperHelper FolderContentWrapperHelper { get; }
-        public WordpressToken WordpressToken { get; }
-        public WordpressHelper WordpressHelper { get; }
-        public ConsumerFactory ConsumerFactory { get; }
-        public EasyBibHelper EasyBibHelper { get; }
-        public ChunkedUploadSessionHelper ChunkedUploadSessionHelper { get; }
-        public ProductEntryPoint ProductEntryPoint { get; }
+        private GlobalFolderHelper GlobalFolderHelper { get; }
+        private FileWrapperHelper FileWrapperHelper { get; }
+        private FilesSettingsHelper FilesSettingsHelper { get; }
+        private FilesLinkUtility FilesLinkUtility { get; }
+        private FileUploader FileUploader { get; }
+        private DocumentServiceHelper DocumentServiceHelper { get; }
+        private TenantManager TenantManager { get; }
+        private SecurityContext SecurityContext { get; }
+        private FolderWrapperHelper FolderWrapperHelper { get; }
+        private FileOperationWraperHelper FileOperationWraperHelper { get; }
+        private FileShareWrapperHelper FileShareWrapperHelper { get; }
+        private FileShareParamsHelper FileShareParamsHelper { get; }
+        private EntryManager EntryManager { get; }
+        private UserManager UserManager { get; }
+        private WebItemSecurity WebItemSecurity { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
+        private ThirdpartyConfiguration ThirdpartyConfiguration { get; }
+        private BoxLoginProvider BoxLoginProvider { get; }
+        private DropboxLoginProvider DropboxLoginProvider { get; }
+        private GoogleLoginProvider GoogleLoginProvider { get; }
+        private OneDriveLoginProvider OneDriveLoginProvider { get; }
+        private MessageService MessageService { get; }
+        private CommonLinkUtility CommonLinkUtility { get; }
+        private DocumentServiceConnector DocumentServiceConnector { get; }
+        private FolderContentWrapperHelper FolderContentWrapperHelper { get; }
+        private WordpressToken WordpressToken { get; }
+        private WordpressHelper WordpressHelper { get; }
+        private ConsumerFactory ConsumerFactory { get; }
+        private EasyBibHelper EasyBibHelper { get; }
+        private ChunkedUploadSessionHelper ChunkedUploadSessionHelper { get; }
+        private ProductEntryPoint ProductEntryPoint { get; }
+        public ILog Logger { get; set; }
 
         /// <summary>
         /// </summary>
@@ -114,7 +118,8 @@ namespace ASC.Files.Helpers
             ConsumerFactory consumerFactory,
             EasyBibHelper easyBibHelper,
             ChunkedUploadSessionHelper chunkedUploadSessionHelper,
-            ProductEntryPoint productEntryPoint)
+            ProductEntryPoint productEntryPoint,
+            IOptionsMonitor<ILog> optionMonitor)
         {
             ApiContext = context;
             FileStorageService = fileStorageService;
@@ -149,6 +154,7 @@ namespace ASC.Files.Helpers
             EasyBibHelper = easyBibHelper;
             ChunkedUploadSessionHelper = chunkedUploadSessionHelper;
             ProductEntryPoint = productEntryPoint;
+            Logger = optionMonitor.Get("ASC.Files");
         }
 
         public async Task<FolderContentWrapper<T>> GetFolder(T folderId, Guid userIdOrGroupId, FilterType filterType, bool withSubFolders)
@@ -241,7 +247,7 @@ namespace ASC.Files.Helpers
         public async Task<Configuration<T>> OpenEdit(T fileId, int version, string doc)
         {
             var (_, configuration) = await DocumentServiceHelper.GetParams(fileId, version, doc, true, true, true);
-            configuration.Type = EditorType.External;
+            configuration.EditorType = EditorType.External;
             configuration.Token = DocumentServiceHelper.GetSignature(configuration);
             return configuration;
         }
@@ -362,6 +368,37 @@ namespace ASC.Files.Helpers
             return await FileWrapperHelper.Get(file);
         }
 
+        public async Task<List<FileEntryWrapper>> GetNewItems(T folderId)
+        {
+            var items = await FileStorageService.GetNewItems(folderId);
+            var result = new List<FileEntryWrapper>();
+
+            foreach (var r in items)
+            {
+                FileEntryWrapper wrapper = null;
+                if (r is Folder<int> fol1)
+                {
+                    wrapper = await FolderWrapperHelper.Get(fol1);
+                }
+                else if (r is Folder<string> fol2)
+                {
+                    wrapper = await FolderWrapperHelper.Get(fol2);
+                }
+                else if (r is File<int> file1)
+                {
+                    wrapper = await FileWrapperHelper.Get(file1);
+                }
+                else if (r is File<string> file2)
+                {
+                    wrapper = await FileWrapperHelper.Get(file2);
+                }
+
+                result.Add(wrapper);
+            }
+
+            return result;
+        }
+
         public async Task<FileWrapper<T>> UpdateFile(T fileId, string title, int lastVersion)
         {
             if (!string.IsNullOrEmpty(title))
@@ -405,8 +442,15 @@ namespace ASC.Files.Helpers
                 };
                 if (!string.IsNullOrEmpty(r.Result))
                 {
-                    var jResult = JObject.Parse(r.Result);
-                    o.File = await GetFileInfo(jResult.Value<T>("id"), jResult.Value<int>("version"));
+                    try
+                    {
+                        var jResult = JsonSerializer.Deserialize<FileJsonSerializerData<T>>(r.Result);
+                        o.File = await GetFileInfo(jResult.Id, jResult.Version);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e);
+                    }
                 }
                 return o;
             }));
@@ -420,9 +464,19 @@ namespace ASC.Files.Helpers
 
         public async Task<IEnumerable<FileEntryWrapper>> MoveOrCopyBatchCheck(BatchModel batchModel)
         {
-            var (checkedFiles, checkedFolders) = await FileStorageService.MoveOrCopyFilesCheck(batchModel.FileIds, batchModel.FolderIds, batchModel.DestFolderId);
+            var checkedFiles = new List<object>();
+            var checkedFolders = new List<object>();
 
-            var entries = await FileStorageService.GetItems(checkedFiles.OfType<long>().Select(Convert.ToInt32), checkedFiles.OfType<long>().Select(Convert.ToInt32), FilterType.FilesOnly, false, "", "");
+            if (batchModel.DestFolderId.ValueKind == System.Text.Json.JsonValueKind.Number)
+            {
+                (checkedFiles, checkedFolders) = await FileStorageService.MoveOrCopyFilesCheck(batchModel.FileIds, batchModel.FolderIds, batchModel.DestFolderId);
+            }
+            else
+            {
+                (checkedFiles, checkedFolders) = await FileStorageService.MoveOrCopyFilesCheck(batchModel.FileIds, batchModel.FolderIds, batchModel.DestFolderId);
+            }
+
+            var entries = await FileStorageService.GetItems(checkedFiles.OfType<int>().Select(Convert.ToInt32), checkedFiles.OfType<int>().Select(Convert.ToInt32), FilterType.FilesOnly, false, "", "");
 
             entries.AddRange(await FileStorageService.GetItems(checkedFiles.OfType<string>(), checkedFiles.OfType<string>(), FilterType.FilesOnly, false, "", ""));
 
@@ -454,7 +508,7 @@ namespace ASC.Files.Helpers
                 .Select(FileOperationWraperHelper.Get));
         }
 
-        public async Task<IEnumerable<FileOperationWraper>> MarkAsRead(BaseBatchModel<object> model)
+        public async Task<IEnumerable<FileOperationWraper>> MarkAsRead(BaseBatchModel<JsonElement> model)
         {
             return await Task.WhenAll(FileStorageService.MarkAsRead(model.FolderIds, model.FileIds).Select(FileOperationWraperHelper.Get));
         }
@@ -471,8 +525,8 @@ namespace ASC.Files.Helpers
 
         public async Task<IEnumerable<FileOperationWraper>> BulkDownload(DownloadModel model)
         {
-            var folders = new Dictionary<object, string>();
-            var files = new Dictionary<object, string>();
+            var folders = new Dictionary<JsonElement, string>();
+            var files = new Dictionary<JsonElement, string>();
 
             foreach (var fileId in model.FileConvertIds.Where(fileId => !files.ContainsKey(fileId.Key)))
             {
@@ -509,6 +563,16 @@ namespace ASC.Files.Helpers
             return await Task.WhenAll(history.Select(FileWrapperHelper.Get));
         }
 
+        public async Task<FileWrapper<T>> LockFile(T fileId, bool lockFile)
+        {
+            var result = await FileStorageService.LockFile(fileId, lockFile);
+            return await FileWrapperHelper.Get(result);
+        }
+
+        public async Task<string> UpdateComment(T fileId, int version, string comment)
+        {
+            return await FileStorageService.UpdateComment(fileId, version, comment);
+        }
 
         public async Task<IEnumerable<FileShareWrapper>> GetFileSecurityInfo(T fileId)
         {
@@ -961,44 +1025,48 @@ namespace ASC.Files.Helpers
     {
         public static DIHelper AddFilesControllerHelperService(this DIHelper services)
         {
-            services.TryAddScoped<FilesControllerHelper<string>>();
-            services.TryAddScoped<FilesControllerHelper<int>>();
+            if (services.TryAddScoped<FilesControllerHelper<string>>())
+            {
+                services.TryAddScoped<FilesControllerHelper<int>>();
 
-            return services
-                .AddEasyBibHelperService()
-                .AddWordpressTokenService()
-                .AddWordpressHelperService()
-                .AddFolderContentWrapperHelperService()
-                .AddFileUploaderService()
-                .AddFileShareParamsService()
-                .AddFileShareWrapperService()
-                .AddFileOperationWraperHelperService()
-                .AddFileWrapperHelperService()
-                .AddFolderWrapperHelperService()
-                .AddConsumerFactoryService()
-                .AddDocumentServiceConnectorService()
-                .AddCommonLinkUtilityService()
-                .AddMessageServiceService()
-                .AddThirdpartyConfigurationService()
-                .AddCoreBaseSettingsService()
-                .AddWebItemSecurity()
-                .AddUserManagerService()
-                .AddEntryManagerService()
-                .AddTenantManagerService()
-                .AddSecurityContextService()
-                .AddDocumentServiceHelperService()
-                .AddFilesLinkUtilityService()
-                .AddApiContextService()
-                .AddFileStorageService()
-                .AddGlobalFolderHelperService()
-                .AddFilesSettingsHelperService()
-                .AddBoxLoginProviderService()
-                .AddDropboxLoginProviderService()
-                .AddOneDriveLoginProviderService()
-                .AddGoogleLoginProviderService()
-                .AddChunkedUploadSessionHelperService()
-                .AddProductEntryPointService()
-                ;
+                return services
+                    .AddEasyBibHelperService()
+                    .AddWordpressTokenService()
+                    .AddWordpressHelperService()
+                    .AddFolderContentWrapperHelperService()
+                    .AddFileUploaderService()
+                    .AddFileShareParamsService()
+                    .AddFileShareWrapperService()
+                    .AddFileOperationWraperHelperService()
+                    .AddFileWrapperHelperService()
+                    .AddFolderWrapperHelperService()
+                    .AddConsumerFactoryService()
+                    .AddDocumentServiceConnectorService()
+                    .AddCommonLinkUtilityService()
+                    .AddMessageServiceService()
+                    .AddThirdpartyConfigurationService()
+                    .AddCoreBaseSettingsService()
+                    .AddWebItemSecurity()
+                    .AddUserManagerService()
+                    .AddEntryManagerService()
+                    .AddTenantManagerService()
+                    .AddSecurityContextService()
+                    .AddDocumentServiceHelperService()
+                    .AddFilesLinkUtilityService()
+                    .AddApiContextService()
+                    .AddFileStorageService()
+                    .AddGlobalFolderHelperService()
+                    .AddFilesSettingsHelperService()
+                    .AddBoxLoginProviderService()
+                    .AddDropboxLoginProviderService()
+                    .AddOneDriveLoginProviderService()
+                    .AddGoogleLoginProviderService()
+                    .AddChunkedUploadSessionHelperService()
+                    .AddProductEntryPointService()
+                    ;
+            }
+
+            return services;
         }
     }
 }

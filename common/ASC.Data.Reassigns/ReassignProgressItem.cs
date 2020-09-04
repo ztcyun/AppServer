@@ -44,13 +44,14 @@ using ASC.Web.Studio.Core.Notify;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace ASC.Data.Reassigns
 {
     public class ReassignProgressItem : IProgressItem
     {
         private readonly HttpContext _context;
-        private readonly Dictionary<string, string> _httpHeaders;
+        private readonly IDictionary<string, StringValues> _httpHeaders;
 
         private readonly int _tenantId;
         private readonly Guid _currentUserId;
@@ -66,8 +67,8 @@ namespace ASC.Data.Reassigns
         public bool IsCompleted { get; set; }
         public Guid FromUser { get; }
         public Guid ToUser { get; }
-        public IServiceProvider ServiceProvider { get; }
-        public QueueWorkerRemove QueueWorkerRemove { get; }
+        private IServiceProvider ServiceProvider { get; }
+        private QueueWorkerRemove QueueWorkerRemove { get; }
 
         public ReassignProgressItem(
             IServiceProvider serviceProvider,
@@ -223,7 +224,7 @@ namespace ASC.Data.Reassigns
         {
             services.TryAddSingleton<ProgressQueueOptionsManager<ReassignProgressItem>>();
             services.TryAddSingleton<ProgressQueue<ReassignProgressItem>>();
-            services.AddSingleton<IConfigureOptions<ProgressQueue<ReassignProgressItem>>, ConfigureProgressQueue<ReassignProgressItem>>(); ;
+            services.AddSingleton<IPostConfigureOptions<ProgressQueue<ReassignProgressItem>>, ConfigureProgressQueue<ReassignProgressItem>>();
             return services;
         }
     }

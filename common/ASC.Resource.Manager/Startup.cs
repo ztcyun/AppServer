@@ -25,9 +25,10 @@ namespace ASC.Resource.Manager
             var diHelper = new DIHelper(services);
             services.AddLogging();
             diHelper.TryAddScoped<ResourceData>();
+
             diHelper.AddDbContextManagerService<ResourceDbContext>();
             diHelper.AddLoggerService();
-            diHelper.TryAddSingleton(Configuration);
-        }
+            diHelper.AddNLogManager();
+            diHelper.TryAddSingleton(Configuration);        }
     }
 }

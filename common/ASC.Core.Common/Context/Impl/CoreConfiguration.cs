@@ -46,7 +46,7 @@ namespace ASC.Core
         private bool? personal;
         private bool? customMode;
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
         public CoreBaseSettings(IConfiguration configuration)
         {
@@ -75,9 +75,9 @@ namespace ASC.Core
 
     class ConfigureCoreSettings : IConfigureNamedOptions<CoreSettings>
     {
-        public IOptionsSnapshot<CachedTenantService> TenantService { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public IConfiguration Configuration { get; }
+        private IOptionsSnapshot<CachedTenantService> TenantService { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
+        private IConfiguration Configuration { get; }
 
         public ConfigureCoreSettings(
             IOptionsSnapshot<CachedTenantService> tenantService,
@@ -305,9 +305,9 @@ namespace ASC.Core
             set { SaveSetting("SmtpSettings", value?.Serialize(), TenantManager.GetCurrentTenant().TenantId); }
         }
 
-        public CoreSettings CoreSettings { get; }
-        public TenantManager TenantManager { get; }
-        public IConfiguration Configuration { get; }
+        private CoreSettings CoreSettings { get; }
+        private TenantManager TenantManager { get; }
+        private IConfiguration Configuration { get; }
 
         #region Methods Get/Save Setting
 
@@ -378,13 +378,17 @@ namespace ASC.Core
 
         public static DIHelper AddCoreSettingsService(this DIHelper services)
         {
-            services.TryAddScoped<CoreSettings>();
-            services.TryAddScoped<CoreConfiguration>();
-            services.TryAddScoped<IConfigureOptions<CoreSettings>, ConfigureCoreSettings>();
+            if (services.TryAddScoped<CoreSettings>())
+            {
+                services.TryAddScoped<CoreConfiguration>();
+                services.TryAddScoped<IConfigureOptions<CoreSettings>, ConfigureCoreSettings>();
 
-            return services
-                .AddCoreBaseSettingsService()
-                .AddTenantService();
+                return services
+                    .AddCoreBaseSettingsService()
+                    .AddTenantService();
+            }
+
+            return services;
         }
         public static DIHelper AddCoreConfigurationService(this DIHelper services)
         {

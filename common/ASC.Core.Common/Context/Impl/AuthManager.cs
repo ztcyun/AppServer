@@ -40,8 +40,8 @@ namespace ASC.Core
     {
         private readonly IUserService userService;
 
-        public UserManager UserManager { get; }
-        public UserFormatter UserFormatter { get; }
+        private UserManager UserManager { get; }
+        private UserFormatter UserFormatter { get; }
 
         public AuthManager(IUserService service, UserManager userManager, UserFormatter userFormatter)
         {
@@ -85,11 +85,15 @@ namespace ASC.Core
     {
         public static DIHelper AddAuthManager(this DIHelper services)
         {
-            services.TryAddScoped<AuthManager>();
-            return services
-                .AddUserService()
-                .AddUserFormatter()
-                .AddUserManagerService();
+            if (services.TryAddScoped<AuthManager>())
+            {
+                return services
+                    .AddUserService()
+                    .AddUserFormatter()
+                    .AddUserManagerService();
+            }
+
+            return services;
         }
     }
 }

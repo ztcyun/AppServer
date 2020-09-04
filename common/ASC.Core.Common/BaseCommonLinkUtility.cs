@@ -51,7 +51,7 @@ namespace ASC.Core.Common
         private UriBuilder _serverRoot;
         private string _vpath;
 
-        public IHttpContextAccessor HttpContextAccessor { get; set; }
+        protected IHttpContextAccessor HttpContextAccessor { get; set; }
 
         public BaseCommonLinkUtility(
             CoreBaseSettings coreBaseSettings,
@@ -108,9 +108,9 @@ namespace ASC.Core.Common
             get { return ToAbsolute("~"); }
         }
 
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public CoreSettings CoreSettings { get; }
-        public TenantManager TenantManager { get; }
+        protected CoreBaseSettings CoreBaseSettings { get; }
+        private CoreSettings CoreSettings { get; }
+        private TenantManager TenantManager { get; }
 
         private string serverRootPath;
         public string ServerRootPath
@@ -231,18 +231,28 @@ namespace ASC.Core.Common
 
             return baseUri.ToString().TrimEnd('/');
         }
+
+        public void Initialize(string serverUri)
+        {
+            var uri = new Uri(serverUri.Replace('*', 'x').Replace('+', 'x'));
+            _serverRoot = new UriBuilder(uri.Scheme, LOCALHOST, uri.Port);
+            _vpath = "/" + uri.AbsolutePath.Trim('/');
+        }
     }
 
     public static class BaseCommonLinkUtilityExtension
     {
         public static DIHelper AddBaseCommonLinkUtilityService(this DIHelper services)
         {
-            services.TryAddScoped<BaseCommonLinkUtility>();
+            if (services.TryAddScoped<BaseCommonLinkUtility>())
+            {
+                return services
+                    .AddCoreBaseSettingsService()
+                    .AddCoreSettingsService()
+                    .AddTenantManagerService();
+            }
 
-            return services
-                .AddCoreBaseSettingsService()
-                .AddCoreSettingsService()
-                .AddTenantManagerService();
+            return services;
         }
     }
 }

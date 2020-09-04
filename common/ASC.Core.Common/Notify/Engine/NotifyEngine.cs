@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ASC.Common.Logging;
 using ASC.Common.Notify.Patterns;
 using ASC.Notify.Channels;
@@ -36,6 +37,7 @@ using ASC.Notify.Cron;
 using ASC.Notify.Messages;
 using ASC.Notify.Patterns;
 using ASC.Notify.Recipients;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -65,7 +67,7 @@ namespace ASC.Notify.Engine
 
         private readonly TimeSpan defaultSleep = TimeSpan.FromSeconds(10);
 
-        public IServiceProvider ServiceProvider { get; }
+        private IServiceProvider ServiceProvider { get; }
 
         public event Action<NotifyEngine, NotifyRequest, IServiceScope> BeforeTransferRequest;
 
@@ -360,9 +362,10 @@ namespace ASC.Notify.Engine
                 PrepareRequestFillPatterns(request);
                 PrepareRequestFillTags(request);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 responses.Add(new SendResponse(request.NotifyAction, null, request.Recipient, SendResult.Impossible));
+                log.Error("Prepare", ex);
             }
 
             if (request.SenderNames != null && request.SenderNames.Length > 0)

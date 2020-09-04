@@ -43,6 +43,7 @@ using ASC.Core.Common.Settings;
 using ASC.Core.Tenants;
 using ASC.Data.Storage;
 using ASC.Web.Core.Utility.Skins;
+
 using Microsoft.Extensions.Options;
 
 namespace ASC.Web.Core.Users
@@ -194,13 +195,13 @@ namespace ASC.Web.Core.Users
 
         private static readonly ConcurrentDictionary<CacheSize, ConcurrentDictionary<Guid, string>> Photofiles = new ConcurrentDictionary<CacheSize, ConcurrentDictionary<Guid, string>>();
 
-        public UserManager UserManager { get; }
-        public WebImageSupplier WebImageSupplier { get; }
-        public TenantManager TenantManager { get; }
-        public StorageFactory StorageFactory { get; }
-        public UserPhotoManagerCache UserPhotoManagerCache { get; }
-        public SettingsManager SettingsManager { get; }
-        public IServiceProvider ServiceProvider { get; }
+        private UserManager UserManager { get; }
+        private WebImageSupplier WebImageSupplier { get; }
+        private TenantManager TenantManager { get; }
+        private StorageFactory StorageFactory { get; }
+        private UserPhotoManagerCache UserPhotoManagerCache { get; }
+        private SettingsManager SettingsManager { get; }
+        private IServiceProvider ServiceProvider { get; }
         public ILog Log { get; }
 
         private Tenant tenant;
@@ -1009,14 +1010,7 @@ namespace ASC.Web.Core.Users
             services.TryAddSingleton<WorkerQueue<ResizeWorkerItem>>();
             services.AddSingleton<IConfigureOptions<WorkerQueue<ResizeWorkerItem>>, ConfigureWorkerQueue<ResizeWorkerItem>>();
 
-            services.Configure<WorkerQueue<ResizeWorkerItem>>(r =>
-            {
-                r.workerCount = 2;
-                r.waitInterval = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
-                r.errorCount = 1;
-                r.stopAfterFinsih = true;
-            });
-
+            services.AddWorkerQueue<ResizeWorkerItem>(2, (int)TimeSpan.FromSeconds(30).TotalMilliseconds, true, 1);
             return services;
         }
     }
@@ -1025,16 +1019,20 @@ namespace ASC.Web.Core.Users
     {
         public static DIHelper AddUserPhotoManagerService(this DIHelper services)
         {
-            services.TryAddScoped<UserPhotoManager>();
-            services.TryAddSingleton<UserPhotoManagerCache>();
+            if (services.TryAddScoped<UserPhotoManager>())
+            {
+                services.TryAddSingleton<UserPhotoManagerCache>();
 
-            return services
-                .AddStorageFactoryService()
-                .AddSettingsManagerService()
-                .AddWebImageSupplierService()
-                .AddUserManagerService()
-                .AddTenantManagerService()
-                .AddResizeWorkerItemService();
+                return services
+                    .AddStorageFactoryService()
+                    .AddSettingsManagerService()
+                    .AddWebImageSupplierService()
+                    .AddUserManagerService()
+                    .AddTenantManagerService()
+                    .AddResizeWorkerItemService();
+            }
+
+            return services;
         }
     }
 }

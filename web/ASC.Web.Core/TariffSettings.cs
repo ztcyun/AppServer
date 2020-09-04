@@ -26,27 +26,27 @@
 
 using System;
 using System.Globalization;
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+
 using ASC.Core.Common.Settings;
 
 namespace ASC.Web.Studio.UserControls.Management
 {
     [Serializable]
-    [DataContract]
     public class TariffSettings : ISettings
     {
         private static readonly CultureInfo CultureInfo = CultureInfo.CreateSpecificCulture("en-US");
 
-        [DataMember(Name = "HideRecommendation")]
+        [JsonPropertyName("HideRecommendation")]
         public bool HideBuyRecommendationSetting { get; set; }
 
-        [DataMember(Name = "HideNotify")]
+        [JsonPropertyName("HideNotify")]
         public bool HideNotifySetting { get; set; }
 
-        [DataMember(Name = "HidePricingPage")]
+        [JsonPropertyName("HidePricingPage")]
         public bool HidePricingPageForUsers { get; set; }
 
-        [DataMember(Name = "LicenseAccept")]
+        [JsonPropertyName("LicenseAccept")]
         public string LicenseAcceptSetting { get; set; }
 
         public ISettings GetDefault(IServiceProvider serviceProvider)
@@ -66,54 +66,55 @@ namespace ASC.Web.Studio.UserControls.Management
         }
 
         //TODO: Need to be returned when needed
-        //public bool HideRecommendation
-        //{
-        //    get { return LoadForCurrentUser().HideBuyRecommendationSetting; }
-        //    set
-        //    {
-        //        var tariffSettings = LoadForCurrentUser();
-        //        tariffSettings.HideBuyRecommendationSetting = value;
-        //        tariffSettings.SaveForCurrentUser();
-        //    }
-        //}
+        public static bool GetHideRecommendation(SettingsManager settingsManager)
+        {
+            return settingsManager.LoadForCurrentUser<TariffSettings>().HideBuyRecommendationSetting;
+        }
 
-        //public bool HideNotify
-        //{
-        //    get { return LoadForCurrentUser().HideNotifySetting; }
-        //    set
-        //    {
-        //        var tariffSettings = LoadForCurrentUser();
-        //        tariffSettings.HideNotifySetting = value;
-        //        tariffSettings.SaveForCurrentUser();
-        //    }
-        //}
+        public static void SetHideRecommendation(SettingsManager settingsManager, bool newVal)
+        {
+            var tariffSettings = settingsManager.LoadForCurrentUser<TariffSettings>();
+            tariffSettings.HideBuyRecommendationSetting = newVal;
+            settingsManager.SaveForCurrentUser(tariffSettings);
+        }
 
-        //public bool HidePricingPage
-        //{
-        //    get { return Load().HidePricingPageForUsers; }
-        //    set
-        //    {
-        //        var tariffSettings = Load();
-        //        tariffSettings.HidePricingPageForUsers = value;
-        //        tariffSettings.Save();
-        //    }
-        //}
+        public static bool GetHideNotify(SettingsManager settingsManager)
+        {
+            return settingsManager.LoadForCurrentUser<TariffSettings>().HideNotifySetting;
+        }
 
-        //public bool LicenseAccept
-        //{
-        //    get
-        //    {
-        //        return !DateTime.MinValue.ToString(CultureInfo).Equals(LoadForDefaultTenant().LicenseAcceptSetting);
-        //    }
-        //    set
-        //    {
-        //        var tariffSettings = LoadForDefaultTenant();
-        //        if (DateTime.MinValue.ToString(CultureInfo).Equals(tariffSettings.LicenseAcceptSetting))
-        //        {
-        //            tariffSettings.LicenseAcceptSetting = DateTime.UtcNow.ToString(CultureInfo);
-        //            tariffSettings.SaveForDefaultTenant();
-        //        }
-        //    }
-        //}
+        public static void SetHideNotify(SettingsManager settingsManager, bool newVal)
+        {
+            var tariffSettings = settingsManager.LoadForCurrentUser<TariffSettings>();
+            tariffSettings.HideNotifySetting = newVal;
+            settingsManager.SaveForCurrentUser(tariffSettings);
+        }
+
+        public static bool GetHidePricingPage(SettingsManager settingsManager)
+        {
+            return settingsManager.Load<TariffSettings>().HidePricingPageForUsers;
+        }
+
+        public static void SetHidePricingPage(SettingsManager settingsManager, bool newVal)
+        {
+            var tariffSettings = settingsManager.Load<TariffSettings>();
+            tariffSettings.HidePricingPageForUsers = newVal;
+            settingsManager.Save<TariffSettings>(tariffSettings);
+        }
+
+        public static bool GetLicenseAccept(SettingsManager settingsManager)
+        {
+            return !DateTime.MinValue.ToString(CultureInfo).Equals(settingsManager.LoadForDefaultTenant<TariffSettings>().LicenseAcceptSetting);
+        }
+
+        public static void SetLicenseAccept(SettingsManager settingsManager)
+        {
+            var tariffSettings = settingsManager.LoadForDefaultTenant<TariffSettings>();
+            if (DateTime.MinValue.ToString(CultureInfo).Equals(tariffSettings.LicenseAcceptSetting))
+            {
+                tariffSettings.LicenseAcceptSetting = DateTime.UtcNow.ToString(CultureInfo);
+                settingsManager.SaveForDefaultTenant(tariffSettings);
+            }
+        }
     }
 }

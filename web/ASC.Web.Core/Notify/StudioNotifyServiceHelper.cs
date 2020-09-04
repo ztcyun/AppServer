@@ -12,10 +12,10 @@ namespace ASC.Web.Core.Notify
 {
     public class StudioNotifyServiceHelper
     {
-        public ICacheNotify<NotifyItem> Cache { get; }
-        public StudioNotifyHelper StudioNotifyHelper { get; }
-        public AuthContext AuthContext { get; }
-        public TenantManager TenantManager { get; }
+        private ICacheNotify<NotifyItem> Cache { get; }
+        private StudioNotifyHelper StudioNotifyHelper { get; }
+        private AuthContext AuthContext { get; }
+        private TenantManager TenantManager { get; }
 
         public StudioNotifyServiceHelper(StudioNotifyHelper studioNotifyHelper, AuthContext authContext, TenantManager tenantManager, ICacheNotify<NotifyItem> cache)
         {
@@ -113,13 +113,17 @@ namespace ASC.Web.Core.Notify
     {
         public static DIHelper AddStudioNotifyServiceHelper(this DIHelper services)
         {
-            services.TryAddScoped<StudioNotifyServiceHelper>();
-            services.TryAddSingleton(typeof(ICacheNotify<>), typeof(KafkaCache<>));
+            if (services.TryAddScoped<StudioNotifyServiceHelper>())
+            {
+                services.TryAddSingleton(typeof(ICacheNotify<>), typeof(KafkaCache<>));
 
-            return services
-                .AddAuthContextService()
-                .AddStudioNotifyHelperService()
-                .AddTenantManagerService();
+                return services
+                    .AddAuthContextService()
+                    .AddStudioNotifyHelperService()
+                    .AddTenantManagerService();
+            }
+
+            return services;
         }
     }
 }

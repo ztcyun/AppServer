@@ -37,8 +37,8 @@ namespace ASC.Web.Studio.UserControls.Statistics
 {
     public class TenantStatisticsProvider
     {
-        public UserManager UserManager { get; }
-        public TenantManager TenantManager { get; }
+        private UserManager UserManager { get; }
+        private TenantManager TenantManager { get; }
 
         public TenantStatisticsProvider(UserManager userManager, TenantManager tenantManager)
         {
@@ -77,11 +77,14 @@ namespace ASC.Web.Studio.UserControls.Statistics
     {
         public static DIHelper AddTenantStatisticsProviderService(this DIHelper services)
         {
-            services.TryAddScoped<TenantStatisticsProvider>();
+            if (services.TryAddScoped<TenantStatisticsProvider>())
+            {
+                return services
+                    .AddUserManagerService()
+                    .AddTenantManagerService();
+            }
 
-            return services
-                .AddUserManagerService()
-                .AddTenantManagerService();
+            return services;
         }
     }
 }

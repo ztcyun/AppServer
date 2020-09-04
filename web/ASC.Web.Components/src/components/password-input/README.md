@@ -87,12 +87,16 @@ If emailInputName parameter value is empty, copy action will be disabled.
 | `onCopyToClipboard`      | `func`         |    -     |         -          |        -        | Will be triggered if you press copy button, return formatted value    |
 | `onValidateInput`        | `func`         |    -     |         -          |        -        | Will be triggered whenever an PasswordInput typing, return bool value |
 | `passwordSettings`       | `object`       |    ✅    |         -          |        -        | Set of settings for password generator and validator                  |
+| `simpleView`   | `bool`       |    -     |         -          |        `false`        | Set simple view of password input (without tooltips, password progress bar and several additional buttons (copy and generate password)                                              |
 | `style`                  | `obj`, `array` |    -     |         -          |        -        | Accepts css style                                                     |
 | `tooltipPasswordCapital` | `string`       |    -     |         -          |        -        | Capital text translation tooltip                                      |
 | `tooltipPasswordDigits`  | `string`       |    -     |         -          |        -        | Digit text translation tooltip                                        |
 | `tooltipPasswordLength`  | `string`       |    -     |         -          |        -        | Password text translation is long tooltip                             |
 | `tooltipPasswordSpecial` | `string`       |    -     |         -          |        -        | Special text translation tooltip                                      |
 | `tooltipPasswordTitle`   | `string`       |    -     |         -          |        -        | Text translation tooltip                                              |
+| `hideNewPasswordButton`  | `bool`         |    -     |         -          |     `false`     | Allows to hide NewPasswordButton                                      |
+| `isDisableTooltip`       | `bool`         |    -     |         -          |     `false`     | Allows to hide Tooltip                                                |
+| `isTextTooltipVisible`   | `bool`         |    -     |         -          |     `false`     | Allows to show text Tooltip                                           |
 
 #### passwordSettings properties
 

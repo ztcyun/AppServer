@@ -39,9 +39,9 @@ namespace ASC.Core.Notify.Jabber
 
         private static DateTime lastErrorTime = default;
 
-        public UserManager UserManager { get; }
-        public AuthContext AuthContext { get; }
-        public TenantManager TenantManager { get; }
+        private UserManager UserManager { get; }
+        private AuthContext AuthContext { get; }
+        private TenantManager TenantManager { get; }
 
         public JabberServiceClient(UserManager userManager, AuthContext authContext, TenantManager tenantManager)
         {
@@ -244,11 +244,15 @@ namespace ASC.Core.Notify.Jabber
     {
         public static DIHelper AddJabberServiceClient(this DIHelper services)
         {
-            services.TryAddScoped<JabberServiceClient>();
-            return services
-                .AddUserManagerService()
-                .AddAuthContextService()
-                .AddTenantManagerService();
+            if (services.TryAddScoped<JabberServiceClient>())
+            {
+                return services
+                    .AddUserManagerService()
+                    .AddAuthContextService()
+                    .AddTenantManagerService();
+            }
+
+            return services;
         }
     }
 }

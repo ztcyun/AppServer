@@ -43,7 +43,7 @@ namespace ASC.Core.Security.Authentication
         private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
 
         private InstanceCrypto InstanceCrypto { get; }
-        public TenantCookieSettingsHelper TenantCookieSettingsHelper { get; }
+        private TenantCookieSettingsHelper TenantCookieSettingsHelper { get; }
         private HttpContext HttpContext { get; }
         private ILog Log { get; }
 
@@ -150,11 +150,14 @@ namespace ASC.Core.Security.Authentication
     {
         public static DIHelper AddCookieStorageService(this DIHelper services)
         {
-            services.TryAddScoped<CookieStorage>();
+            if (services.TryAddScoped<CookieStorage>())
+            {
+                return services
+                    .AddTenantCookieSettingsService()
+                    .AddInstanceCryptoService();
+            }
 
-            return services
-                .AddTenantCookieSettingsService()
-                .AddInstanceCryptoService();
+            return services;
         }
     }
 }

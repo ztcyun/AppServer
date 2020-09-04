@@ -37,7 +37,7 @@ namespace ASC.IPSecurity
         private const string cacheKey = "iprestrictions";
         public ICache Cache { get; set; }
 
-        public ICacheNotify<IPRestrictionItem> Notify { get; }
+        internal ICacheNotify<IPRestrictionItem> Notify { get; }
 
         public IPRestrictionsServiceCache(ICacheNotify<IPRestrictionItem> notify)
         {
@@ -57,7 +57,7 @@ namespace ASC.IPSecurity
         private readonly ICacheNotify<IPRestrictionItem> notify;
         private static readonly TimeSpan timeout = TimeSpan.FromMinutes(5);
 
-        public IPRestrictionsRepository IPRestrictionsRepository { get; }
+        private IPRestrictionsRepository IPRestrictionsRepository { get; }
 
         public IPRestrictionsService(
             IPRestrictionsRepository iPRestrictionsRepository,
@@ -91,10 +91,14 @@ namespace ASC.IPSecurity
     {
         public static DIHelper AddIPRestrictionsService(this DIHelper services)
         {
-            services.TryAddScoped<IPRestrictionsService>();
-            services.TryAddSingleton<IPRestrictionsServiceCache>();
+            if (services.TryAddScoped<IPRestrictionsService>())
+            {
+                services.TryAddSingleton<IPRestrictionsServiceCache>();
 
-            return services.AddIPRestrictionsRepositoryService();
+                return services.AddIPRestrictionsRepositoryService();
+            }
+
+            return services;
         }
     }
 }

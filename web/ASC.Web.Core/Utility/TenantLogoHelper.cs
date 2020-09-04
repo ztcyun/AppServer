@@ -32,10 +32,10 @@ namespace ASC.Web.Studio.Utility
 {
     public class TenantLogoHelper
     {
-        public TenantLogoManager TenantLogoManager { get; }
-        public SettingsManager SettingsManager { get; }
-        public TenantWhiteLabelSettingsHelper TenantWhiteLabelSettingsHelper { get; }
-        public TenantInfoSettingsHelper TenantInfoSettingsHelper { get; }
+        private TenantLogoManager TenantLogoManager { get; }
+        private SettingsManager SettingsManager { get; }
+        private TenantWhiteLabelSettingsHelper TenantWhiteLabelSettingsHelper { get; }
+        private TenantInfoSettingsHelper TenantInfoSettingsHelper { get; }
 
         public TenantLogoHelper(
             TenantLogoManager tenantLogoManager,
@@ -87,13 +87,17 @@ namespace ASC.Web.Studio.Utility
     {
         public static DIHelper AddTenantLogoHelperService(this DIHelper services)
         {
-            services.TryAddScoped<TenantLogoHelper>();
+            if (services.TryAddScoped<TenantLogoHelper>())
+            {
 
-            return services
-                .AddTenantLogoManagerService()
-                .AddSettingsManagerService()
-                .AddTenantWhiteLabelSettingsService()
-                .AddTenantInfoSettingsService();
+                return services
+                    .AddTenantLogoManagerService()
+                    .AddSettingsManagerService()
+                    .AddTenantWhiteLabelSettingsService()
+                    .AddTenantInfoSettingsService();
+            }
+
+            return services;
         }
     }
 }

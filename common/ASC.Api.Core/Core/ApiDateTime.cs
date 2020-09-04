@@ -27,7 +27,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -37,7 +36,6 @@ using ASC.Core;
 
 namespace ASC.Api.Core
 {
-    [DataContract(Name = "date", Namespace = "")]
     [TypeConverter(typeof(ApiDateTimeTypeConverter))]
     public class ApiDateTime : IComparable<ApiDateTime>, IComparable
     {
@@ -291,8 +289,8 @@ namespace ASC.Api.Core
 
         public DateTime UtcTime { get; private set; }
         public TimeSpan TimeZoneOffset { get; private set; }
-        public TenantManager TenantManager { get; }
-        public TimeZoneConverter TimeZoneConverter { get; }
+        private TenantManager TenantManager { get; }
+        private TimeZoneConverter TimeZoneConverter { get; }
 
         public static ApiDateTime GetSample()
         {
@@ -352,8 +350,8 @@ namespace ASC.Api.Core
 
     public class ApiDateTimeHelper
     {
-        public TenantManager TenantManager { get; }
-        public TimeZoneConverter TimeZoneConverter { get; }
+        private TenantManager TenantManager { get; }
+        private TimeZoneConverter TimeZoneConverter { get; }
 
         public ApiDateTimeHelper(TenantManager tenantManager, TimeZoneConverter timeZoneConverter)
         {
@@ -368,10 +366,13 @@ namespace ASC.Api.Core
     {
         public static DIHelper AddApiDateTimeHelper(this DIHelper services)
         {
-            services.TryAddScoped<ApiDateTimeHelper>();
+            if (services.TryAddScoped<ApiDateTimeHelper>())
+            {
+                return services
+                    .AddTenantManagerService();
+            }
 
-            return services
-                .AddTenantManagerService();
+            return services;
         }
     }
 }

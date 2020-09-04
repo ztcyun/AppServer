@@ -27,7 +27,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 
 using ASC.Common;
 using ASC.Common.Caching;
@@ -43,10 +42,8 @@ using Newtonsoft.Json;
 namespace ASC.ElasticSearch.Core
 {
     [Serializable]
-    [DataContract]
     public class SearchSettings : ISettings
     {
-        [DataMember(Name = "Data")]
         public string Data { get; set; }
 
         public Guid ID
@@ -84,12 +81,12 @@ namespace ASC.ElasticSearch.Core
 
     public class SearchSettingsHelper
     {
-        public TenantManager TenantManager { get; }
-        public SettingsManager SettingsManager { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public FactoryIndexer FactoryIndexer { get; }
-        public ICacheNotify<ReIndexAction> CacheNotify { get; }
-        public IServiceProvider ServiceProvider { get; }
+        private TenantManager TenantManager { get; }
+        private SettingsManager SettingsManager { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
+        private FactoryIndexer FactoryIndexer { get; }
+        private ICacheNotify<ReIndexAction> CacheNotify { get; }
+        private IServiceProvider ServiceProvider { get; }
 
         public SearchSettingsHelper(
             TenantManager tenantManager,
@@ -173,13 +170,10 @@ namespace ASC.ElasticSearch.Core
     }
 
     [Serializable]
-    [DataContract]
     public class SearchSettingsItem
     {
-        [DataMember(Name = "ID")]
         public string ID { get; set; }
 
-        [DataMember(Name = "Enabled")]
         public bool Enabled { get; set; }
 
         public string Title { get; set; }
@@ -189,13 +183,16 @@ namespace ASC.ElasticSearch.Core
     {
         public static DIHelper AddSearchSettingsHelperService(this DIHelper services)
         {
-            services.TryAddScoped<SearchSettingsHelper>();
+            if (services.TryAddScoped<SearchSettingsHelper>())
+            {
+                return services
+                    .AddSettingsManagerService()
+                    .AddCoreBaseSettingsService()
+                    .AddFactoryIndexerService()
+                    .AddTenantManagerService();
+            }
 
-            return services
-                .AddSettingsManagerService()
-                .AddCoreBaseSettingsService()
-                .AddFactoryIndexerService()
-                .AddTenantManagerService();
+            return services;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace ASC.Core
     public class UserManagerConstants
     {
         public IDictionary<Guid, UserInfo> SystemUsers { get; }
-        public Constants Constants { get; }
+        internal Constants Constants { get; }
 
         public UserManagerConstants(Constants constants)
         {
@@ -76,25 +76,34 @@ namespace ASC.Core
 
         public UserManager(
             IUserService service,
-            IHttpContextAccessor httpContextAccessor,
             TenantManager tenantManager,
             PermissionContext permissionContext,
             UserManagerConstants userManagerConstants)
         {
             UserService = service;
-            Accessor = httpContextAccessor;
             TenantManager = tenantManager;
             PermissionContext = permissionContext;
             UserManagerConstants = userManagerConstants;
             Constants = UserManagerConstants.Constants;
         }
 
+        public UserManager(
+            IUserService service,
+            TenantManager tenantManager,
+            PermissionContext permissionContext,
+            UserManagerConstants userManagerConstants,
+            IHttpContextAccessor httpContextAccessor)
+            : this(service, tenantManager, permissionContext, userManagerConstants)
+        {
+            Accessor = httpContextAccessor;
+        }
+
 
         public void ClearCache()
         {
-            if (UserService is ICachedService)
+            if (UserService is ICachedService service)
             {
-                ((ICachedService)UserService).InvalidateCache();
+                service.InvalidateCache();
             }
         }
 
@@ -648,14 +657,18 @@ namespace ASC.Core
     {
         public static DIHelper AddUserManagerService(this DIHelper services)
         {
-            services.TryAddSingleton<UserManagerConstants>();
-            services.TryAddScoped<UserManager>();
+            if (services.TryAddScoped<UserManager>())
+            {
+                services.TryAddSingleton<UserManagerConstants>();
 
-            return services
-                .AddUserService()
-                .AddTenantManagerService()
-                .AddConstantsService()
-                .AddPermissionContextService();
+                return services
+                    .AddUserService()
+                    .AddTenantManagerService()
+                    .AddConstantsService()
+                    .AddPermissionContextService();
+            }
+
+            return services;
         }
     }
 }

@@ -37,6 +37,7 @@ using ASC.Core.Common.EF;
 using ASC.Core.Data;
 using ASC.Core.Tenants;
 using ASC.Core.Users;
+
 using Microsoft.Extensions.Options;
 
 namespace ASC.Core.Caching
@@ -49,11 +50,11 @@ namespace ASC.Core.Caching
 
         public TrustInterval TrustInterval { get; set; }
         public ICache Cache { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public ICacheNotify<UserInfoCacheItem> CacheUserInfoItem { get; }
-        public ICacheNotify<UserPhotoCacheItem> CacheUserPhotoItem { get; }
-        public ICacheNotify<GroupCacheItem> CacheGroupCacheItem { get; }
-        public ICacheNotify<UserGroupRefCacheItem> CacheUserGroupRefItem { get; }
+        internal CoreBaseSettings CoreBaseSettings { get; }
+        internal ICacheNotify<UserInfoCacheItem> CacheUserInfoItem { get; }
+        internal ICacheNotify<UserPhotoCacheItem> CacheUserPhotoItem { get; }
+        internal ICacheNotify<GroupCacheItem> CacheGroupCacheItem { get; }
+        internal ICacheNotify<UserGroupRefCacheItem> CacheUserGroupRefItem { get; }
 
         public UserServiceCache(
             CoreBaseSettings coreBaseSettings,
@@ -138,9 +139,9 @@ namespace ASC.Core.Caching
 
     class ConfigureCachedUserService : IConfigureNamedOptions<CachedUserService>
     {
-        public IOptionsSnapshot<EFUserService> Service { get; }
-        public UserServiceCache UserServiceCache { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
+        internal IOptionsSnapshot<EFUserService> Service { get; }
+        internal UserServiceCache UserServiceCache { get; }
+        internal CoreBaseSettings CoreBaseSettings { get; }
 
         public ConfigureCachedUserService(
             IOptionsSnapshot<EFUserService> service,
@@ -521,20 +522,22 @@ namespace ASC.Core.Caching
     {
         public static DIHelper AddUserService(this DIHelper services)
         {
-            services.TryAddSingleton(typeof(ICacheNotify<>), typeof(KafkaCache<>));
+            if (services.TryAddScoped<EFUserService>())
+            {
+                services.TryAddScoped<IUserService, CachedUserService>();
 
-            services
-                .AddCoreSettingsService()
-                .AddLoggerService()
-                .AddUserDbContextService();
+                services.TryAddScoped<IConfigureOptions<EFUserService>, ConfigureEFUserService>();
+                services.TryAddScoped<IConfigureOptions<CachedUserService>, ConfigureCachedUserService>();
 
-            services.TryAddScoped<EFUserService>();
-            services.TryAddScoped<IUserService, CachedUserService>();
+                services.TryAddSingleton<UserServiceCache>();
+                services.TryAddSingleton(typeof(ICacheNotify<>), typeof(KafkaCache<>));
 
-            services.TryAddScoped<IConfigureOptions<EFUserService>, ConfigureEFUserService>();
-            services.TryAddScoped<IConfigureOptions<CachedUserService>, ConfigureCachedUserService>();
+                services
+                    .AddCoreSettingsService()
+                    .AddLoggerService()
+                    .AddUserDbContextService();
+            }
 
-            services.TryAddSingleton<UserServiceCache>();
             return services;
         }
     }

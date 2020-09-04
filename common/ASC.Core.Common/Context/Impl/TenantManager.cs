@@ -44,12 +44,12 @@ namespace ASC.Core
 {
     class ConfigureTenantManager : IConfigureNamedOptions<TenantManager>
     {
-        public IOptionsSnapshot<CachedTenantService> TenantService { get; }
-        public IOptionsSnapshot<CachedQuotaService> QuotaService { get; }
-        public IOptionsSnapshot<TariffService> TariffService { get; }
-        public IHttpContextAccessor HttpContextAccessor { get; }
-        public CoreBaseSettings CoreBaseSettings { get; }
-        public CoreSettings CoreSettings { get; }
+        private IOptionsSnapshot<CachedTenantService> TenantService { get; }
+        private IOptionsSnapshot<CachedQuotaService> QuotaService { get; }
+        private IOptionsSnapshot<TariffService> TariffService { get; }
+        private IHttpContextAccessor HttpContextAccessor { get; }
+        private CoreBaseSettings CoreBaseSettings { get; }
+        private CoreSettings CoreSettings { get; }
 
         public ConfigureTenantManager(
             IOptionsSnapshot<CachedTenantService> tenantService,
@@ -91,6 +91,34 @@ namespace ASC.Core
 
     public class TenantManager
     {
+        private class TenantHolder
+        {
+            public Tenant Tenant;
+        }
+
+        private static readonly AsyncLocal<TenantHolder> currentTenant = new AsyncLocal<TenantHolder>();
+
+        public Tenant CurrentTenant
+        {
+            get
+            {
+                return currentTenant.Value?.Tenant;
+            }
+            set
+            {
+                var holder = currentTenant.Value;
+                if (holder != null)
+                {
+                    holder.Tenant = null;
+                }
+
+                if (value != null)
+                {
+                    currentTenant.Value = new TenantHolder { Tenant = value };
+                }
+            }
+        }
+
         public const string CURRENT_TENANT = "CURRENT_TENANT";
         internal ITenantService TenantService { get; set; }
         internal IQuotaService QuotaService { get; set; }
@@ -101,8 +129,6 @@ namespace ASC.Core
         internal IHttpContextAccessor HttpContextAccessor { get; set; }
         internal CoreBaseSettings CoreBaseSettings { get; set; }
         internal CoreSettings CoreSettings { get; set; }
-
-        public Tenant CurrentTenant { get; set; }
 
         static TenantManager()
         {
@@ -248,6 +274,9 @@ namespace ASC.Core
             {
                 throw new Exception("Could not resolve current tenant :-(.");
             }
+
+            CurrentTenant = tenant;
+
             return tenant;
         }
 
@@ -258,7 +287,7 @@ namespace ASC.Core
 
         public Tenant GetCurrentTenant(bool throwIfNotFound)
         {
-            return GetCurrentTenant(throwIfNotFound, HttpContextAccessor.HttpContext);
+            return GetCurrentTenant(throwIfNotFound, HttpContextAccessor?.HttpContext);
         }
 
         public void SetCurrentTenant(Tenant tenant)
@@ -356,15 +385,19 @@ namespace ASC.Core
     {
         public static DIHelper AddTenantManagerService(this DIHelper services)
         {
-            services.TryAddScoped<TenantManager>();
-            services.TryAddScoped<IConfigureOptions<TenantManager>, ConfigureTenantManager>();
+            if (services.TryAddScoped<TenantManager>())
+            {
+                services.TryAddScoped<IConfigureOptions<TenantManager>, ConfigureTenantManager>();
 
-            return services
-                .AddTenantService()
-                .AddQuotaService()
-                .AddTariffService()
-                .AddCoreBaseSettingsService()
-                .AddCoreSettingsService();
+                return services
+                    .AddTenantService()
+                    .AddQuotaService()
+                    .AddTariffService()
+                    .AddCoreBaseSettingsService()
+                    .AddCoreSettingsService();
+            }
+
+            return services;
         }
     }
 }
