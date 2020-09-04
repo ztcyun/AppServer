@@ -226,12 +226,12 @@ class PortalAdmins extends Component {
             this.checkChanges()
     }
 
-    onChangeAdmin = (userIds, isAdmin, productId) => {
+    onChangeAdmin = async (userIds, isAdmin, productId) => {
         this.onLoading(true);
         const { changeAdmins } = this.props;
         const newFilter = this.onAdminsFilter();
 
-        changeAdmins(userIds, productId, isAdmin, newFilter)
+        await changeAdmins(userIds, productId, isAdmin, newFilter)
             .catch(error => {
                 toastr.error("accessRights onChangeAdmin", error);
             })
@@ -386,11 +386,23 @@ class PortalAdmins extends Component {
     }
 
     onSaveButtonClick = () => {
-        const { setNewAdmins } = this.props
+        const { fetchPeople } = this.props
         let changedAdmins = this.createChangedAdminsList();
         let deletedAdmins = this.createDeletedAdminsList();
-        this.acceptChanges(changedAdmins, deletedAdmins)
-        setNewAdmins("")
+        this.saveChanges(changedAdmins, deletedAdmins).then(() => {
+
+            const newFilter = this.onAdminsFilter();
+            fetchPeople(newFilter)
+                .catch(error => {
+                    toastr.error(error);
+                })
+                .finally(() => {
+                    this.onCancelClick()
+                    this.setState({
+                        showLoader: false
+                    })
+                });
+        })
     }
 
     onCancelClick = () => {
@@ -414,7 +426,12 @@ class PortalAdmins extends Component {
         }
     };
 
-    acceptChanges = (changedAdmins, deletedAdmins) => {
+    saveChanges = async (changedAdmins, deletedAdmins) => {
+        await this.saveChangedAdmins(changedAdmins)
+        await this.saveDeletedAdmins(deletedAdmins)
+    }
+
+    saveChangedAdmins = async (changedAdmins) => {
         for (let i = 0; i < changedAdmins.length; i++) {
             const adminBeforeChanges = this.getAdminById(this.props.admins, changedAdmins[i].id);
 
@@ -423,20 +440,22 @@ class PortalAdmins extends Component {
                 : changedAdmins[i].listAdminModules && changedAdmins[i].listAdminModules.slice();
 
             if (changedAdminModules && changedAdminModules.length > 0) {
-                changedAdminModules.forEach(moduleName => {
-                    const currentModule = this.props.modules.find(module => module.title.toLowerCase() === moduleName.toLowerCase());
-                    if (currentModule) this.onChangeAdmin([changedAdmins[i].id], this.isModuleAdmin(changedAdmins[i], moduleName), currentModule.id)
-                });
+
+                for (const key in changedAdminModules) {
+                    const currentModule = this.props.modules.find(module => module.title.toLowerCase() === changedAdminModules[key].toLowerCase());
+                    if (currentModule) await this.onChangeAdmin([changedAdmins[i].id], this.isModuleAdmin(changedAdmins[i], changedAdminModules[key]), currentModule.id)
+                }
             }
         }
+    }
+
+    saveDeletedAdmins = async (deletedAdmins) => {
+        const { modules } = this.props
         for (let i = 0; i < deletedAdmins.length; i++) {
-            this.props.modules.forEach(module => {
-                this.onChangeAdmin([deletedAdmins[i].id], false, module.id)
-            });
-
+            for (const key in modules) {
+                await this.onChangeAdmin([deletedAdmins[i].id], false, modules[key].id)
+            }
         }
-
-        this.onCancelClick()
     }
 
     getChangedAdminModules = (adminBeforeChanges, admin) => {
