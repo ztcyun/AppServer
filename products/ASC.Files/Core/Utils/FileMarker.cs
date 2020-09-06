@@ -87,7 +87,7 @@ namespace ASC.Web.Files.Utils
             {
                 using var scope = ServiceProvider.CreateScope();
                 var fileMarker = scope.ServiceProvider.GetService<FileMarker>();
-                await fileMarker.ExecMarkFileAsNew(obj);
+                //await fileMarker.ExecMarkFileAsNew(obj); TODO
             }
             catch (Exception e)
             {
@@ -459,9 +459,9 @@ namespace ASC.Web.Files.Utils
 
         public async Task<int> GetRootFoldersIdMarkedAsNew<T>(T rootId)
         {
-                                    var fromCache = GetCountFromCahce(rootId);
-                                    if (fromCache == -1)
-                                    {
+            var fromCache = GetCountFromCahce(rootId);
+            if (fromCache == -1)
+            {
                 var tagDao = DaoFactory.GetTagDao<T>();
                 var folderDao = DaoFactory.GetFolderDao<T>();
                 var requestTags = tagDao.GetNewTags(AuthContext.CurrentAccount.ID, await folderDao.GetFolder(rootId));
@@ -472,7 +472,7 @@ namespace ASC.Web.Files.Utils
                 return count;
             }
             else if (fromCache > 0)
-                                       {
+            {
                 return fromCache;
             }
 

@@ -68,7 +68,10 @@ namespace ASC.Common.Threading
 
             notifyCache.Subscribe((c) =>
             {
-                Cache.HashSet(c.Key, c.Id, c);
+                if (c != null)
+                {
+                    Cache.HashSet(c.Key, c.Id, c);
+                }
             }, CacheNotifyAction.InsertOrUpdate);
         }
 

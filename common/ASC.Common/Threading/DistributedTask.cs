@@ -45,7 +45,10 @@ namespace ASC.Common.Threading
             }
             set
             {
-                DistributedTaskCache.InstanceId = value?.ToString() ?? "";
+                if (DistributedTaskCache != null)
+                {
+                    DistributedTaskCache.InstanceId = value?.ToString() ?? "";
+                }
             }
         }
         public string Id
@@ -56,7 +59,10 @@ namespace ASC.Common.Threading
             }
             private set
             {
-                DistributedTaskCache.Id = value?.ToString() ?? "";
+                if (DistributedTaskCache != null)
+                {
+                    DistributedTaskCache.Id = value?.ToString() ?? "";
+                }
             }
         }
 
@@ -68,7 +74,10 @@ namespace ASC.Common.Threading
             }
             internal set
             {
-                DistributedTaskCache.Status = value.ToString();
+                if (DistributedTaskCache != null)
+                {
+                    DistributedTaskCache.Status = value.ToString();
+                }
             }
         }
 
@@ -80,7 +89,10 @@ namespace ASC.Common.Threading
             }
             internal set
             {
-                DistributedTaskCache.Exception = value?.ToString() ?? "";
+                if (DistributedTaskCache != null)
+                {
+                    DistributedTaskCache.Exception = value?.ToString() ?? "";
+                }
             }
         }
 

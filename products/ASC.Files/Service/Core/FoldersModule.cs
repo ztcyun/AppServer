@@ -75,7 +75,7 @@ namespace ASC.Files.Service.Core
                 targetCond = true;
             }
 
-            return targetCond && FileSecurity.CanRead(folder, userId);
+            return targetCond && FileSecurity.CanRead(folder, userId).Result;//TODO
         }
 
         public override IEnumerable<int> GetTenantsWithFeeds(DateTime fromTime)
@@ -90,7 +90,7 @@ namespace ASC.Files.Service.Core
                         .ToList();
 
             var parentFolderIDs = folders.Select(r => r.Item1.ParentFolderID).ToArray();
-            var parentFolders = FolderDao.GetFolders(parentFolderIDs, checkShare: false);
+            var parentFolders = FolderDao.GetFolders(parentFolderIDs, checkShare: false).Result;//TODO
 
             return folders.Select(f => new Tuple<Feed.Aggregator.Feed, object>(ToFeed(f, parentFolders.FirstOrDefault(r => r.ID.Equals(f.Item1.ParentFolderID))), f));
         }

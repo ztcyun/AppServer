@@ -415,6 +415,7 @@ namespace ASC.ElasticSearch
 
         public bool Support(T t)
         {
+            return false; //TODO
             if (!FactoryIndexerCommon.CheckState()) return false;
 
             var cacheTime = DateTime.UtcNow.AddMinutes(15);

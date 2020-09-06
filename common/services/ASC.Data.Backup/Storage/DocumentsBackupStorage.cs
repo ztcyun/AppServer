@@ -134,7 +134,7 @@ namespace ASC.Data.Backup.Storage
             var folderDao = GetFolderDao<T>();
             var fileDao = GetFileDao<T>();
 
-            var folder = folderDao.GetFolder(folderId);
+            var folder = folderDao.GetFolder(folderId).Result;//TODO
             if (folder == null)
             {
                 throw new FileNotFoundException("Folder not found.");
@@ -146,7 +146,7 @@ namespace ASC.Data.Backup.Storage
             newFile.FolderID = folder.ID;
             newFile.ContentLength = source.Length;
 
-            var file = fileDao.SaveFile(newFile, source);
+            var file = fileDao.SaveFile(newFile, source).Result;//TODO
 
             return file.ID;
         }
@@ -155,7 +155,7 @@ namespace ASC.Data.Backup.Storage
         {
             TenantManager.SetCurrentTenant(TenantId);
             var fileDao = GetFileDao<T>();
-            var file = fileDao.GetFile(fileId);
+            var file = fileDao.GetFile(fileId).Result;//TODO
             if (file == null)
             {
                 throw new FileNotFoundException("File not found.");
@@ -178,7 +178,7 @@ namespace ASC.Data.Backup.Storage
             try
             {
 
-                var file = fileDao.GetFile(fileId);
+                var file = fileDao.GetFile(fileId).Result;//TODO
                 return file != null && file.RootFolderType != FolderType.TRASH;
             }
             catch (Exception)

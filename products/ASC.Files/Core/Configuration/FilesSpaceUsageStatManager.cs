@@ -76,7 +76,7 @@ namespace ASC.Web.Files
         public override List<UsageSpaceStatItem> GetStatData()
         {
             var myFiles = FilesDbContext.Files
-                .AsQueryable()
+                
                 .Join(FilesDbContext.Tree, a => a.FolderId, b => b.FolderId, (file, tree) => new { file, tree })
                 .Join(FilesDbContext.BunchObjects, a => a.tree.ParentId.ToString(), b => b.LeftNode, (fileTree, bunch) => new { fileTree.file, fileTree.tree, bunch })
                 .Where(r => r.file.TenantId == r.bunch.TenantId)
@@ -86,7 +86,7 @@ namespace ASC.Web.Files
                 .Select(r => new { CreateBy = r.Key, Size = r.Sum(a => a.file.ContentLength) });
 
             var commonFiles = FilesDbContext.Files
-                .AsQueryable()
+                
                 .Join(FilesDbContext.Tree, a => a.FolderId, b => b.FolderId, (file, tree) => new { file, tree })
                 .Join(FilesDbContext.BunchObjects, a => a.tree.ParentId.ToString(), b => b.LeftNode, (fileTree, bunch) => new { fileTree.file, fileTree.tree, bunch })
                 .Where(r => r.file.TenantId == r.bunch.TenantId)
@@ -141,7 +141,7 @@ namespace ASC.Web.Files
         public long GetUserSpaceUsage(Guid userId)
         {
             return FilesDbContext.Files
-                .AsQueryable()
+                
                 .Join(FilesDbContext.Tree, a => a.FolderId, b => b.FolderId, (file, tree) => new { file, tree })
                 .Join(FilesDbContext.BunchObjects, a => a.tree.ParentId.ToString(), b => b.LeftNode, (fileTree, bunch) => new { fileTree.file, fileTree.tree, bunch })
                 .Where(r => r.file.TenantId == r.bunch.TenantId)

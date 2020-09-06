@@ -702,9 +702,9 @@ namespace ASC.Api.Documents
         /// <remarks>In case the extension for the file title differs from DOCX/XLSX/PPTX and belongs to one of the known text, spreadsheet or presentation formats, it will be changed to DOCX/XLSX/PPTX accordingly. If the file extension is not set or is unknown, the DOCX extension will be added to the file title.</remarks>
         /// <returns>New file info</returns>
         [Create("@my/file")]
-        public async Task<FileWrapper<int>> CreateFile(string title)
+        public async Task<FileWrapper<int>> CreateFile(UpdateFileModel model)
         {
-            return await CreateFile(await GlobalFolderHelper.FolderMy, title);
+            return await CreateFile(await GlobalFolderHelper.FolderMy, model.Title);
         }
 
         /// <summary>

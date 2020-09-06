@@ -101,6 +101,7 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
 
         protected override async Task Do(IServiceScope scope)
         {
+            return; //TODO
             var folderDao = scope.ServiceProvider.GetService<IFolderDao<int>>();
             _trashId = await folderDao.GetFolderIDTrash(true);
 

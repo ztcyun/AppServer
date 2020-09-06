@@ -116,15 +116,19 @@ namespace ASC.Web.Files.Services.WCFService.FileOperations
             var daoFactory = scope.ServiceProvider.GetService<IDaoFactory>();
             var rootIds = new List<int>
                 {
-                    globalFolder.GetFolderMy(fileMarker, daoFactory),
-                    globalFolder.GetFolderCommon(fileMarker, daoFactory),
-                    globalFolder.GetFolderShare(daoFactory),
-                    globalFolder.GetFolderProjects(daoFactory),
+                    await globalFolder.GetFolderMy(fileMarker, daoFactory),
+                    await globalFolder.GetFolderCommon(fileMarker, daoFactory),
+                    await globalFolder.GetFolderShare(daoFactory),
+                    await globalFolder.GetFolderProjects(daoFactory),
                 };
 
-            var newrootfolder =
-                rootIds.Select(r => new KeyValuePair<int, int>(r, (await fileMarker.GetRootFoldersIdMarkedAsNew(r))))
-                .Select(item => string.Format("new_{{\"key\"? \"{0}\", \"value\"? \"{1}\"}}", item.Key, item.Value));
+            var nrf = new Dictionary<int, int>();
+            foreach (var r in rootIds)
+            {
+                nrf.Add(r, await fileMarker.GetRootFoldersIdMarkedAsNew(r));
+            }
+
+            var newrootfolder = nrf.Select(item => $"new_{{\"key\"? \"{item.Key}\", \"value\"? \"{item.Value}\"}}");
 
             Status += string.Join(SPLIT_CHAR, newrootfolder.ToArray());
         }

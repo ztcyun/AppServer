@@ -76,7 +76,7 @@ namespace ASC.Files.Service.Core
                 targetCond = true;
             }
 
-            return targetCond && FileSecurity.CanRead(file, userId);
+            return targetCond && FileSecurity.CanRead(file, userId).Result;//TODO
         }
 
         public override void VisibleFor(List<Tuple<FeedRow, object>> feed, Guid userId)
@@ -101,7 +101,7 @@ namespace ASC.Files.Service.Core
                 }
             }
 
-            var canRead = FileSecurity.CanRead(files, userId).Where(r => r.Item2).ToList();
+            var canRead = FileSecurity.CanRead(files, userId).Result.Where(r => r.Item2).ToList();//TODO
 
             foreach (var f in feed1)
             {
@@ -119,7 +119,7 @@ namespace ASC.Files.Service.Core
                 .ToList();
 
             var folderIDs = files.Select(r => r.Item1.FolderID).ToArray();
-            var folders = FolderDao.GetFolders(folderIDs, checkShare: false);
+            var folders = FolderDao.GetFolders(folderIDs, checkShare: false).Result;//TODO
 
             return files.Select(f => new Tuple<Feed.Aggregator.Feed, object>(ToFeed(f, folders.FirstOrDefault(r => r.ID.Equals(f.Item1.FolderID))), f));
         }
