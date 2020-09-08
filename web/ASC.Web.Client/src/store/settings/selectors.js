@@ -5,7 +5,7 @@ export const getUserRole = user => {
   if (user.isOwner) return "owner";
   else if (user.isAdmin) return "admin";
   else if (
-    user.listAdminModules !== undefined &&
+    user.listAdminModules &&
     user.listAdminModules.includes("people")
   )
     return "admin";

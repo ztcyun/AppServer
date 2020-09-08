@@ -121,6 +121,12 @@ const ToggleContentContainer = styled.div`
         margin-right:20px;
         display: flex;
         align-items: center;
+        padding: 10px 0px;
+        cursor:pointer;
+
+        &.owner{
+            cursor: default;
+        }
 
         .fullAccessIcon{
             margin-right: 4px;
@@ -146,6 +152,7 @@ const ToggleContentContainer = styled.div`
 `;
 
 let adminsFromSessionStorage = null
+const fullAccessId = "00000000-0000-0000-0000-000000000000"
 
 class PortalAdmins extends Component {
     constructor(props) {
@@ -337,6 +344,32 @@ class PortalAdmins extends Component {
         this.changeAdminRights(adminIndex, moduleName, isAdmin)
     }
 
+    onFullAccessClick = (admin) => {
+
+        const admins = JSON.parse(JSON.stringify(this.state.admins))
+
+        const adminIndex = admins.findIndex((adminState) => {
+            if (admin.id === adminState.id) return true
+            return false
+        })
+
+        if (adminIndex < 0) return false
+
+        admins[adminIndex].isAdmin = !admin.isAdmin
+
+        saveToSessionStorage("admins", admins)
+        this.setState({
+            admins
+        })
+        setNewAdmins(admins)
+
+        this.checkChanges();
+    }
+
+    findAdminById = (admin) => {
+        if (admin.id === this.id) return true
+    }
+
     filterNewAdmins = (admins, newAdmins) => {
         admins.forEach(admin => {
             for (let t = 0; t < newAdmins.length; t++) {
@@ -387,9 +420,10 @@ class PortalAdmins extends Component {
 
     onSaveButtonClick = () => {
         const { fetchPeople } = this.props
-        let changedAdmins = this.createChangedAdminsList();
-        let deletedAdmins = this.createDeletedAdminsList();
-        this.saveChanges(changedAdmins, deletedAdmins).then(() => {
+        const changedAdmins = this.createChangedAdminsList();
+        const changedFullAccessAdmins = this.createChangedFullAccessAdminsList();
+        const deletedAdmins = this.createDeletedAdminsList();
+        this.saveChanges(changedAdmins, deletedAdmins, changedFullAccessAdmins).then(() => {
 
             const newFilter = this.onAdminsFilter();
             fetchPeople(newFilter)
@@ -426,7 +460,8 @@ class PortalAdmins extends Component {
         }
     };
 
-    saveChanges = async (changedAdmins, deletedAdmins) => {
+    saveChanges = async (changedAdmins, deletedAdmins, changedFullAccessAdmins) => {
+        await this.saveChangedFullAccessAdmins(changedFullAccessAdmins)
         await this.saveChangedAdmins(changedAdmins)
         await this.saveDeletedAdmins(deletedAdmins)
     }
@@ -434,6 +469,10 @@ class PortalAdmins extends Component {
     saveChangedAdmins = async (changedAdmins) => {
         for (let i = 0; i < changedAdmins.length; i++) {
             const adminBeforeChanges = this.getAdminById(this.props.admins, changedAdmins[i].id);
+
+            if (adminBeforeChanges && adminBeforeChanges.isAdmin !== changedAdmins[i].isAdmin) {
+                await this.onChangeAdmin([changedAdmins[i].id], changedAdmins[i].isAdmin, fullAccessId)
+            }
 
             let changedAdminModules = adminBeforeChanges
                 ? this.getChangedAdminModules(adminBeforeChanges, changedAdmins[i])
@@ -450,10 +489,23 @@ class PortalAdmins extends Component {
     }
 
     saveDeletedAdmins = async (deletedAdmins) => {
-        const { modules } = this.props
         for (let i = 0; i < deletedAdmins.length; i++) {
-            for (const key in modules) {
-                await this.onChangeAdmin([deletedAdmins[i].id], false, modules[key].id)
+            await this.onChangeAdmin([deletedAdmins[i].id], false, fullAccessId)
+        }
+    }
+
+    saveChangedFullAccessAdmins = async (changedAdmins) => {
+        for (let i = 0; i < changedAdmins.length; i++) {
+            const modulesList = changedAdmins[i].listAdminModules
+
+            await this.onChangeAdmin([changedAdmins[i].id], changedAdmins[i].isAdmin, fullAccessId)
+
+            if (modulesList && modulesList.length > 0) {
+
+                for (const key in modulesList) {
+                    const currentModule = this.props.modules.find(module => module.title.toLowerCase() === modulesList[key].toLowerCase());
+                    if (currentModule) await this.onChangeAdmin([changedAdmins[i].id], this.isModuleAdmin(changedAdmins[i], modulesList[key]), currentModule.id)
+                }
             }
         }
     }
@@ -493,7 +545,11 @@ class PortalAdmins extends Component {
         for (let i = 0; i < admins.length; i++) {
             const adminBeforeChanges = this.getAdminById(this.props.admins, admins[i].id)
 
-            if (!this.compareObjects(admins[i], adminBeforeChanges)) {
+            if (adminBeforeChanges) {
+                if (adminBeforeChanges.isAdmin === admins[i].isAdmin && !this.compareObjects(admins[i], adminBeforeChanges)) {
+                    changedAdmins.push(admins[i])
+                }
+            } else if (!this.compareObjects(admins[i], adminBeforeChanges)) {
                 changedAdmins.push(admins[i])
             }
         }
@@ -513,6 +569,21 @@ class PortalAdmins extends Component {
         }
 
         return deletedAdmins
+    }
+
+    createChangedFullAccessAdminsList = () => {
+        const { admins } = this.state
+        let changedAdmins = [];
+
+        for (let i = 0; i < admins.length; i++) {
+            const adminBeforeChanges = this.getAdminById(this.props.admins, admins[i].id)
+
+            if ((!adminBeforeChanges && admins[i].isAdmin) || (adminBeforeChanges && adminBeforeChanges.isAdmin !== admins[i].isAdmin)) {
+                changedAdmins.push(admins[i])
+            }
+        }
+
+        if (changedAdmins) return changedAdmins
     }
 
     getAdminById = (admins, id) => {
@@ -661,70 +732,91 @@ class PortalAdmins extends Component {
                                                             checked={checked}
                                                             contextButtonSpacerWidth={"0px"}
                                                         >
-                                                            <div>
-                                                                <div className="nameAndStatus">
-                                                                    <Link
-                                                                        isTextOverflow={true}
-                                                                        type="page"
-                                                                        title={user.displayName}
-                                                                        isBold={true}
-                                                                        fontSize="15px"
-                                                                        color={nameColor}
-                                                                        href={user.profileUrl}
-                                                                    >
-                                                                        {user.displayName}
-                                                                    </Link>
-                                                                    {getUserStatus(user) === 'pending' && <Icons.SendClockIcon className="statusIcon" size='small' isfill={true} color='#3B72A7' />}
-                                                                    {getUserStatus(user) === 'disabled' && <Icons.CatalogSpamIcon className="statusIcon" size='small' isfill={true} color='#3B72A7' />}
-                                                                </div>
+                                                            <>
                                                                 <div>
-                                                                    <Text truncate={true} className="userRole">{getUserRole(user)}</Text>
-                                                                </div>
-                                                            </div>
-                                                            <div className="actionIconsWrapper">
-                                                                <div className="fullAccessWrapper">
-                                                                    <IconButton
-                                                                        iconName="ActionsFullAccessIcon"
-                                                                        isClickable={false}
-                                                                        className="fullAccessIcon"
-                                                                        size="medium"
-                                                                        isFill={true}
-                                                                        color={getUserRole(user) === "owner" ? '#316DAA' : '#D0D5DA'}
-                                                                    />
-                                                                    <Text color={getUserRole(user) === "owner" ? '#316DAA' : '#D0D5DA'} font-size="11px" fontWeight={700}>Full access</Text>
-                                                                </div>
-                                                                <div className="hyphen"></div>
-                                                                <div>
-                                                                    <div className="iconWrapper">
-                                                                        <IconButton
-                                                                            iconName="ActionsDocumentsSettingsIcon"
-                                                                            size={14}
-                                                                            color={
-                                                                                getUserRole(user) === "owner"
-                                                                                    ? '#7A95B0'
-                                                                                    : this.isModuleAdmin(user, 'documents') ? '#316DAA' : '#D0D5DA'
-                                                                            }
-                                                                            isfill={true}
-                                                                            isClickable={false}
-                                                                            onClick={getUserRole(user) !== "owner" && this.onModuleIconClick.bind(this, [user.id], "documents", this.isModuleAdmin(user, 'documents'))}
-                                                                        />
+                                                                    <div className="nameAndStatus">
+                                                                        <Link
+                                                                            isTextOverflow={true}
+                                                                            type="page"
+                                                                            title={user.displayName}
+                                                                            isBold={true}
+                                                                            fontSize="15px"
+                                                                            color={nameColor}
+                                                                            href={user.profileUrl}
+                                                                        >
+                                                                            {user.displayName}
+                                                                        </Link>
+                                                                        {getUserStatus(user) === 'pending' && <Icons.SendClockIcon className="statusIcon" size='small' isfill={true} color='#3B72A7' />}
+                                                                        {getUserStatus(user) === 'disabled' && <Icons.CatalogSpamIcon className="statusIcon" size='small' isfill={true} color='#3B72A7' />}
                                                                     </div>
-                                                                    <div className="iconWrapper">
-                                                                        <IconButton
-                                                                            iconName="MainMenuPeopleIcon"
-                                                                            size={16}
-                                                                            color={
-                                                                                getUserRole(user) === "owner"
-                                                                                    ? '#7A95B0'
-                                                                                    : this.isModuleAdmin(user, 'people') ? '#316DAA' : '#D0D5DA'
-                                                                            }
-                                                                            isfill={true}
-                                                                            isClickable={false}
-                                                                            onClick={getUserRole(user) !== "owner" && this.onModuleIconClick.bind(this, [user.id], "people", this.isModuleAdmin(user, 'people'))}
-                                                                        />
+                                                                    <div>
+                                                                        <Text truncate={true} className="userRole">{getUserRole(user)}</Text>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                                <div className="actionIconsWrapper">
+                                                                    {getUserRole(user) === "owner"
+                                                                        ?
+                                                                        <div className="fullAccessWrapper owner">
+                                                                            <IconButton
+                                                                                iconName="OwnerSettingsIcon"
+                                                                                isClickable={false}
+                                                                                className="fullAccessIcon"
+                                                                                size="medium"
+                                                                                isFill={true}
+                                                                                color='#7A95B0'
+                                                                            />
+                                                                            <Text color='#7A95B0' font-size="11px" fontWeight={700}>Owner</Text>
+                                                                        </div>
+
+                                                                        :
+
+                                                                        <div className="fullAccessWrapper" onClick={this.onFullAccessClick.bind(this, user)}>
+                                                                            <IconButton
+                                                                                iconName="ActionsFullAccessIcon"
+                                                                                isClickable={false}
+                                                                                className="fullAccessIcon"
+                                                                                size="medium"
+                                                                                isFill={true}
+                                                                                color={user.isAdmin ? '#316DAA' : '#D0D5DA'}
+                                                                            />
+                                                                            <Text color={user.isAdmin ? '#316DAA' : '#D0D5DA'} font-size="11px" fontWeight={700}>Full access</Text>
+                                                                        </div>
+                                                                    }
+                                                                    <div className="hyphen"></div>
+                                                                    <div>
+                                                                        <div className="iconWrapper">
+                                                                            <IconButton
+                                                                                iconName="ActionsDocumentsSettingsIcon"
+                                                                                size={14}
+                                                                                color={
+                                                                                    getUserRole(user) === "owner" || user.isAdmin
+                                                                                        ? '#7A95B0'
+                                                                                        : this.isModuleAdmin(user, 'documents') ? '#316DAA' : '#D0D5DA'
+                                                                                }
+                                                                                isfill={true}
+                                                                                isClickable={false}
+                                                                                isDisabled={getUserRole(user) === "owner" || user.isAdmin}
+                                                                                onClick={(getUserRole(user) !== "owner" || !user.isAdmin) && this.onModuleIconClick.bind(this, [user.id], "documents", this.isModuleAdmin(user, 'documents'))}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="iconWrapper">
+                                                                            <IconButton
+                                                                                iconName="MainMenuPeopleIcon"
+                                                                                size={16}
+                                                                                color={
+                                                                                    getUserRole(user) === "owner" || user.isAdmin
+                                                                                        ? '#7A95B0'
+                                                                                        : this.isModuleAdmin(user, 'people') ? '#316DAA' : '#D0D5DA'
+                                                                                }
+                                                                                isfill={true}
+                                                                                isClickable={false}
+                                                                                isDisabled={getUserRole(user) === "owner" || user.isAdmin}
+                                                                                onClick={(getUserRole(user) !== "owner" || !user.isAdmin) && this.onModuleIconClick.bind(this, [user.id], "people", this.isModuleAdmin(user, 'people'))}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </>
                                                         </Row>
                                                     );
                                                 })}
