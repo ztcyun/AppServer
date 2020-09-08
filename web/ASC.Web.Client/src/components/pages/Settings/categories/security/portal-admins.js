@@ -167,7 +167,8 @@ class PortalAdmins extends Component {
             selectedOptions: [],
             admins: adminsFromSessionStorage || {},
             hasChanged: false,
-            showReminder: false
+            showReminder: false,
+            searchValue: ""
         };
     }
 
@@ -460,6 +461,14 @@ class PortalAdmins extends Component {
         }
     };
 
+    onSearchChange = value => {
+        if (this.state.searchValue === value) return false
+
+        this.setState({
+            searchValue: value
+        })
+    }
+
     saveChanges = async (changedAdmins, deletedAdmins, changedFullAccessAdmins) => {
         await this.saveChangedFullAccessAdmins(changedFullAccessAdmins)
         await this.saveChangedAdmins(changedAdmins)
@@ -677,9 +686,20 @@ class PortalAdmins extends Component {
         return JSON.stringify(obj1) === JSON.stringify(obj2)
     }
 
+    getFilteredAdmins = (admins, searchValue) => {
+        const filteredAdmins = admins.filter((admin) => {
+            if (admin.displayName.toLowerCase().indexOf(searchValue.toLowerCase()) !== -1) return true
+            return false
+        })
+
+        return filteredAdmins
+    }
+
     render() {
         const { t, selection } = this.props;
-        const { isLoading, showLoader, admins, hasChanged, showReminder } = this.state;
+        const { isLoading, showLoader, admins, hasChanged, showReminder, searchValue } = this.state;
+
+        const filteredAdmins = searchValue ? this.getFilteredAdmins(admins, searchValue) : admins
 
         return (
             <>
@@ -702,13 +722,15 @@ class PortalAdmins extends Component {
                                 <SearchInput
                                     className="filter_container"
                                     placeholder="Search added employees"
+                                    onChange={this.onSearchChange}
+                                    onClearSearch={this.onSearchChange}
                                 />
 
-                                {admins.length > 0 ? (
+                                {filteredAdmins.length > 0 ? (
                                     <>
                                         <div className="wrapper">
                                             <RowContainer useReactWindow={false}>
-                                                {admins.map(user => {
+                                                {filteredAdmins.map(user => {
                                                     const element = (
                                                         <Avatar
                                                             size="small"
