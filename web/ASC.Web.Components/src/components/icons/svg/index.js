@@ -139,6 +139,7 @@ import OrigSecurityIcon from './security.react.svg';
 import OrigArrowRightIcon from './arrow.right.react.svg';
 import OrigActionsDocumentsSettingsIcon from './actions.documents.settings.react.svg';
 import OrigActionsFullAccessIcon from './actions.full.access.react.svg';
+import OrigOwnerSettingsIcon from './owner.settings.react.svg';
 
 import OrigEyeIcon from './eye.react.svg';
 import OrigEyeOffIcon from './eye.off.react.svg';
@@ -862,3 +863,7 @@ export const ActionsFullAccessIcon = createStyledIcon(
   OrigActionsFullAccessIcon,
   'ActionsFullAccessIcon'
 );
+export const OwnerSettingsIcon = createStyledIcon(
+  OrigOwnerSettingsIcon,
+  'OwnerSettingsIcon'
+)
