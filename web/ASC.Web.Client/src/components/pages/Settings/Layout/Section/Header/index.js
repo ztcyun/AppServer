@@ -239,6 +239,10 @@ class SectionHeaderContent extends React.Component {
     this.props.setSelected(checked ? "all" : "none");
   }
 
+  onCancelSelector = () => {
+    this.onShowGroupSelector();
+  }
+
   render() {
     const { t, groupsCaption, me } = this.props;
     const { disableRemove } = this.state
