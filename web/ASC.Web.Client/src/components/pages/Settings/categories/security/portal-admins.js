@@ -371,17 +371,6 @@ class PortalAdmins extends Component {
         return newFilter;
     };
 
-    onResetFilter = () => {
-        const { getUpdateListAdmin, filter } = this.props;
-
-        const newFilter = filter.clone(true);
-
-        this.onLoading(true);
-        getUpdateListAdmin(newFilter)
-            .catch(res => console.log(res))
-            .finally(() => this.onLoading(false));
-    };
-
     onModuleIconClick = (userIds, moduleName, isAdmin) => {
         const { admins } = this.state
 
@@ -777,6 +766,7 @@ class PortalAdmins extends Component {
                                     placeholder="Search added employees"
                                     onChange={this.onSearchChange}
                                     onClearSearch={this.onSearchChange}
+                                    value={searchValue}
                                 />
 
                                 {filteredAdmins.length > 0 ? (
@@ -923,7 +913,7 @@ class PortalAdmins extends Component {
                                                     <Link
                                                         type="action"
                                                         isHovered={true}
-                                                        onClick={this.onResetFilter}
+                                                        onClick={this.onSearchChange.bind(this, "")}
                                                     >
                                                         {t("ClearButton")}
                                                     </Link>
