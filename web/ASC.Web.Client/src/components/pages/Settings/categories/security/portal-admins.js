@@ -25,7 +25,8 @@ import {
     EmptyScreenContainer,
     Icons,
     SearchInput,
-    SaveCancelButtons
+    SaveCancelButtons,
+    utils
 } from "asc-web-components";
 import { constants } from 'asc-web-common';
 import { getUserRole, isUserSelected } from "../../../../../store/settings/selectors";
@@ -33,6 +34,7 @@ import isEmpty from "lodash/isEmpty";
 import { saveToSessionStorage, getFromSessionStorage } from '../../utils';
 
 const { EmployeeActivationStatus, EmployeeStatus } = constants;
+const { tablet, desktop, mobile } = utils.device;
 
 const getUserStatus = user => {
     if (user.status === EmployeeStatus.Active && user.activationStatus === EmployeeActivationStatus.Activated) {
@@ -111,6 +113,14 @@ const ToggleContentContainer = styled.div`
   .row_content{
     justify-content: space-between;
     align-items: center;
+
+    .userData{
+        max-width: calc(100% - 300px);
+    }
+  }
+
+  .iconsWrapper{
+    display: flex;
   }
 
   .actionIconsWrapper{
@@ -130,6 +140,7 @@ const ToggleContentContainer = styled.div`
 
         .fullAccessIcon{
             margin-right: 4px;
+            width:16px;
         }
       }
 
@@ -149,6 +160,44 @@ const ToggleContentContainer = styled.div`
          }
       }
   }
+
+    @media ${tablet}{
+        .row_content{
+            flex-direction: column;
+            align-items: baseline;
+
+            .userData{
+                max-width: 100%;
+            }
+        }
+
+        .actionIconsWrapper{
+
+            .hyphen{
+                margin-right: 10px;
+            }
+
+            .fullAccessWrapper{
+                margin-right: 10px;
+                p{
+                    display:none;
+                }
+            }
+        }
+
+        .wrapper {
+            #rowContainer{
+                &>div>div{
+                    align-items: normal;
+                    padding-top: 10px;
+
+                    &>div label{
+                        margin-top: 8px;
+                    }
+                }
+            }
+        }
+    }
 `;
 
 let adminsFromSessionStorage = null
@@ -755,7 +804,7 @@ class PortalAdmins extends Component {
                                                             contextButtonSpacerWidth={"0px"}
                                                         >
                                                             <>
-                                                                <div>
+                                                                <div className="userData">
                                                                     <div className="nameAndStatus">
                                                                         <Link
                                                                             isTextOverflow={true}
@@ -787,7 +836,7 @@ class PortalAdmins extends Component {
                                                                                 isFill={true}
                                                                                 color='#7A95B0'
                                                                             />
-                                                                            <Text color='#7A95B0' font-size="11px" fontWeight={700}>Owner</Text>
+                                                                            <Text as="p" truncate={true} color='#7A95B0' font-size="11px" fontWeight={700}>Owner</Text>
                                                                         </div>
 
                                                                         :
@@ -801,11 +850,11 @@ class PortalAdmins extends Component {
                                                                                 isFill={true}
                                                                                 color={user.isAdmin ? '#316DAA' : '#D0D5DA'}
                                                                             />
-                                                                            <Text color={user.isAdmin ? '#316DAA' : '#D0D5DA'} font-size="11px" fontWeight={700}>Full access</Text>
+                                                                            <Text as="p" truncate={true} color={user.isAdmin ? '#316DAA' : '#D0D5DA'} font-size="11px" fontWeight={700}>Full access</Text>
                                                                         </div>
                                                                     }
                                                                     <div className="hyphen"></div>
-                                                                    <div>
+                                                                    <div className="iconsWrapper">
                                                                         <div className="iconWrapper">
                                                                             <IconButton
                                                                                 iconName="ActionsDocumentsSettingsIcon"
