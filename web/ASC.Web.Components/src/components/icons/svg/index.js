@@ -151,6 +151,7 @@ import OrigNavLogoOpenedIcon from './nav.logo.opened.react.svg';
 import OrigCheckIcon from './check.react.svg';
 import OrigDangerIcon from './danger.react.svg';
 import OrigInfoIcon from './info.react.svg';
+import OrigNewInfoIcon from './new.info.react.svg';
 
 import OrigArrowPathIcon from './arrow.path.react.svg'
 
@@ -506,6 +507,10 @@ export const ImportIcon = createStyledIcon(
 export const InfoIcon = createStyledIcon(
   OrigInfoIcon,
   'InfoIcon'
+);
+export const NewInfoIcon = createStyledIcon(
+  OrigNewInfoIcon,
+  'NewInfoIcon'
 );
 export const InvitationLinkIcon = createStyledIcon(
   OrigInvitationLinkIcon,
