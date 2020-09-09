@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import styled, { css } from "styled-components";
 import { withRouter } from "react-router";
 import { Headline, PeopleSelector, api } from 'asc-web-common';
-import { IconButton, utils, GroupButtonsMenu } from "asc-web-components";
+import { IconButton, utils, GroupButtonsMenu, HelpButton, Text, Heading, Icons } from "asc-web-components";
 import { withTranslation } from 'react-i18next';
 import { getKeyByLink, settingsTree, getTKeyByKey, checkPropertyByLink } from '../../../utils';
 import { addAdmins, removeAdmins, setSelected } from "../../../../../../store/settings/actions";
@@ -19,6 +19,10 @@ const HeaderContainer = styled.div`
     .add-button{
       margin-left: 15px;
       cursor: pointer;
+    }
+
+    .help-icon{
+      margin-left: 12px;
     }
 
     .arrow-button {
@@ -60,6 +64,45 @@ const StyledContainer = styled.div`
 
     @media ${desktop} {
       margin: 0 -24px;
+    }
+  }
+`
+
+const StyledTooltip = styled.div`
+
+  width: 288px;
+
+  .tooltipHeading{
+    margin:0;
+  }
+
+  .line{
+    margin-top: 10px;
+    margin-bottom:10px;
+    height:1px;
+    width:100%;
+    background-color: #ECEEF1;
+  }
+  .tooltipIcon{
+    margin-right:8px;
+    width: 16px;
+
+    &.doc{
+      width: 14px;
+      margin-right:10px;
+    }
+  }
+  .infoItem{
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 10px;
+
+    &:last-child{
+      margin-bottom: 0;
+    }
+
+    p{
+      flex-basis: calc(100% - 16px);
     }
   }
 `
@@ -248,6 +291,52 @@ class SectionHeaderContent extends React.Component {
     const { disableRemove } = this.state
     const { header, isCategoryOrHeader, showSelector, showAddButton, isHeaderVisible, isHeaderChecked, isHeaderIndeterminate } = this.state;
     const arrayOfParams = this.getArrayOfParams();
+    const tooltipInfo = (
+      <StyledTooltip>
+        <Heading className="tooltipHeading" size="medium" level={3}>Access rights settings</Heading>
+        <div className="line"></div>
+        <div className="infoItem">
+          <IconButton
+            className="tooltipIcon"
+            iconName="OwnerSettingsIcon"
+            isClickable={false}
+            color="#333333"
+            size="medium"
+            isFill={true}
+          />
+          <Text as="p" fontSize="13px" color="#333333">
+            Have the same access rights as the portal owner, except the right to: change portal owner; deactivate or delete portal.
+          </Text>
+        </div>
+        <div className="infoItem">
+          <IconButton
+            className="tooltipIcon doc"
+            iconName="ActionsDocumentsSettingsIcon"
+            isClickable={false}
+            color="#333333"
+            size="medium"
+            isFill={true}
+          />
+          <Text as="p" fontSize="13px" color="#333333">
+            Documents administrators can: do the same as a user; link Dropbox, Box and other accounts in the 'Common Documents' section; set up access rights to the documents and folders in the 'Common Documents' section.
+          </Text>
+        </div>
+        <div className="infoItem">
+          <IconButton
+            className="tooltipIcon"
+            iconName="MainMenuPeopleIcon"
+            isClickable={false}
+            color="#333333"
+            size="medium"
+            isFill={true}
+          />
+          <Text as="p" fontSize="13px" color="#333333">
+            People administrators can: do the same as a user; create profiles and groups; import profiles; invite users.
+          </Text>
+        </div>
+
+      </StyledTooltip>
+    );
 
     const menuItems = [
       {
@@ -318,6 +407,17 @@ class SectionHeaderContent extends React.Component {
                     defaultOption={me}
                     defaultOptionLabel={t("MeLabel")}
                     groupsCaption={groupsCaption}
+                  />
+                  <HelpButton
+                    place="bottom"
+                    offsetTop={0}
+                    offsetRight={0}
+                    offsetBottom={0}
+                    offsetLeft={0}
+                    iconName="NewInfoIcon"
+                    color="#A3A9AE"
+                    size={17}
+                    tooltipContent={tooltipInfo}
                   />
                 </>
               }
