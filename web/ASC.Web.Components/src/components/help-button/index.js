@@ -56,7 +56,7 @@ class HelpButton extends React.Component {
       handleAnyClick(true, this.handleClick);
     });
 
-    if(this.state.hideTooltip) {
+    if (this.state.hideTooltip) {
       this.refTooltip.current.hideTooltip();
     }
   };
@@ -121,7 +121,7 @@ class HelpButton extends React.Component {
 
   onClick = () => {
     let state = false;
-    if(this.state.displayType === "aside") {
+    if (this.state.displayType === "aside") {
       state = true;
     }
     this.setState({ isOpen: !this.state.isOpen, hideTooltip: state });
@@ -143,7 +143,8 @@ class HelpButton extends React.Component {
       getContent,
       className,
       dataTip,
-      style
+      style,
+      size
     } = this.props;
 
     return (
@@ -153,7 +154,7 @@ class HelpButton extends React.Component {
           className={`${className} help-icon`}
           isClickable={true}
           iconName={iconName}
-          size={13}
+          size={size}
           color={color}
           data-for={this.id}
           dataTip={dataTip}
@@ -174,19 +175,19 @@ class HelpButton extends React.Component {
             getContent={getContent}
           />
         ) : (
-          <Tooltip
-            id={this.id}
-            reference={this.refTooltip}
-            effect="solid"
-            place={place}
-            offsetRight={offsetRight}
-            offsetLeft={offsetLeft}
-            afterShow={this.afterShow}
-            afterHide={this.afterHide}
-          >
-            {tooltipContent}
-          </Tooltip>
-        )}
+            <Tooltip
+              id={this.id}
+              reference={this.refTooltip}
+              effect="solid"
+              place={place}
+              offsetRight={offsetRight}
+              offsetLeft={offsetLeft}
+              afterShow={this.afterShow}
+              afterHide={this.afterHide}
+            >
+              {tooltipContent}
+            </Tooltip>
+          )}
         {displayType === "aside" && (
           <>
             <Backdrop onClick={this.onClose} visible={isOpen} zIndex={zIndex} />
@@ -227,6 +228,7 @@ HelpButton.propTypes = {
   helpButtonHeaderContent: PropTypes.string,
   iconName: PropTypes.string,
   color: PropTypes.string,
+  size: PropTypes.number,
   dataTip: PropTypes.string,
   getContent: PropTypes.func,
   className: PropTypes.string,
@@ -243,7 +245,8 @@ HelpButton.defaultProps = {
   zIndex: 310,
   displayType: "auto",
   className: "icon-button",
-  iconName: "QuestionIcon"
+  iconName: "QuestionIcon",
+  size: 13
 };
 
 export default HelpButton;

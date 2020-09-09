@@ -1,6 +1,6 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import { withKnobs, number } from "@storybook/addon-knobs/react";
+import { withKnobs, number, text, color } from "@storybook/addon-knobs/react";
 import withReadme from "storybook-readme/with-readme";
 import Readme from "./README.md";
 import HelpButton from ".";
@@ -32,6 +32,9 @@ storiesOf("Components|Buttons", module)
             offsetRight={number("offsetRight", 0)}
             offsetBottom={number("offsetBottom", 0)}
             offsetLeft={number("offsetLeft", 0)}
+            size={number("size", 13)}
+            iconName={text("iconName", "QuestionIcon")}
+            color={color("color", "")}
             tooltipContent={
               <Text fontSize='13px'>
                 Paste you tooltip content here
@@ -41,6 +44,9 @@ storiesOf("Components|Buttons", module)
           <HelpButton
             displayType="aside"
             helpButtonHeaderContent="Aside position HelpButton"
+            size={number("size", 13)}
+            iconName={text("iconName", "QuestionIcon")}
+            color={color("color", "")}
             tooltipContent={
               <Text>
                 You tooltip content with{" "}
@@ -56,6 +62,9 @@ storiesOf("Components|Buttons", module)
           <HelpButton
             displayType="auto"
             helpButtonHeaderContent="Auto position HelpButton"
+            size={number("size", 13)}
+            iconName={text("iconName", "QuestionIcon")}
+            color={color("color", "")}
             tooltipContent={
               <>
                 <p>You can put every thing here</p>
