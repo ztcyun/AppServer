@@ -183,6 +183,10 @@ const ToggleContentContainer = styled.div`
                     display:none;
                 }
             }
+            
+            .iconWrapper{
+                margin-right: 22px;
+            }
         }
 
         .wrapper {
