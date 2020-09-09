@@ -148,6 +148,7 @@ class SectionHeaderContent extends React.Component {
     const showAddButton = header === "PortalAdmins"
 
     prevState.showAddButton !== showAddButton && this.setState({ showAddButton })
+    prevState.showAddButton !== showAddButton && !showAddButton && this.onClose()
     header !== this.state.header && this.setState({ header });
     isCategoryOrHeader !== this.state.isCategoryOrHeader && this.setState({ isCategoryOrHeader });
     if (this.props.selection !== prevProps.selection) this.renderGroupButtonMenu();
@@ -159,12 +160,12 @@ class SectionHeaderContent extends React.Component {
 
   removeAdmins = () => {
     const { selection, removeAdmins } = this.props
-    debugger
     const adminsId = selection.map(admin => {
       if (!admin.isOwner) return admin.id
     })
 
     if (adminsId.length > 0) removeAdmins(adminsId)
+    this.onClose()
   }
 
   onSelectorSelect = () => {
