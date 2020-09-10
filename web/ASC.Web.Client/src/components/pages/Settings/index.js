@@ -18,7 +18,8 @@ const PortalAdmins = lazy(() => import("./categories/security/portal-admins"));
 //const WhiteLabel = lazy(() => import("./categories/common/whitelabel"));
 
 const Settings = () => {
-  const basePath = "/settings"  return (
+  const basePath = "/settings";
+  return (
     <Layout key="1">
       <Suspense
         fallback={<Loader className="pageLoader" type="rombs" size="40px" />}
