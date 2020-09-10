@@ -17,7 +17,6 @@ import {
     Row,
     RowContainer,
     Link,
-    Paging,
     IconButton,
     toastr,
     RequestLoader,
@@ -34,7 +33,7 @@ import isEmpty from "lodash/isEmpty";
 import { saveToSessionStorage, getFromSessionStorage } from '../../utils';
 
 const { EmployeeActivationStatus, EmployeeStatus } = constants;
-const { tablet, desktop, mobile } = utils.device;
+const { tablet } = utils.device;
 
 const getUserStatus = user => {
     if (user.status === EmployeeStatus.Active && user.activationStatus === EmployeeActivationStatus.Activated) {
@@ -301,62 +300,6 @@ class PortalAdmins extends Component {
             });
     };
 
-    onChangePage = pageItem => {
-        const { filter, getUpdateListAdmin } = this.props;
-
-        const newFilter = filter.clone();
-        newFilter.page = pageItem.key;
-        this.onLoading(true);
-
-        getUpdateListAdmin(newFilter)
-            .catch(res => console.log(res))
-            .finally(() => this.onLoading(false));
-    };
-
-    onChangePageSize = pageItem => {
-        const { filter, getUpdateListAdmin } = this.props;
-
-        const newFilter = filter.clone();
-        newFilter.page = 0;
-        newFilter.pageCount = pageItem.key;
-        this.onLoading(true);
-
-        getUpdateListAdmin(newFilter)
-            .catch(res => console.log(res))
-            .finally(() => this.onLoading(false));
-    };
-
-    onPrevClick = e => {
-        const { filter, getUpdateListAdmin } = this.props;
-
-        if (!filter.hasPrev()) {
-            e.preventDefault();
-            return;
-        }
-        const newFilter = filter.clone();
-        newFilter.page--;
-        this.onLoading(true);
-        getUpdateListAdmin(newFilter)
-            .catch(res => console.log(res))
-            .finally(() => this.onLoading(false));
-    };
-
-    onNextClick = e => {
-        const { filter, getUpdateListAdmin } = this.props;
-
-        if (!filter.hasNext()) {
-            e.preventDefault();
-            return;
-        }
-        const newFilter = filter.clone();
-        newFilter.page++;
-        this.onLoading(true);
-
-        getUpdateListAdmin(newFilter)
-            .catch(res => console.log(res))
-            .finally(() => this.onLoading(false));
-    };
-
     onLoading = status => {
         this.setState({ isLoading: status });
     };
@@ -521,10 +464,6 @@ class PortalAdmins extends Component {
         for (let i = 0; i < changedAdmins.length; i++) {
             const adminBeforeChanges = this.getAdminById(this.props.admins, changedAdmins[i].id);
 
-            if (adminBeforeChanges && adminBeforeChanges.isAdmin !== changedAdmins[i].isAdmin) {
-                await this.onChangeAdmin([changedAdmins[i].id], changedAdmins[i].isAdmin, fullAccessId)
-            }
-
             let changedAdminModules = adminBeforeChanges
                 ? this.getChangedAdminModules(adminBeforeChanges, changedAdmins[i])
                 : changedAdmins[i].listAdminModules && changedAdmins[i].listAdminModules.slice();
@@ -652,51 +591,6 @@ class PortalAdmins extends Component {
 
         if (currentAdmin) return currentAdmin
     }
-
-    pageItems = () => {
-        const { t, filter } = this.props;
-        if (filter.total < filter.pageCount) return [];
-        const totalPages = Math.ceil(filter.total / filter.pageCount);
-        return [...Array(totalPages).keys()].map(item => {
-            return {
-                key: item,
-                label: t("PageOfTotalPage", { page: item + 1, totalPage: totalPages })
-            };
-        });
-    };
-
-    countItems = () => [
-        { key: 25, label: this.props.t("CountPerPage", { count: 25 }) },
-        { key: 50, label: this.props.t("CountPerPage", { count: 50 }) },
-        { key: 100, label: this.props.t("CountPerPage", { count: 100 }) }
-    ];
-
-    selectedPageItem = () => {
-        const { filter, t } = this.props;
-        const pageItems = this.pageItems();
-
-        const emptyPageSelection = {
-            key: 0,
-            label: t("PageOfTotalPage", { page: 1, totalPage: 1 })
-        };
-
-        return pageItems.find(x => x.key === filter.page) || emptyPageSelection;
-    };
-
-    selectedCountItem = () => {
-        const { filter, t } = this.props;
-
-        const emptyCountSelection = {
-            key: 0,
-            label: t("CountPerPage", { count: 25 })
-        };
-
-        const countItems = this.countItems();
-
-        return (
-            countItems.find(x => x.key === filter.pageCount) || emptyCountSelection
-        );
-    };
 
     isModuleAdmin = (user, moduleName) => {
         let isModuleAdmin = false;
@@ -861,7 +755,7 @@ class PortalAdmins extends Component {
                                                                                 isfill={true}
                                                                                 isClickable={false}
                                                                                 isDisabled={getUserRole(user) === "owner" || user.isAdmin}
-                                                                                onClick={(getUserRole(user) !== "owner" || !user.isAdmin) && this.onModuleIconClick.bind(this, [user.id], "documents", this.isModuleAdmin(user, 'documents'))}
+                                                                                onClick={(getUserRole(user) !== "owner" || !user.isAdmin) ? this.onModuleIconClick.bind(this, [user.id], "documents", this.isModuleAdmin(user, 'documents')) : null}
                                                                             />
                                                                         </div>
                                                                         <div className="iconWrapper">
@@ -876,7 +770,7 @@ class PortalAdmins extends Component {
                                                                                 isfill={true}
                                                                                 isClickable={false}
                                                                                 isDisabled={getUserRole(user) === "owner" || user.isAdmin}
-                                                                                onClick={(getUserRole(user) !== "owner" || !user.isAdmin) && this.onModuleIconClick.bind(this, [user.id], "people", this.isModuleAdmin(user, 'people'))}
+                                                                                onClick={(getUserRole(user) !== "owner" || !user.isAdmin) ? this.onModuleIconClick.bind(this, [user.id], "people", this.isModuleAdmin(user, 'people')) : null}
                                                                             />
                                                                         </div>
                                                                     </div>
