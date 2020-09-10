@@ -24,8 +24,7 @@ RUN apt-get -y update && \
     adduser -uid 104 --quiet --home /var/www/onlyoffice --system --gid 107 onlyoffice && \
     locale-gen en_US.UTF-8 && \
     apt-get -y update && \
-    apt-get install -yq software-properties-common wget curl cron rsyslog && \
-    apt-get install -yq openjdk-8-jre-headless && \
+    apt-get install -yq software-properties-common wget curl && \
     curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && \
     apt-get install -y nodejs && \
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
@@ -152,33 +151,33 @@ RUN rm -rf /var/lib/apt/lists/*
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 as builder
 
-USER root
-
 # set up default mysql, kafka values for docker-entrypoint.sh 
-ENV MYSQL_HOST=mysql
-ENV MYSQL_DATABASE=onlyoffice
-ENV MYSQL_USER=onlyoffice_user
-ENV MYSQL_PASSWORD=onlyoffice_pass
-ENV KAFKA_HOST=kafka
-ENV DOTNET_ENV=test
+ENV MYSQL_HOST=mysql \
+MYSQL_DATABASE=onlyoffice \
+MYSQL_USER=onlyoffice_user \
+MYSQL_PASSWORD=onlyoffice_pass \
+KAFKA_HOST=kafka \
+DOTNET_ENV=test
 
 COPY --from=develop /app/onlyoffice/config/ /app/onlyoffice/config/
 
 # add defualt user and group for no-root run
 RUN mkdir -p /var/log/onlyoffice && \
     mkdir -p /app/onlyoffice/data && \
+    mkdir -p /var/www/services/backup && \
     groupadd -g 1001 appuser && \
-    useradd -r -u 1001 -g appuser appuser &&\
-    chown appuser:appuser /app/onlyoffice -R &&\
-    chown appuser:appuser /var/log -R 
-
+    useradd -r -u 1001 -g appuser appuser && \
+    chown appuser:appuser /app/onlyoffice -R && \
+    chown appuser:appuser /var/log -R  && \
+    chown appuser:appuser /var/www -R 
+    
+USER appuser    
 EXPOSE 5050
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
 
 ### STAGE 3: Run ###
-
 
 ## NGINX ##
 FROM nginx:stable-alpine AS web
@@ -209,46 +208,47 @@ RUN chown nginx:nginx /etc/nginx/* -R &&\
     sed -i 's/http.*{/http {\n client_body_temp_path \/tmp\/client_temp;\n proxy_temp_path \/tmp\/proxy_temp_path;\n fastcgi_temp_path \/tmp\/fastcgi_temp;\n uwsgi_temp_path \/tmp\/uwsgi_temp;\n scgi_temp_path  \/tmp\/scgi_temp;/' /etc/nginx/nginx.conf
 
 
+## backup ##
+FROM builder AS backup
+
+WORKDIR /var/www/services/backup/
+
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop --chown=appuser:appuser /var/www/services/backup/ .
+COPY --from=develop --chown=appuser:appuser /var/www/products/ASC.People/server/ASC.People.dll /var/www/products/ASC.People/server/
+COPY --from=develop --chown=appuser:appuser /var/www/products/ASC.Files/server/ASC.Files*.dll /var/www/products/ASC.Files/server/
+
+CMD ["ASC.Data.Backup.dll", "backup", "--core:products:folder=/var/www/products/", "--core:products:subfolder=server"]
+
 ## api ##
 FROM builder AS api
 
-COPY --from=develop /var/www/studio/api/  /var/www/studio/api/
-COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
-
 WORKDIR /var/www/studio/api/
-COPY docker-entrypoint.sh .
 
-RUN chown appuser:appuser /var/www -R
-USER appuser
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop --chown=appuser:appuser /var/www/studio/api .
+COPY --from=develop --chown=appuser:appuser /var/www/products/ASC.People/server/ASC.People.dll /var/www/products/ASC.People/server/
+COPY --from=develop --chown=appuser:appuser /var/www/products/ASC.Files/server/ASC.Files*.dll /var/www/products/ASC.Files/server/
 
 CMD ["ASC.Web.Api.dll", "api"]
-
 
 ## api_system ##
 FROM builder AS api_system
 
-COPY --from=develop /var/www/services/apisystem/  /var/www/services/apisystem/
-
 WORKDIR /var/www/services/apisystem/
-COPY docker-entrypoint.sh .
 
-RUN chown appuser:appuser /var/www -R
-USER appuser
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop /var/www/services/apisystem/ /var/www/services/apisystem/
 
 CMD ["ASC.ApiSystem.dll", "api_system"]
-
 
 ## urlshortener ##
 FROM builder AS urlshortener
 
-COPY --from=develop /services/urlshortener/service/   /services/urlshortener/service/ 
-
 WORKDIR /services/urlshortener/service/ 
-COPY docker-entrypoint.sh .
 
-RUN chown appuser:appuser /services -R
-USER appuser
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop /services/urlshortener/service/ /services/urlshortener/service/ 
 
 CMD ["ASC.UrlShortener.Svc.dll", "urlshortener"]
 
@@ -256,87 +256,68 @@ CMD ["ASC.UrlShortener.Svc.dll", "urlshortener"]
 ## studio.notify ##
 FROM builder AS studio.notify
 
-COPY --from=develop /var/www/services/studio.notify/  /var/www/services/studio.notify/
-COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-
 WORKDIR /var/www/services/studio.notify/
-COPY docker-entrypoint.sh .
 
-RUN chown appuser:appuser /var/www -R
-USER appuser
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop /var/www/services/studio.notify/ /var/www/services/studio.notify/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll /var/www/products/ASC.People/server/
 
-CMD ["ASC.Studio.Notify.dll", "studio.notify"]
+CMD ["ASC.Studio.Notify.dll", "studio.notify", "--core:products:folder=/var/www/products/", "--core:products:subfolder=server"]
 
+
+## notify ##
+FROM builder AS notify
+
+WORKDIR /var/www/services/notify/
+
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop /var/www/services/notify/ .
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll /var/www/products/ASC.People/server/
+COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll /var/www/products/ASC.Files/server/
+
+CMD ["ASC.Notify.dll", "notify", "--core:products:folder=/var/www/products/", "--core:products:subfolder=server"]
 
 ## people.server ##
 FROM builder AS people.server
 
-COPY --from=develop /var/www/products/ASC.People/server/  /var/www/products/ASC.People/server/
-COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
-
 WORKDIR /var/www/products/ASC.People/server/
-COPY docker-entrypoint.sh .
 
-RUN chown appuser:appuser /var/www -R
-USER appuser
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop /var/www/products/ASC.People/server/ /var/www/products/ASC.People/server/
+COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll /var/www/products/ASC.Files/server/
 
 CMD ["ASC.People.dll", "people.server"]
-
 
 ## files ##
 FROM builder AS files
 
-COPY --from=develop /var/www/products/ASC.Files/server/  /var/www/products/ASC.Files/server/
-COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-
 WORKDIR /var/www/products/ASC.Files/server/
-COPY docker-entrypoint.sh .
 
-RUN chown appuser:appuser /var/www -R
-USER appuser
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop /var/www/products/ASC.Files/server/ /var/www/products/ASC.Files/server/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll /var/www/products/ASC.People/server/
 
 CMD ["ASC.Files.dll", "files"]
-
 
 ## files_services ##
 FROM builder AS files_services
 
+WORKDIR /var/www/products/ASC.Files/service/
+
+COPY --chown=appuser:appuser docker-entrypoint.sh .
 COPY --from=develop /var/www/products/ASC.Files/service/ /var/www/products/ASC.Files/service/
 
-WORKDIR /var/www/products/ASC.Files/service/
-COPY docker-entrypoint.sh .
-
-RUN chown appuser:appuser /var/www -R
-USER appuser
-
 CMD ["ASC.Files.Service.dll", "files_services"]
-
 
 ## studio ##
 FROM builder AS studio
 
-COPY --from=develop /var/www/studio/server/  /var/www/studio/server/
-COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
-COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-
 WORKDIR /var/www/studio/server/
-COPY docker-entrypoint.sh .
 
-RUN chown appuser:appuser /var/www -R
-USER appuser
+COPY --chown=appuser:appuser docker-entrypoint.sh .
+COPY --from=develop /var/www/studio/server/ .
+COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll /var/www/products/ASC.Files/server/
+COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll /var/www/products/ASC.People/server/
 
 CMD ["ASC.Web.Studio.dll", "studio"]
 
-## backup ##
-FROM builder AS backup
-
-COPY --from=develop /var/www/services/backup/  /var/www/services/backup/
-COPY --from=develop /var/www/products/ASC.People/server/ASC.People.dll  /var/www/products/ASC.People/server/
-COPY --from=develop /var/www/products/ASC.Files/server/ASC.Files*.dll  /var/www/products/ASC.Files/server/
-WORKDIR /var/www/services/backup/
-COPY docker-entrypoint.sh .
-
-RUN chown appuser:appuser /var/www -R
-USER appuser
-
-CMD ["ASC.Data.Backup.dll", "backup", "--core:products:folder=/var/www/products/", "--core:products:subfolder=server"]

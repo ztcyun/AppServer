@@ -1,7 +1,27 @@
 version: "3.4"
+x-service: 
+    &x-service-base
+    build:
+      context: .
+      target: base
+    container_name: base
+    hostname: base
+    restart: always
+    depends_on:
+    - mysql
+    expose:
+    - ${SERVICE_PORT}
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
+    volumes:
+    - app_data:/app/onlyoffice/data/
 
-services:
-
+services: 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
     container_name: elasticsearch
@@ -72,209 +92,100 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
-      - ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/02_dotnet_dump.sql
-      - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/03_alter_priv.sql
       - ./config/mysql/conf.d:/etc/mysql/conf.d
-      - mysql_log:/var/log/mysql:rw
-      - mysql_error:/var/log/mysql/error.log:rw
+      - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
+      - ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
+      - ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
+      - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/04_alter_priv.sql
+      #- ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/05_dotnet_dump.sql
+      - mysql_data:/var/lib/mysql
     
   api:
+    <<: *x-service-base
     build:
       context: .
       target: api
     container_name: api
     hostname: api
-    restart: always
-    depends_on:
-      - mysql
-    expose:
-      - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-      - app_data:/app/onlyoffice/data/  
-    
+
   api_system:
+    <<: *x-service-base
     build:
       context: .
       target: api_system
     image: api_system
     container_name: api_system
     hostname: api_system 
-    restart: always
-    depends_on:
-    - mysql
-    expose:
-    - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-    - app_data:/app/onlyoffice/data/
-  
+     
   urlshortener:
+    <<: *x-service-base
     build:
       context: .
       target: urlshortener
     image: urlshortener
     container_name: urlshortener
     hostname: urlshortener 
-    restart: always
-    depends_on:
-    - mysql
-    expose:
-    - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-    - app_data:/app/onlyoffice/data/
- 
+   
   studio.notify:
+    <<: *x-service-base
     build:
       context: .
       target: studio.notify
     image: studio.notify
     container_name: studio.notify
     hostname: studio_notify
-    restart: always
-    depends_on:
-    - mysql
-    expose:
-    - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-    - app_data:/app/onlyoffice/data/
+    
+  notify:
+    <<: *x-service-base
+    build:
+      context: .
+      target: notify
+    image: notify
+    container_name: notify
+    hostname: notify
 
   people.server:
+    <<: *x-service-base
     build:
       context: .
       target: people.server  
     container_name: people.server
     hostname: people_server
-    restart: always
-    depends_on:
-    - mysql
-    expose:
-      - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-      - app_data:/app/onlyoffice/data/ 
-
+    
   files:
+    <<: *x-service-base
     build:
       context: .
       target: files  
     container_name: files
     hostname: files
-    restart: always
-    depends_on:
-    - mysql
-    expose:
-      - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-      - app_data:/app/onlyoffice/data/
-
+    
   files_services:
+    <<: *x-service-base
     build:
       context: .
       target: files_services  
     container_name: files_services
     hostname: files_services
-    restart: always
-    depends_on:
-    - mysql
-    expose:
-      - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-      - app_data:/app/onlyoffice/data/
-      
+    
   studio:
+    <<: *x-service-base
     build:
       context: .
       target: studio
     image: studio
     container_name: studio
     hostname: studio
-    restart: always
-    depends_on:
-    - mysql
-    - api
-    expose:
-    - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-    - app_data:/app/onlyoffice/data/
-
+   
   backup:
+    <<: *x-service-base
     build:
       context: .
       target: backup
     image: backup
     container_name: backup
     hostname: backup
-    restart: always
-    depends_on:
-    - mysql
-    - api
-    expose:
-    - ${SERVICE_PORT}
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      KAFKA_HOST: ${KAFKA_HOST}
-    volumes:
-    - app_data:/app/onlyoffice/data/
-  
+    
   nginx:
     build:
       context: .
@@ -290,6 +201,7 @@ services:
       - api_system
       - urlshortener
       - studio.notify
+      - notify
       - people.server
       - files
       - files_services
@@ -314,8 +226,7 @@ volumes:
   kafka_data:
   zoo_data:
   zoo_log:
-  mysql_log:
-  mysql_error:
+  mysql_data:
   nginx_log:
   app_data:
   es_data:
