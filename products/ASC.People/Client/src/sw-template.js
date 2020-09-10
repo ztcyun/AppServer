@@ -9,13 +9,9 @@ if ("function" === typeof importScripts) {
     // Force development builds -> { debug: true } or production builds { debug: false }
     workbox.setConfig({ debug: true });
 
-    //`generateSW` and `generateSWString` provide the option
-    // to force update an exiting service worker.
-    // Since we're using `injectManifest` to build SW,
-    // manually overriding the skipWaiting();
-    self.addEventListener("install", event => {
-      self.skipWaiting();
-    });
+    // Updating SW lifecycle to update the app after user triggered refresh
+    workbox.core.skipWaiting();
+    workbox.core.clientsClaim();
 
     /* injection point for manifest files.  */
     workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
@@ -23,7 +19,9 @@ if ("function" === typeof importScripts) {
     // Image caching
     workbox.routing.registerRoute(
       // Cache image files.
-      ({ request }) => request.destination === "image",
+      ({ request, url }) =>
+        request.destination === "image" &&
+        url.pathname.indexOf("userPhotos/temp") === -1,
       // Use the cache if it's available.
       new workbox.strategies.CacheFirst({
         // Use a custom cache name.

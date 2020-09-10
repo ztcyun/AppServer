@@ -478,7 +478,7 @@ class FilesRowContent extends React.PureComponent {
               {fileOwner}
             </Text>
             <Text
-              containerMinWidth='190px'
+              containerMinWidth='200px'
               containerWidth='15%'
               title={updatedDate}
               fontSize='12px'
@@ -518,7 +518,7 @@ function mapStateToProps(state) {
     filter,
     fileAction,
     parentFolder: selectedFolder.id,
-    isTrashFolder: treeFolders[indexOfTrash].id === selectedFolder.id,
+    isTrashFolder: treeFolders.length && treeFolders[indexOfTrash].id === selectedFolder.id,
     settings,
     treeFolders,
     rootFolderId,

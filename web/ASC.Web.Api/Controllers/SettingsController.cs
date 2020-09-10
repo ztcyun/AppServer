@@ -560,21 +560,11 @@ namespace ASC.Api.Settings
 
             foreach (var tz in timeZones.OrderBy(z => z.BaseUtcOffset))
             {
-                var displayName = tz.DisplayName;
-                if (!displayName.StartsWith("(UTC") && !displayName.StartsWith("UTC"))
+                listOfTimezones.Add(new TimezonesModel
                 {
-                    if (tz.BaseUtcOffset != TimeSpan.Zero)
-                    {
-                        displayName = string.Format("(UTC{0}{1}) ", tz.BaseUtcOffset < TimeSpan.Zero ? "-" : "+", tz.BaseUtcOffset.ToString(@"hh\:mm")) + displayName;
-                    }
-                    else
-                    {
-                        displayName = "(UTC) " + displayName;
-                    }
-                }
-
-                listOfTimezones.Add(new TimezonesModel { Id = tz.Id, DisplayName = displayName });
-
+                    Id = tz.Id,
+                    DisplayName = TimeZoneConverter.GetTimeZoneDisplayName(tz)
+                });
             }
 
             return listOfTimezones;
@@ -1813,6 +1803,28 @@ namespace ASC.Api.Settings
                 MessageService.Send(MessageAction.AuthorizationKeysSetting);
 
             return changed;
+        }
+
+        [Read("payment")]
+        public object PaymentSettings()
+        {
+            var settings = SettingsManager.LoadForDefaultTenant<AdditionalWhiteLabelSettings>();
+            var currentQuota = TenantExtra.GetTenantQuota();
+            var currentTariff = TenantExtra.GetCurrentTariff();
+
+            return
+                new
+                {
+                    settings.SalesEmail,
+                    settings.FeedbackAndSupportUrl,
+                    settings.BuyUrl,
+                    CoreBaseSettings.Standalone,
+                    currentLicense = new
+                    {
+                        currentQuota.Trial,
+                        currentTariff.DueDate.Date
+                    }
+                };
         }
 
         private readonly int maxCount = 10;
