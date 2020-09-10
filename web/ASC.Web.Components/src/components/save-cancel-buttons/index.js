@@ -15,6 +15,7 @@ const StyledSaveCancelButtons = styled.div`
     justify-content: space-between;
     box-sizing: border-box;
     align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
 
     .save-button{
         margin-right: 8px;
@@ -27,6 +28,8 @@ const StyledSaveCancelButtons = styled.div`
     @media ${tablet} {
         justify-content:flex-end;
         position:fixed;
+        padding-bottom: 20px;
+        padding-top: 20px;
 
         .unsaved-changes{
             display:none;
