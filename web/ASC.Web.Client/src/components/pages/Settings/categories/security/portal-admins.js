@@ -657,7 +657,7 @@ class PortalAdmins extends Component {
                             <ToggleContentContainer>
                                 <SearchInput
                                     className="filter_container"
-                                    placeholder="Search added employees"
+                                    placeholder={t("SearchAddedEmployees")}
                                     onChange={this.onSearchChange}
                                     onClearSearch={this.onSearchChange}
                                     value={searchValue}
@@ -709,7 +709,7 @@ class PortalAdmins extends Component {
                                                                         {getUserStatus(user) === 'disabled' && <Icons.CatalogSpamIcon className="statusIcon" size='small' isfill={true} color='#3B72A7' />}
                                                                     </div>
                                                                     <div>
-                                                                        <Text truncate={true} className="userRole">{getUserRole(user)}</Text>
+                                                                        <Text truncate={true} className="userRole">{t(getUserRole(user))}</Text>
                                                                     </div>
                                                                 </div>
                                                                 <div className="actionIconsWrapper">
@@ -724,7 +724,7 @@ class PortalAdmins extends Component {
                                                                                 isFill={true}
                                                                                 color='#7A95B0'
                                                                             />
-                                                                            <Text as="p" truncate={true} color='#7A95B0' font-size="11px" fontWeight={700}>Owner</Text>
+                                                                            <Text as="p" truncate={true} color='#7A95B0' font-size="11px" fontWeight={700}>{t("owner")}</Text>
                                                                         </div>
 
                                                                         :
@@ -738,7 +738,7 @@ class PortalAdmins extends Component {
                                                                                 isFill={true}
                                                                                 color={user.isAdmin ? '#316DAA' : '#D0D5DA'}
                                                                             />
-                                                                            <Text as="p" truncate={true} color={user.isAdmin ? '#316DAA' : '#D0D5DA'} font-size="11px" fontWeight={700}>Full access</Text>
+                                                                            <Text as="p" truncate={true} color={user.isAdmin ? '#316DAA' : '#D0D5DA'} font-size="11px" fontWeight={700}>{t("AccessRightsFullAccess")}</Text>
                                                                         </div>
                                                                     }
                                                                     <div className="hyphen"></div>

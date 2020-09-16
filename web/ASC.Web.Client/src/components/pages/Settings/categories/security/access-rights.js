@@ -334,7 +334,7 @@ class AccessRights extends Component {
                                 {admins.length > 0 && <Text className="category-item-subheader" truncate={true}>{admins.length} {t('Employees')}</Text>}
 
                                 <Text className="category-item-description">
-                                    {t('PortalAdminsDescription')}
+                                    {t('AccessRightsFullAccessDescription')}
                                 </Text>
                             </div>
                         </StyledWrapper>

@@ -1,5 +1,9 @@
 {
-"PortalOwner": "Portal Owner",
+  "PortalOwner": "Portal Owner",
+  "owner": "Owner",
+  "admin": "Admin",
+  "user": "User",
+  "guest": "Guest",
   "AccessRightsOwnerCan": "Portal owner can",
   "AccessRightsOwnerOpportunities": "Do the same as module administrators|Appoint module administrators|Set modules access rights|Manage portal configuration|Manage user accounts|Change portal owner|Backup portal data|Deactivate or delete portal",
   "AdminSettings": "Administrators",
@@ -99,5 +103,12 @@
   "YouHaveUnsavedChanges": "You have unsaved changes",
   "CustomTitles": "Custom titles",
   "LanguageAndTimeZoneSettingsDescription": "Language and time zone settings is a way to change the language of the whole portal for all portal users and to configure the time zone so that all the events of the portal will be shown with the correct date and time.",
-  "CustomTitlesSettingsDescription": "Custom welcome page title will be displayed on the welcome page of your portal. The same name is also used for the From field of your portal email notifications. Custom domain name is a way to set an alternative URL for your portal. Custom portal name will appear next to the onlyoffice.com/onlyoffice.eu portal address."
+  "CustomTitlesSettingsDescription": "Custom welcome page title will be displayed on the welcome page of your portal. The same name is also used for the From field of your portal email notifications. Custom domain name is a way to set an alternative URL for your portal. Custom portal name will appear next to the onlyoffice.com/onlyoffice.eu portal address.",
+  "AccessRightsSettings": "Access rights settings",
+  "AccessRightsFullAccessDescription": "Have the same access rights as the portal owner, except the right to: change portal owner; deactivate or delete portal.",
+  "AccessRightsDocumentsDescription": "Documents administrators can: do the same as a user; link Dropbox, Box and other accounts in the 'Common Documents' section; set up access rights to the documents and folders in the 'Common Documents' section.",
+  "AccessRightsPeopleDescription": "People administrators can: do the same as a user; create profiles and groups; import profiles; invite users.",
+  "Remove": "Remove",
+  "SelectAll": "Select all",
+  "SearchAddedEmployees": "Search added employees"
 }

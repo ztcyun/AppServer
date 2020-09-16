@@ -294,7 +294,7 @@ class SectionHeaderContent extends React.Component {
     const arrayOfParams = this.getArrayOfParams();
     const tooltipInfo = (
       <StyledTooltip>
-        <Heading className="tooltipHeading" size="medium" level={3}>Access rights settings</Heading>
+        <Heading className="tooltipHeading" size="medium" level={3}>{t("AccessRightsSettings")}</Heading>
         <div className="line"></div>
         <div className="infoItem">
           <IconButton
@@ -306,7 +306,7 @@ class SectionHeaderContent extends React.Component {
             isFill={true}
           />
           <Text as="p" fontSize="13px" color="#333333">
-            Have the same access rights as the portal owner, except the right to: change portal owner; deactivate or delete portal.
+            {t("AccessRightsFullAccessDescription")}
           </Text>
         </div>
         <div className="infoItem">
@@ -319,7 +319,7 @@ class SectionHeaderContent extends React.Component {
             isFill={true}
           />
           <Text as="p" fontSize="13px" color="#333333">
-            Documents administrators can: do the same as a user; link Dropbox, Box and other accounts in the 'Common Documents' section; set up access rights to the documents and folders in the 'Common Documents' section.
+            {t("AccessRightsDocumentsDescription")}
           </Text>
         </div>
         <div className="infoItem">
@@ -332,7 +332,7 @@ class SectionHeaderContent extends React.Component {
             isFill={true}
           />
           <Text as="p" fontSize="13px" color="#333333">
-            People administrators can: do the same as a user; create profiles and groups; import profiles; invite users.
+            {t("AccessRightsPeopleDescription")}
           </Text>
         </div>
 
@@ -341,7 +341,7 @@ class SectionHeaderContent extends React.Component {
 
     const menuItems = [
       {
-        label: t("Select all"),
+        label: t("SelectAll"),
         isDropdown: true,
         isSeparator: true,
         isSelect: true,
