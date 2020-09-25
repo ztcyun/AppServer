@@ -20,6 +20,8 @@ x-service:
       KAFKA_HOST: ${KAFKA_HOST}
     volumes:
     - app_data:/app/onlyoffice/data/
+    networks:
+      - onlyoffice
 
 services: 
   elasticsearch:
@@ -42,6 +44,8 @@ services:
       - es_data:/usr/share/elasticsearch/data
     expose:
       - "9200"
+    networks:
+      - onlyoffice
 
   zookeeper:
     image: zookeeper:latest
@@ -57,6 +61,8 @@ services:
     volumes:
     - zoo_data:/data
     - zoo_log:/datalog
+    networks:
+      - onlyoffice
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -77,6 +83,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
     volumes:
     - kafka_data:/var/lib/kafka/data
+    networks:
+      - onlyoffice
 
   mysql:
     image: mysql:8.0.18
@@ -94,11 +102,16 @@ services:
     volumes:
       - ./config/mysql/conf.d:/etc/mysql/conf.d
       - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
-      - ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
-      - ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
+      #- ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
+      #- ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
       - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/04_alter_priv.sql
-      #- ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/05_dotnet_dump.sql
-      - mysql_data:/var/lib/mysql
+      #- ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/021_dotnet_dump.sql
+      - ../../../sql/onlyoffice.resources.sql:/docker-entrypoint-initdb.d/024_onlyoffice.resources.sql
+      - ../../../sql/onlyoffice.sql:/docker-entrypoint-initdb.d/022_onlyoffice.sql
+      - ../../../sql/onlyoffice.data.sql:/docker-entrypoint-initdb.d/023_onlyoffice.data.sql
+      #- mysql_data:/var/lib/mysql
+    networks:
+      - onlyoffice
     
   api:
     <<: *x-service-base
@@ -196,6 +209,7 @@ services:
     ports:
       - 8092:8092 
       - 8081:8081
+      - 8099:8099
     depends_on:
       - api
       - api_system
@@ -221,12 +235,18 @@ services:
       - SERVICE_PORT=${SERVICE_PORT}
     volumes:
       - nginx_log:/var/log/nginx
+    networks:
+      - onlyoffice
+
+networks:
+  onlyoffice:
+    driver: 'bridge'
 
 volumes:
   kafka_data:
   zoo_data:
   zoo_log:
-  mysql_data:
+  #mysql_data:
   nginx_log:
   app_data:
   es_data:
