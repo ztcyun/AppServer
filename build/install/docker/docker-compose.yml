@@ -3,8 +3,6 @@ x-service:
     &x-service-base
     container_name: base
     restart: always
-    #depends_on:
-    #- onlyoffice-mysql
     expose:
     - ${SERVICE_PORT}
     environment:
@@ -141,7 +139,6 @@ services:
       - onlyoffice-files_services
       - onlyoffice-studio
       - onlyoffice-backup
-      #- onlyoffice-mysql
     environment:
       - SERVICE_API="onlyoffice-api:${SERVICE_PORT}"
       - SERVICE_API_SYSTEM="onlyoffice-api_system:${SERVICE_PORT}"
@@ -160,8 +157,6 @@ networks:
   default:
     external:
       name: ${NETWORK_NAME}
-
-
 
 volumes:
   kafka_data:
