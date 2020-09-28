@@ -188,8 +188,9 @@ RUN rm -rf /usr/share/nginx/html/*
 # copy artefacts and config values for nginx
 COPY --from=develop /etc/nginx/conf.d /etc/nginx/conf.d
 COPY --from=develop /etc/nginx/includes /etc/nginx/includes
-COPY --from=develop /var/www/products /var/www/products
 COPY --from=develop /var/www/story /var/www/story
+COPY --from=develop /var/www/products/ASC.Files/client /var/www/products/ASC.Files/client
+COPY --from=develop /var/www/products/ASC.People/client /var/www/products/ASC.People/client
 COPY --from=develop /var/www/studio/client /var/www/studio/client
 COPY /config/nginx/templates/upstream.conf.template /etc/nginx/templates/upstream.conf.template
 

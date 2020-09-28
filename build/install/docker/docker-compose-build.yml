@@ -1,10 +1,13 @@
 version: "3.4"
 x-service: 
     &x-service-base
+    build:
+      context: .
+      target: base
     container_name: base
     restart: always
-    #depends_on:
-    #- onlyoffice-mysql
+    depends_on:
+    - onlyoffice-mysql
     expose:
     - ${SERVICE_PORT}
     environment:
@@ -16,7 +19,8 @@ x-service:
       KAFKA_HOST: ${KAFKA_HOST}
     volumes:
     - app_data:/app/onlyoffice/data/
-    - document_data:/var/www/onlyoffice/DocumentServerData
+    networks:
+      - onlyoffice
 
 services: 
   onlyoffice-elasticsearch:
@@ -38,6 +42,8 @@ services:
       - es_data:/usr/share/elasticsearch/data
     expose:
       - "9200"
+    networks:
+      - onlyoffice
 
   onlyoffice-zookeeper:
     image: zookeeper:latest
@@ -52,6 +58,8 @@ services:
     volumes:
     - zoo_data:/data
     - zoo_log:/datalog
+    networks:
+      - onlyoffice
 
   onlyoffice-kafka:
     image: confluentinc/cp-kafka:latest
@@ -71,58 +79,115 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
     volumes:
     - kafka_data:/var/lib/kafka/data
+    networks:
+      - onlyoffice
 
+  onlyoffice-mysql:
+    image: mysql:8.0.18
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: ${MYSQL_HOST}
+    restart: always
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./config/mysql/conf.d:/etc/mysql/conf.d
+      - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
+      - ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
+      - ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
+      - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/04_alter_priv.sql
+      - ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/021_dotnet_dump.sql
+    networks:
+      - onlyoffice
+    
   onlyoffice-api:
     <<: *x-service-base
+    build:
+      context: .
+      target: api
     image: "${REPO}/${STATUS}appserver-api:${SERVICE_VERSION}"
     container_name: onlyoffice-api
 
   onlyoffice-api_system:
     <<: *x-service-base
+    build:
+      context: .
+      target: api_system
     image: "${REPO}/${STATUS}appserver-api_system:${SERVICE_VERSION}"
     container_name: onlyoffice-api_system
      
   onlyoffice-urlshortener:
     <<: *x-service-base
+    build:
+      context: .
+      target: urlshortener
     image: "${REPO}/${STATUS}appserver-urlshortener:${SERVICE_VERSION}"
     container_name: onlyoffice-urlshortener
    
   onlyoffice-studio.notify:
     <<: *x-service-base
+    build:
+      context: .
+      target: studio.notify
     image: "${REPO}/${STATUS}appserver-studio.notify:${SERVICE_VERSION}"
     container_name: onlyoffice-studio.notify
     
   onlyoffice-notify:
     <<: *x-service-base
+    build:
+      context: .
+      target: notify
     image: "${REPO}/${STATUS}appserver-notify:${SERVICE_VERSION}"
     container_name: onlyoffice-notify
 
   onlyoffice-people.server:
     <<: *x-service-base
+    build:
+      context: .
+      target: people.server
     image: "${REPO}/${STATUS}appserver-people.server:${SERVICE_VERSION}"
     container_name: onlyoffice-people.server
     
   onlyoffice-files:
     <<: *x-service-base
+    build:
+      context: .
+      target: files
     image: "${REPO}/${STATUS}appserver-files:${SERVICE_VERSION}"
     container_name: onlyoffice-files
     
   onlyoffice-files_services:
     <<: *x-service-base
+    build:
+      context: .
+      target: files_services
     image: "${REPO}/${STATUS}appserver-files_services:${SERVICE_VERSION}"
     container_name: onlyoffice-files_services
     
   onlyoffice-studio:
     <<: *x-service-base
+    build:
+      context: .
+      target: studio
     image: "${REPO}/${STATUS}appserver-studio:${SERVICE_VERSION}"
     container_name: onlyoffice-studio
    
   onlyoffice-backup:
     <<: *x-service-base
+    build:
+      context: .
+      target: backup
     image: "${REPO}/${STATUS}appserver-backup:${SERVICE_VERSION}"
     container_name: onlyoffice-backup
     
   onlyoffice-nginx:
+    build:
+      context: .
+      target: web
     image: "${REPO}/${STATUS}appserver-nginx:${SERVICE_VERSION}"
     container_name: onlyoffice-nginx
     restart: always
@@ -141,7 +206,7 @@ services:
       - onlyoffice-files_services
       - onlyoffice-studio
       - onlyoffice-backup
-      #- onlyoffice-mysql
+      - onlyoffice-mysql
     environment:
       - SERVICE_API="onlyoffice-api:${SERVICE_PORT}"
       - SERVICE_API_SYSTEM="onlyoffice-api_system:${SERVICE_PORT}"
@@ -155,13 +220,12 @@ services:
       - SERVICE_PORT=${SERVICE_PORT}
     volumes:
       - nginx_log:/var/log/nginx
+    networks:
+      - onlyoffice
 
 networks:
-  default:
-    external:
-      name: ${NETWORK_NAME}
-
-
+  onlyoffice:
+    driver: 'bridge'
 
 volumes:
   kafka_data:
@@ -171,4 +235,3 @@ volumes:
   nginx_log:
   app_data:
   es_data:
-  document_data:
