@@ -8,7 +8,7 @@ x-service:
     hostname: base
     restart: always
     depends_on:
-    - mysql
+    - onlyoffice-mysql
     expose:
     - ${SERVICE_PORT}
     environment:
@@ -24,10 +24,9 @@ x-service:
       - onlyoffice
 
 services: 
-  elasticsearch:
+  onlyoffice-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
     container_name: elasticsearch
-    hostname: elasticsearch
     environment:
       - node.name=elasticsearch
       - discovery.type=single-node
@@ -47,32 +46,30 @@ services:
     networks:
       - onlyoffice
 
-  zookeeper:
+  onlyoffice-zookeeper:
     image: zookeeper:latest
     container_name: zookeeper
-    hostname: zookeeper
     restart: always
     expose:
       - "2181"
     environment:
       ZOO_MY_ID: 1
       ZOO_PORT: 2181
-      ZOO_SERVER: server.1=zookeeper:2888:3888
+      ZOO_SERVER: server.1=zookeeper-zookeeper:2888:3888
     volumes:
     - zoo_data:/data
     - zoo_log:/datalog
     networks:
       - onlyoffice
 
-  kafka:
+  onlyoffice-kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka
-    hostname: kafka
+    container_name: ${KAFKA_HOST}
     restart: always
     expose:
       - "9092"
     depends_on:
-    - zookeeper
+    - onlyoffice-zookeeper
     environment:
       KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
@@ -86,11 +83,10 @@ services:
     networks:
       - onlyoffice
 
-  mysql:
+  onlyoffice-mysql:
     image: mysql:8.0.18
     command: --default-authentication-plugin=mysql_native_password
-    container_name: mysql
-    hostname: ${MYSQL_HOST}
+    container_name: ${MYSQL_HOST}
     restart: always
     expose:
       - "3306"
@@ -102,136 +98,129 @@ services:
     volumes:
       - ./config/mysql/conf.d:/etc/mysql/conf.d
       - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
-      #- ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
-      #- ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
+      - ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
+      - ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
       - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/04_alter_priv.sql
-      #- ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/021_dotnet_dump.sql
-      - ../../../sql/onlyoffice.resources.sql:/docker-entrypoint-initdb.d/024_onlyoffice.resources.sql
-      - ../../../sql/onlyoffice.sql:/docker-entrypoint-initdb.d/022_onlyoffice.sql
-      - ../../../sql/onlyoffice.data.sql:/docker-entrypoint-initdb.d/023_onlyoffice.data.sql
+      - ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/021_dotnet_dump.sql
+      #- ../../../sql/onlyoffice.resources.sql:/docker-entrypoint-initdb.d/024_onlyoffice.resources.sql
+      #- ../../../sql/onlyoffice.sql:/docker-entrypoint-initdb.d/022_onlyoffice.sql
+      #- ../../../sql/onlyoffice.data.sql:/docker-entrypoint-initdb.d/023_onlyoffice.data.sql
       #- mysql_data:/var/lib/mysql
     networks:
       - onlyoffice
     
-  api:
+  onlyoffice-api:
     <<: *x-service-base
     build:
       context: .
       target: api
-    container_name: api
-    hostname: api
+    image: "${REPO}/${STATUS}-appserver-api:${API_VERSION}"
+    container_name: onlyoffice-api
 
-  api_system:
+  onlyoffice-api_system:
     <<: *x-service-base
     build:
       context: .
       target: api_system
-    image: api_system
-    container_name: api_system
-    hostname: api_system 
+    image: "${REPO}/${STATUS}-appserver-api_system:${API_SYSTEM_VERSION}"
+    container_name: onlyoffice-api_system
      
-  urlshortener:
+  onlyoffice-urlshortener:
     <<: *x-service-base
     build:
       context: .
       target: urlshortener
-    image: urlshortener
-    container_name: urlshortener
-    hostname: urlshortener 
+    image: "${REPO}/${STATUS}-appserver-urlshortener:${URLSHORTENER_VERSION}"
+    container_name: onlyoffice-urlshortener
    
-  studio.notify:
+  onlyoffice-studio.notify:
     <<: *x-service-base
     build:
       context: .
       target: studio.notify
-    image: studio.notify
-    container_name: studio.notify
-    hostname: studio_notify
+    image: "${REPO}/${STATUS}-appserver-studio.notify:${STUDIO_NOTIFY_VERSION}"
+    container_name: onlyoffice-studio.notify
     
-  notify:
+  onlyoffice-notify:
     <<: *x-service-base
     build:
       context: .
       target: notify
-    image: notify
-    container_name: notify
-    hostname: notify
+    image: "${REPO}/${STATUS}-appserver-notify:${NOTIFY_VERSION}"
+    container_name: onlyoffice-notify
 
-  people.server:
+  onlyoffice-people.server:
     <<: *x-service-base
     build:
       context: .
-      target: people.server  
-    container_name: people.server
-    hostname: people_server
+      target: people.server
+    image: "${REPO}/${STATUS}-appserver-people.server:${PEOPLE_SERVER_VERSION}"
+    container_name: onlyoffice-people.server
     
-  files:
+  onlyoffice-files:
     <<: *x-service-base
     build:
       context: .
-      target: files  
-    container_name: files
-    hostname: files
+      target: files
+    image: "${REPO}/${STATUS}-appserver-files:${FILES_VERSION}"
+    container_name: onlyoffice-files
     
-  files_services:
+  onlyoffice-files_services:
     <<: *x-service-base
     build:
       context: .
-      target: files_services  
-    container_name: files_services
-    hostname: files_services
+      target: files_services
+    image: "${REPO}/${STATUS}-appserver-files_services:${FILES_SEVICES_VERSION}"
+    container_name: onlyoffice-files_services
     
-  studio:
+  onlyoffice-studio:
     <<: *x-service-base
     build:
       context: .
       target: studio
-    image: studio
-    container_name: studio
-    hostname: studio
+    image: "${REPO}/${STATUS}-appserver-studio:${STUDIO_VERSION}"
+    container_name: onlyoffice-studio
    
-  backup:
+  onlyoffice-backup:
     <<: *x-service-base
     build:
       context: .
       target: backup
-    image: backup
-    container_name: backup
-    hostname: backup
+    image: "${REPO}/${STATUS}-backup:${BACKUP_VERSION}"
+    container_name: onlyoffice-backup
     
-  nginx:
+  onlyoffice-nginx:
     build:
       context: .
       target: web
-    container_name: nginx
-    hostname: nginx
+    container_name: onlyoffice-nginx
     restart: always
     ports:
       - 8092:8092 
       - 8081:8081
       - 8099:8099
     depends_on:
-      - api
-      - api_system
-      - urlshortener
-      - studio.notify
-      - notify
-      - people.server
-      - files
-      - files_services
-      - studio
-      - backup
-      - mysql
+      - onlyoffice-api
+      - onlyoffice-api_system
+      - onlyoffice-urlshortener
+      - onlyoffice-studio.notify
+      - onlyoffice-notify
+      - onlyoffice-people.server
+      - onlyoffice-files
+      - onlyoffice-files_services
+      - onlyoffice-studio
+      - onlyoffice-backup
+      - onlyoffice-mysql
     environment:
-      - SERVICE_API="api:${SERVICE_PORT}"
-      - SERVICE_API_SYSTEM="api_system:${SERVICE_PORT}"
-      - SERVICE_URLSHORYENER="urlshortener:${SERVICE_PORT}"
-      - SERVICE_STUDIO_NOTIFY="studio.notify:${SERVICE_PORT}"
-      - SERVICE_PEOPLE_SERVER="people.server:${SERVICE_PORT}"
-      - SERVICE_FILES="files:${SERVICE_PORT}"
-      - SERVICE_FILES_SERVICES="files_services:${SERVICE_PORT}"
-      - SERVICE_STUDIO="studio:${SERVICE_PORT}"
-      - SERVICE_BACKUP="backup:${SERVICE_PORT}"
+      - SERVICE_API="onlyoffice-api:${SERVICE_PORT}"
+      - SERVICE_API_SYSTEM="onlyoffice-api_system:${SERVICE_PORT}"
+      - SERVICE_URLSHORYENER="onlyoffice-urlshortener:${SERVICE_PORT}"
+      - SERVICE_STUDIO_NOTIFY="onlyoffice-studio.notify:${SERVICE_PORT}"
+      - SERVICE_PEOPLE_SERVER="onlyoffice-people.server:${SERVICE_PORT}"
+      - SERVICE_FILES="onlyoffice-files:${SERVICE_PORT}"
+      - SERVICE_FILES_SERVICES="onlyoffice-files_services:${SERVICE_PORT}"
+      - SERVICE_STUDIO="onlyoffice-studio:${SERVICE_PORT}"
+      - SERVICE_BACKUP="onlyoffice-backup:${SERVICE_PORT}"
       - SERVICE_PORT=${SERVICE_PORT}
     volumes:
       - nginx_log:/var/log/nginx
