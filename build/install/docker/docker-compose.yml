@@ -1,4 +1,4 @@
-version: "3.4"
+version: "3.5"
 x-service: 
     &x-service-base
     container_name: base
@@ -162,7 +162,6 @@ volumes:
   kafka_data:
   zoo_data:
   zoo_log:
-  #mysql_data:
   nginx_log:
   app_data:
   es_data:
