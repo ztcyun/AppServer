@@ -25,5 +25,6 @@ services:
       - ${NETWORK_NAME}
 
 networks:
-  docker-communityserver_onlyoffice:
+  onlyoffice:
+    name: ${NETWORK_NAME}
     driver: 'bridge'

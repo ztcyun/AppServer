@@ -188,7 +188,7 @@ services:
     build:
       context: .
       target: web
-    image: "${REPO}/${STATUS}appserver-nginx:${SERVICE_VERSION}"
+    image: "${REPO}/${STATUS}appserver-nginx:${WEB_VERSION}"
     container_name: onlyoffice-nginx
     restart: always
     ports:
