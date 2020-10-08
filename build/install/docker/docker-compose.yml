@@ -122,7 +122,7 @@ services:
     
   onlyoffice-nginx:
     image: "${REPO}/${STATUS}appserver-nginx:${WEB_VERSION}"
-    container_name: onlyoffice-nginx
+    container_name: nginx
     restart: always
     ports:
       - 8092:8092 

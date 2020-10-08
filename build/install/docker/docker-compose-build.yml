@@ -6,8 +6,6 @@ x-service:
       target: base
     container_name: base
     restart: always
-    depends_on:
-    - onlyoffice-mysql
     expose:
     - ${SERVICE_PORT}
     environment:
@@ -20,7 +18,7 @@ x-service:
     volumes:
     - app_data:/app/onlyoffice/data/
     networks:
-      - onlyoffice
+      - ${NETWORK_NAME}
 
 services: 
   onlyoffice-elasticsearch:
@@ -43,7 +41,7 @@ services:
     expose:
       - "9200"
     networks:
-      - onlyoffice
+      - ${NETWORK_NAME}
 
   onlyoffice-zookeeper:
     image: zookeeper:latest
@@ -59,7 +57,7 @@ services:
     - zoo_data:/data
     - zoo_log:/datalog
     networks:
-      - onlyoffice
+      - ${NETWORK_NAME}
 
   onlyoffice-kafka:
     image: confluentinc/cp-kafka:latest
@@ -80,30 +78,8 @@ services:
     volumes:
     - kafka_data:/var/lib/kafka/data
     networks:
-      - onlyoffice
+      - ${NETWORK_NAME}
 
-  onlyoffice-mysql:
-    image: mysql:8.0.18
-    command: --default-authentication-plugin=mysql_native_password
-    container_name: ${MYSQL_HOST}
-    restart: always
-    expose:
-      - "3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    volumes:
-      - ./config/mysql/conf.d:/etc/mysql/conf.d
-      - ../../../sql/createdb.sql:/docker-entrypoint-initdb.d/01_createdb.sql
-      - ../../../sql/app.sql:/docker-entrypoint-initdb.d/02_app.sql
-      - ../../../sql/app.data.sql:/docker-entrypoint-initdb.d/03_app.data.sql
-      - ../../../sql/alter_priv.sql:/docker-entrypoint-initdb.d/04_alter_priv.sql
-      - ./config/mysql/dotnet_dump.sql:/docker-entrypoint-initdb.d/021_dotnet_dump.sql
-    networks:
-      - onlyoffice
-    
   onlyoffice-api:
     <<: *x-service-base
     build:
@@ -188,8 +164,9 @@ services:
     build:
       context: .
       target: web
-    image: "${REPO}/${STATUS}appserver-nginx:${WEB_VERSION}"
-    container_name: onlyoffice-nginx
+    image: "${REPO}/${STATUS}appserver-nginx:${SERVICE_VERSION}"
+    #container_name: onlyoffice-nginx
+    container_name: nginx
     restart: always
     ports:
       - 8092:8092 
@@ -206,7 +183,6 @@ services:
       - onlyoffice-files_services
       - onlyoffice-studio
       - onlyoffice-backup
-      - onlyoffice-mysql
     environment:
       - SERVICE_API="onlyoffice-api:${SERVICE_PORT}"
       - SERVICE_API_SYSTEM="onlyoffice-api_system:${SERVICE_PORT}"
@@ -221,17 +197,17 @@ services:
     volumes:
       - nginx_log:/var/log/nginx
     networks:
-      - onlyoffice
+     - ${NETWORK_NAME}
 
 networks:
   onlyoffice:
+    name: ${NETWORK_NAME}
     driver: 'bridge'
 
 volumes:
   kafka_data:
   zoo_data:
   zoo_log:
-  #mysql_data:
   nginx_log:
   app_data:
   es_data:
