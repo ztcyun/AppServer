@@ -15,6 +15,7 @@ x-service:
     volumes:
     - app_data:/app/onlyoffice/data/
     - document_data:/var/www/onlyoffice/DocumentServerData
+    - ./config/appsettings.test.json:/app/onlyoffice/config/appsettings.test.json
 
 services: 
   onlyoffice-elasticsearch:
