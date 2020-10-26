@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "codeceptjs": "^3.0.1",
+    "codeceptjs-resemblehelper": "^1.9.3",
     "copy-webpack-plugin": "^5.1.1",
     "cross-env": "^6.0.3",
     "playwright": "^1.5.1",
@@ -49,7 +50,10 @@
     "clean-cra-sw": "rm -f build/precache-manifest.*.js && rm -f build/service-worker.js",
     "test": "cross-env CI=true react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
-    "lint": "eslint ./src/"
+    "lint": "eslint ./src/",
+    "test.e2e:chromium": "npx codeceptjs run --steps --profile chromium",
+    "test.e2e:firefox": "npx codeceptjs run --steps --profile firefox",
+    "test.e2e:webkit": "npx codeceptjs run --steps --profile webkit"
   },
   "eslintConfig": {
     "extends": "react-app"

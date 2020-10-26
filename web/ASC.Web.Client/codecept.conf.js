@@ -1,35 +1,44 @@
-const { setHeadlessWhen } = require('@codeceptjs/configure');
+const { setHeadlessWhen } = require("@codeceptjs/configure");
 
 // turn on headless mode when running with HEADLESS=true environment variable
 // export HEADLESS=true && npx codeceptjs run
 setHeadlessWhen(process.env.HEADLESS);
 
+const browser = process.env.profile || "chromium";
+
 exports.config = {
-  tests: './tests/*_test.js',
-  output: './tests/output',
+  tests: "./tests/*_test.js",
+  output: "./tests/output",
   helpers: {
     Playwright: {
-      url: 'http://localhost:8092/',
+      url: "http://localhost:8092/",
       show: true,
-      browser: 'chromium'
-    }
+      browser: browser,
+      waitForNavigation: "networkidle0",
+    },
+    ResembleHelper: {
+      require: "codeceptjs-resemblehelper",
+      screenshotFolder: "./tests/output/",
+      baseFolder: "./tests/screenshots/base/",
+      diffFolder: "./tests/screenshots/diff/",
+    },
   },
   include: {
-    I: './steps_file.js'
+    I: "./steps_file.js",
   },
   bootstrap: null,
   mocha: {},
-  name: 'ASC.Web.Client',
+  name: "ASC.Web.Client",
   plugins: {
     pauseOnFail: {},
     retryFailedStep: {
-      enabled: true
+      enabled: true,
     },
     tryTo: {
-      enabled: true
+      enabled: true,
     },
     screenshotOnFail: {
-      enabled: true
-    }
-  }
-}
+      enabled: true,
+    },
+  },
+};
