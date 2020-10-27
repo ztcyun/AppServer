@@ -1,13 +1,15 @@
-Feature("login");
-
 const browser = process.env.profile || "chromium";
+const deviceType = process.env.DEVICE_TYPE || "desktop";
+
+Feature(`Login Page on '${browser}' with '${deviceType}' dimension`);
 
 Scenario("Compare Login Page @visual-test", async ({ I }) => {
   I.amOnPage("/login");
-  I.saveScreenshot(`login.desktop.${browser}.png`);
-  I.seeVisualDiff(`login.desktop.${browser}.png`, {
+  I.see("Web Office");
+  I.saveScreenshot(`login.${browser}.${deviceType}.png`);
+  I.seeVisualDiff(`login.${browser}.${deviceType}.png`, {
     tolerance: 2,
-    prepareBaseImage: false,
+    prepareBaseImage: true,
   });
 });
 

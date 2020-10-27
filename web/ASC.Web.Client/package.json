@@ -29,6 +29,7 @@
     "styled-components": "^5.0.0"
   },
   "devDependencies": {
+    "@codeceptjs/configure": "^0.6.0",
     "codeceptjs": "^3.0.1",
     "codeceptjs-resemblehelper": "^1.9.3",
     "copy-webpack-plugin": "^5.1.1",
@@ -48,12 +49,15 @@
     "build": "rimraf ./build && react-app-rewired build && npm run build-sw && npm run clean-cra-sw",
     "build-sw": "node ./src/sw-build.js",
     "clean-cra-sw": "rm -f build/precache-manifest.*.js && rm -f build/service-worker.js",
-    "test": "cross-env CI=true react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "lint": "eslint ./src/",
+    "test": "yarn test:chromium && yarn test:firefox && yarn test:webkit",
     "test.e2e:chromium": "npx codeceptjs run --steps --profile chromium",
+    "test:chromium": "cross-env DEVICE_TYPE=mobile yarn test.e2e:chromium && cross-env DEVICE_TYPE=smallTablet yarn test.e2e:chromium && cross-env DEVICE_TYPE=tablet yarn test.e2e:chromium && cross-env DEVICE_TYPE=desktop yarn test.e2e:chromium",
     "test.e2e:firefox": "npx codeceptjs run --steps --profile firefox",
-    "test.e2e:webkit": "npx codeceptjs run --steps --profile webkit"
+    "test:firefox": "cross-env DEVICE_TYPE=mobile yarn test.e2e:firefox && cross-env DEVICE_TYPE=smallTablet yarn test.e2e:firefox && cross-env DEVICE_TYPE=tablet yarn test.e2e:firefox && cross-env DEVICE_TYPE=desktop yarn test.e2e:firefox",
+    "test.e2e:webkit": "npx codeceptjs run --steps --profile webkit",
+    "test:webkit": "cross-env DEVICE_TYPE=mobile yarn test.e2e:webkit && cross-env DEVICE_TYPE=smallTablet yarn test.e2e:webkit && cross-env DEVICE_TYPE=tablet yarn test.e2e:webkit && cross-env DEVICE_TYPE=desktop yarn test.e2e:webkit"
   },
   "eslintConfig": {
     "extends": "react-app"

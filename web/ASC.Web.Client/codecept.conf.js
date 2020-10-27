@@ -1,8 +1,21 @@
-const { setHeadlessWhen } = require("@codeceptjs/configure");
+const { setHeadlessWhen, setWindowSize } = require("@codeceptjs/configure");
 
 // turn on headless mode when running with HEADLESS=true environment variable
 // export HEADLESS=true && npx codeceptjs run
 setHeadlessWhen(process.env.HEADLESS);
+
+const sizes = {
+  mobile: { width: 375, height: 667 },
+  smallTablet: { width: 600, height: 667 },
+  tablet: { width: 1023, height: 667 },
+  desktop: { width: 1025, height: 667 },
+};
+
+const deviceType = process.env.DEVICE_TYPE || "desktop";
+
+const device = sizes[deviceType];
+
+setWindowSize(device.width, device.height);
 
 const browser = process.env.profile || "chromium";
 
@@ -12,7 +25,7 @@ exports.config = {
   helpers: {
     Playwright: {
       url: "http://localhost:8092",
-      show: true,
+      show: false,
       browser: browser,
       waitForNavigation: "networkidle0",
     },
