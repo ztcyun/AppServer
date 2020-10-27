@@ -11,7 +11,7 @@ exports.config = {
   output: "./tests/output",
   helpers: {
     Playwright: {
-      url: "http://localhost:8092/",
+      url: "http://localhost:8092",
       show: true,
       browser: browser,
       waitForNavigation: "networkidle0",
