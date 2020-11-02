@@ -186,6 +186,7 @@ class ADSelectorExample extends React.Component {
           selectedOptions={selectedOptions}
           selectedGroups={selectedGroups}
           isOpen={isOpen}
+          allowGroupSelection={boolean("allowGroupSelection", false)}
           isMultiSelect={boolean("isMultiSelect", true)}
           isDisabled={boolean("isDisabled", false)}
           searchPlaceHolderLabel={text(

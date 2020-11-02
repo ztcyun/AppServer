@@ -2,7 +2,7 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
 import { action } from "@storybook/addon-actions";
-import { withKnobs, boolean } from "@storybook/addon-knobs/react";
+import { withKnobs, boolean, select } from "@storybook/addon-knobs/react";
 import Section from "../../../.storybook/decorators/section";
 import withProvider from "../../../.storybook/decorators/redux";
 import GroupSelector from ".";
@@ -10,6 +10,8 @@ import { BooleanValue } from "react-values";
 import { Button } from "asc-web-components";
 //import withReadme from "storybook-readme/with-readme";
 //import Readme from "./README.md";
+
+const displayTypes = ["dropdown", "aside", "auto"];
 
 class GroupSelectorExample extends React.Component {
   constructor(props) {
@@ -49,7 +51,9 @@ class GroupSelectorExample extends React.Component {
         <GroupSelector
           isOpen={this.state.isOpen}
           useFake={true}
+          allowSelectAll={boolean("allowSelectAll", true)}
           isMultiSelect={boolean("isMultiSelect", true)}
+          displayType={select("displayType", displayTypes, "aside")}
           onSelect={(data) => {
             console.log("onSelect", data);
             this.toggle();

@@ -96,6 +96,7 @@ class GroupSelector extends React.Component {
       displayType,
       withoutAside,
       embeddedComponent,
+      allowSelectAll,
     } = this.props;
 
     return (
@@ -126,6 +127,7 @@ class GroupSelector extends React.Component {
         onCancel={onCancel}
         withoutAside={withoutAside}
         embeddedComponent={embeddedComponent}
+        allowSelectAll={allowSelectAll}
       />
     );
   }
@@ -147,12 +149,14 @@ GroupSelector.propTypes = {
   displayType: PropTypes.oneOf(["auto", "aside", "dropdown"]),
   withoutAside: PropTypes.bool,
   embeddedComponent: PropTypes.any,
+  allowSelectAll: PropTypes.bool,
 };
 
 GroupSelector.defaultProps = {
   useFake: false,
   displayType: "auto",
   withoutAside: false,
+  allowSelectAll: true,
 };
 
 const ExtendedGroupSelector = withTranslation()(GroupSelector);
