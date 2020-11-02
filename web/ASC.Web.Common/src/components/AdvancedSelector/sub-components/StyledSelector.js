@@ -139,7 +139,7 @@ const StyledSelector = styled(Container)`
             : props.groups && props.groups.length > 0
             ? "70px"
             : props.allowSelectAll 
-              ? "58px" : "30px"
+              ? "80px" : "30px"
           : "30px"} 1fr;
     grid-template-areas: "header-options" "body-options";
 
@@ -151,7 +151,7 @@ const StyledSelector = styled(Container)`
         props.displayType === "aside" &&
         css`
           display: grid;
-          grid-row-gap: 12px;
+          grid-row-gap: ${props => props.allowSelectAll ? "18px" : "12px"};
           grid-template-columns: 1fr;
           grid-template-rows: 30px 30px ${(props) =>
               props.isMultiSelect &&
@@ -219,7 +219,7 @@ const StyledSelector = styled(Container)`
         padding-top: 8px;
         box-sizing: border-box;
         height: 32px;
-        margin-top: 16px;
+        margin-top: ${props => props.allowSelectAll ? "0px": "16px"};
         cursor: pointer;
 
         &:hover {
