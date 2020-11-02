@@ -954,7 +954,7 @@ namespace ASC.Files.Core.Data
             return ChunkedUploadSessionHolder.CreateUploadSession(file, contentLength);
         }
 
-        public void UploadChunk(ChunkedUploadSession<int> uploadSession, Stream stream, long chunkLength)
+        public File<int> UploadChunk(ChunkedUploadSession<int> uploadSession, Stream stream, long chunkLength)
         {
             if (!uploadSession.UseChunks)
             {
@@ -964,7 +964,7 @@ namespace ASC.Files.Core.Data
                         uploadSession.File = SaveFile(GetFileForCommit(uploadSession), streamToSave);
                     }
 
-                return;
+                return uploadSession.File;
             }
 
             ChunkedUploadSessionHolder.UploadChunk(uploadSession, stream, chunkLength);
@@ -973,6 +973,7 @@ namespace ASC.Files.Core.Data
             {
                 uploadSession.File = FinalizeUploadSession(uploadSession);
             }
+            return uploadSession.File;
         }
 
         private File<int> FinalizeUploadSession(ChunkedUploadSession<int> uploadSession)

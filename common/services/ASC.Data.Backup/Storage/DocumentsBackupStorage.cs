@@ -145,9 +145,9 @@ namespace ASC.Data.Backup.Storage
             newFile.Title = Path.GetFileName(localPath);
             newFile.FolderID = folder.ID;
             newFile.ContentLength = source.Length;
-
-            var file = fileDao.SaveFile(newFile, source);
-
+            var ChunkedUploadSession = fileDao.CreateUploadSession(newFile, 1000);
+            ChunkedUploadSession.UseChunks = true;
+            var file = fileDao.UploadChunk(ChunkedUploadSession, source, 1024);
             return file.ID;
         }
 

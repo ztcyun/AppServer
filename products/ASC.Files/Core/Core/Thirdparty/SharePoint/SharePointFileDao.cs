@@ -397,7 +397,7 @@ namespace ASC.Files.Thirdparty.SharePoint
             return new ChunkedUploadSession<string>(FixId(file), contentLength) { UseChunks = false };
         }
 
-        public void UploadChunk(ChunkedUploadSession<string> uploadSession, Stream chunkStream, long chunkLength)
+        public File<string> UploadChunk(ChunkedUploadSession<string> uploadSession, Stream chunkStream, long chunkLength)
         {
             if (!uploadSession.UseChunks)
             {
@@ -406,7 +406,7 @@ namespace ASC.Files.Thirdparty.SharePoint
 
                 uploadSession.File = SaveFile(uploadSession.File, chunkStream);
                 uploadSession.BytesUploaded = chunkLength;
-                return;
+                return uploadSession.File;
             }
 
             throw new NotImplementedException();

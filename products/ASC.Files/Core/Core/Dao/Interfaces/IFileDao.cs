@@ -253,7 +253,7 @@ namespace ASC.Files.Core
 
         ChunkedUploadSession<T> CreateUploadSession(File<T> file, long contentLength);
 
-        void UploadChunk(ChunkedUploadSession<T> uploadSession, Stream chunkStream, long chunkLength);
+        File<T> UploadChunk(ChunkedUploadSession<T> uploadSession, Stream chunkStream, long chunkLength);
 
         void AbortUploadSession(ChunkedUploadSession<T> uploadSession);
 

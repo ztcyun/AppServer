@@ -505,7 +505,7 @@ namespace ASC.Files.Thirdparty.Box
             return uploadSession;
         }
 
-        public void UploadChunk(ChunkedUploadSession<string> uploadSession, Stream stream, long chunkLength)
+        public File<string> UploadChunk(ChunkedUploadSession<string> uploadSession, Stream stream, long chunkLength)
         {
             if (!uploadSession.UseChunks)
             {
@@ -514,7 +514,7 @@ namespace ASC.Files.Thirdparty.Box
 
                 uploadSession.File = SaveFile(uploadSession.File, stream);
                 uploadSession.BytesUploaded = chunkLength;
-                return;
+                return uploadSession.File;
             }
 
             var tempPath = uploadSession.GetItemOrDefault<string>("TempPath");
@@ -535,6 +535,7 @@ namespace ASC.Files.Thirdparty.Box
             {
                 uploadSession.File = RestoreIds(uploadSession.File);
             }
+            return uploadSession.File;
         }
 
         public void AbortUploadSession(ChunkedUploadSession<string> uploadSession)
