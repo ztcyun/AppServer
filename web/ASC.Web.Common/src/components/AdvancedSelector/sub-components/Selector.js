@@ -265,11 +265,20 @@ const Selector = (props) => {
 
   const onSelectAll = useCallback(
     (e) => {
-      const newSelected = e.target.checked
+      const isIntermediate = Boolean(selectedOptionList && selectedOptionList.length > 0 && options.length !== selectedOptionList.length)
+      const newSelected = e.target.checked || isIntermediate
         ? [...options]
         : [];
       setSelectedOptionList(newSelected);
-      setSelectedAll(e.target.checked);
+      setSelectedAll(e.target.checked || isIntermediate);
+
+      /*
+      const newSelected = Boolean(!selectedOptionList || (selectedOptionList.length > 0 && options && options.length !== selectedOptionList.length))
+        ? [...options]
+        : [];
+      setSelectedOptionList(newSelected);
+      setSelectedAll(newSelected);
+      */
     },
     [selectedOptionList, options]
   );
@@ -613,8 +622,8 @@ const Selector = (props) => {
                   <Checkbox
                     className="select_all_options"
                     label={selectAllLabel}
-                    isChecked={selectedAll}
-                    isIndeterminate={false}
+                    isChecked={options.length === selectedOptionList.length}
+                    isIndeterminate={selectedOptionList && selectedOptionList.length > 0 && options.length !== selectedOptionList.length}
                     truncate={true}
                     onChange={onSelectAll}
                   />
