@@ -69,6 +69,7 @@ const Selector = (props) => {
     size,
     allowGroupSelection,
     embeddedComponent,
+    allowSelectAll,
   } = props;
 
   //console.log("options", options);
@@ -261,6 +262,17 @@ const Selector = (props) => {
   const onSelectOptions = (items) => {
     onSelect && onSelect(items);
   };
+
+  const onSelectAll = useCallback(
+    (e) => {
+      const newSelected = e.target.checked
+        ? [...options]
+        : [];
+      setSelectedOptionList(newSelected);
+      setSelectedAll(e.target.checked);
+    },
+    [selectedOptionList, options]
+  );
 
   const isOptionChecked = useCallback(
     (option) => {
@@ -576,6 +588,7 @@ const Selector = (props) => {
       groups={groups}
       isMultiSelect={isMultiSelect}
       allowGroupSelection={allowGroupSelection}
+      allowSelectAll={allowSelectAll}
       hasSelected={hasSelected()}
       className="selector-wrapper"
     >
@@ -592,6 +605,22 @@ const Selector = (props) => {
             onChange={onSearchChange}
             onClearSearch={onSearchReset}
           />
+          {allowSelectAll && displayType === "aside" && (
+            <>
+              {isMultiSelect &&
+                options &&
+                options.length > 0 && (
+                  <Checkbox
+                    className="select_all_options"
+                    label={selectAllLabel}
+                    isChecked={selectedAll}
+                    isIndeterminate={false}
+                    truncate={true}
+                    onChange={onSelectAll}
+                  />
+                )}
+            </>
+          )}
           {displayType === "aside" && groups && groups.length > 0 && (
             <>
               <ComboBox

@@ -138,7 +138,8 @@ const StyledSelector = styled(Container)`
               : "30px"
             : props.groups && props.groups.length > 0
             ? "70px"
-            : "30px"
+            : props.allowSelectAll 
+              ? "58px" : "30px"
           : "30px"} 1fr;
     grid-template-areas: "header-options" "body-options";
 
