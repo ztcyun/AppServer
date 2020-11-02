@@ -134,13 +134,13 @@ const StyledSelector = styled(Container)`
             props.options &&
             props.options.length > 0
             ? props.groups && props.groups.length > 0
-              ? "100px"
-              : "30px"
+              ? "116px"
+              : "28px"
             : props.groups && props.groups.length > 0
             ? "70px"
-            : props.allowSelectAll 
-              ? "80px" : "30px"
-          : "30px"} 1fr;
+            : props.allowSelectAll && props.isMultiSelect
+              ? "80px" : "28px"
+          : "28px"} 1fr;
     grid-template-areas: "header-options" "body-options";
 
     .header-options {
@@ -151,7 +151,7 @@ const StyledSelector = styled(Container)`
         props.displayType === "aside" &&
         css`
           display: grid;
-          grid-row-gap: ${props => props.allowSelectAll ? "18px" : "12px"};
+          grid-row-gap: ${props => props.allowSelectAll && props.isMultiSelect ? "18px" : "12px"};
           grid-template-columns: 1fr;
           grid-template-rows: 30px 30px ${(props) =>
               props.isMultiSelect &&
@@ -219,7 +219,15 @@ const StyledSelector = styled(Container)`
         padding-top: 8px;
         box-sizing: border-box;
         height: 32px;
-        margin-top: ${props => props.allowSelectAll ? "0px": "16px"};
+        margin-top: ${props => (props.allowSelectAll && props.isMultiSelect) || 
+          (props.displayType === "aside" &&
+          props.isMultiSelect &&
+          props.allowGroupSelection &&
+          props.options &&
+          props.options.length > 0 &&
+          props.groups && 
+          props.groups.length > 0)
+            ? "0px": "16px"};
         cursor: pointer;
 
         &:hover {
