@@ -12,6 +12,7 @@ const Container = ({
   isMultiSelect,
   allowGroupSelection,
   hasSelected,
+  allowSelectAll,
   ...props
 }) => <div {...props} />;
 /* eslint-enable react/prop-types */

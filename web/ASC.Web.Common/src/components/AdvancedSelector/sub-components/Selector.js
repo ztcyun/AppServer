@@ -785,6 +785,7 @@ Selector.propTypes = {
   getOptionTooltipContent: PropTypes.func,
 
   embeddedComponent: PropTypes.any,
+  allowSelectAll: PropTypes.bool,
 };
 
 Selector.defaultProps = {
