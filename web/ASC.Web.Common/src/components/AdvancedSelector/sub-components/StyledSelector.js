@@ -138,7 +138,8 @@ const StyledSelector = styled(Container)`
               ? "116px"
               : "28px"
             : props.groups && props.groups.length > 0
-            ? "70px"
+            ? props.allowSelectAll 
+              ? "128px" : "70px"
             : props.allowSelectAll && props.isMultiSelect
               ? "80px" : "28px"
           : "28px"} 1fr;

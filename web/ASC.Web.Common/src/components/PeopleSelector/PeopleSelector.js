@@ -217,6 +217,7 @@ class PeopleSelector extends React.Component {
       withoutAside,
       embeddedComponent,
       selectedOptions,
+      allowSelectAll,
     } = this.props;
 
     return (
@@ -252,6 +253,7 @@ class PeopleSelector extends React.Component {
         onCancel={onCancel}
         withoutAside={withoutAside}
         embeddedComponent={embeddedComponent}
+        allowSelectAll={allowSelectAll}
       />
     );
   }

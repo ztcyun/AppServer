@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import { withKnobs, boolean } from "@storybook/addon-knobs/react";
+import { withKnobs, boolean, select } from "@storybook/addon-knobs/react";
 import Section from "../../../.storybook/decorators/section";
 
 import PeopleSelector from ".";
@@ -10,6 +10,8 @@ import withProvider from "../../../.storybook/decorators/redux";
 import { text } from "@storybook/addon-knobs";
 //import withReadme from "storybook-readme/with-readme";
 //import Readme from "./README.md";
+
+const displayTypes = ["dropdown", "aside", "auto"];
 
 class PeopleSelectorExample extends React.Component {
   constructor(props) {
@@ -49,6 +51,8 @@ class PeopleSelectorExample extends React.Component {
         <PeopleSelector
           isOpen={this.state.isOpen}
           useFake={true}
+          displayType={select("displayType", displayTypes, "aside")}
+          allowSelectAll={boolean("allowSelectAll", true)}
           isMultiSelect={boolean("isMultiSelect", true)}
           onSelect={(data) => {
             console.log("onSelect", data);
