@@ -10,7 +10,7 @@ const truncateCss = css`
 `;
 
 const commonCss = css`
-  margin: 0 8px;
+  margin: 0 6px;
   font-family: "Open Sans";
   font-size: 12px;
   font-style: normal;
@@ -37,7 +37,7 @@ const mainContainerTabletStyle = css`
 const sideInfoTabletStyle = css`
   display: block;
   min-width: 160px;
-  margin: 0 8px;
+  margin: 0 6px;
   ${commonCss};
   color: ${(props) => props.color && props.color};
   white-space: nowrap;
@@ -182,7 +182,7 @@ const RowContent = (props) => {
     style,
     sideColor,
     onClick,
-    widthProp,
+    sectionWidth,
     isMobile,
   } = props;
 
@@ -197,18 +197,18 @@ const RowContent = (props) => {
       id={id}
       onClick={onClick}
       style={style}
-      widthProp={widthProp}
+      widthProp={sectionWidth}
       isMobile={isMobile}
     >
       <MainContainerWrapper
         disableSideInfo={disableSideInfo}
         mainContainerWidth={mainContainerWidth}
-        widthProp={widthProp}
+        widthProp={sectionWidth}
         isMobile={isMobile}
       >
         <MainContainer
           className="rowMainContainer"
-          widthProp={widthProp}
+          widthProp={sectionWidth}
           isMobile={isMobile}
         >
           {children[0]}
@@ -225,7 +225,7 @@ const RowContent = (props) => {
               containerMinWidth={
                 element.props && element.props.containerMinWidth
               }
-              widthProp={widthProp}
+              widthProp={sectionWidth}
               isMobile={isMobile}
             >
               {element}
@@ -236,7 +236,7 @@ const RowContent = (props) => {
       {!disableSideInfo && (
         <TabletSideInfo
           color={sideColor}
-          widthProp={widthProp}
+          widthProp={sectionWidth}
           isMobile={isMobile}
         >
           {sideInfo}
@@ -254,7 +254,7 @@ RowContent.propTypes = {
   onClick: PropTypes.func,
   sideColor: PropTypes.string,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  widthProp: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  sectionWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isMobile: PropTypes.bool,
 };
 

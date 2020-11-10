@@ -62,7 +62,7 @@ const SimpleFilesRowContent = styled(RowContent)`
   .badge {
     height: 14px;
     width: 14px;
-    margin-right: 8px;
+    margin-right: 6px;
   }
 
   .badges {
@@ -70,14 +70,14 @@ const SimpleFilesRowContent = styled(RowContent)`
     align-items: center;
   }
 
-.favorite {
-  cursor: pointer;
-}
+  .favorite {
+    cursor: pointer;
+  }
 
-.share-icon {
-  margin-top: -4px;
-  padding-right: 8px;
-}
+  .share-icon {
+    margin-top: -4px;
+    padding-right: 8px;
+  }
 
   .row_update-text {
     overflow: hidden;
@@ -91,6 +91,7 @@ const okIcon = (
     size="scale"
     isfill={true}
     color="#A3A9AE"
+    hoveredcolor="#657077"
   />
 );
 
@@ -100,6 +101,7 @@ const cancelIcon = (
     size="scale"
     isfill={true}
     color="#A3A9AE"
+    hoveredcolor="#657077"
   />
 );
 
@@ -152,7 +154,13 @@ class FilesRowContent extends React.PureComponent {
   };
 
   createItem = (e) => {
-    const { createFile, createFolder, item, setIsLoading, openDocEditor } = this.props;
+    const {
+      createFile,
+      createFolder,
+      item,
+      setIsLoading,
+      openDocEditor,
+    } = this.props;
     const { itemTitle } = this.state;
 
     setIsLoading(true);
@@ -161,13 +169,15 @@ class FilesRowContent extends React.PureComponent {
 
     if (itemTitle.trim() === "") return this.completeAction(itemId);
 
+    let tab = item.fileExst ? window.open("about:blank", "_blank") : null;
+
     !item.fileExst
       ? createFolder(item.parentId, itemTitle)
           .then(() => this.completeAction(itemId))
           .finally(() => setIsLoading(false))
       : createFile(item.parentId, `${itemTitle}.${item.fileExst}`)
           .then((file) => {
-            openDocEditor(file.id);
+            openDocEditor(file.id, tab, file.webUrl);
             this.completeAction(itemId);
           })
           .finally(() => setIsLoading(false));
@@ -218,7 +228,7 @@ class FilesRowContent extends React.PureComponent {
       canWebEdit,
       item,
       isTrashFolder,
-      openDocEditor
+      openDocEditor,
     } = this.props;
     const { id, fileExst, viewUrl } = item;
 
@@ -397,11 +407,11 @@ class FilesRowContent extends React.PureComponent {
       fileAction,
       isTrashFolder,
       folders,
-      widthProp,
       isLoading,
       isMobile,
       canWebEdit,
       canConvert,
+      sectionWidth,
     } = this.props;
     const {
       itemTitle,
@@ -465,7 +475,7 @@ class FilesRowContent extends React.PureComponent {
           />
         )}
         <SimpleFilesRowContent
-          widthProp={widthProp}
+          sectionWidth={sectionWidth}
           isMobile={isMobile}
           sideColor={sideColor}
           isFile={fileExst}
@@ -497,7 +507,7 @@ class FilesRowContent extends React.PureComponent {
                 >
                   {fileExst}
                 </Text>
-                {canConvert && (
+                {canConvert && !isTrashFolder && (
                   <IconButton
                     onClick={this.setConvertDialogVisible}
                     iconName="FileActionsConvertIcon"
@@ -505,26 +515,30 @@ class FilesRowContent extends React.PureComponent {
                     size="small"
                     isfill={true}
                     color="#A3A9AE"
+                    hoverColor="#3B72A7"
                   />
                 )}
-                {canWebEdit && (
-                  <Icons.AccessEditIcon
+                {canWebEdit && !isTrashFolder && (
+                  <IconButton
+                    onClick={this.onFilesClick}
+                    iconName="AccessEditIcon"
                     className="badge"
                     size="small"
                     isfill={true}
                     color="#A3A9AE"
+                    hoverColor="#3B72A7"
                   />
                 )}
-                {(fileStatus === 32 && !isTrashFolder) && 
+                {fileStatus === 32 && !isTrashFolder && (
                   <Icons.FavoriteIcon
-                    className='favorite'
-                    size='small'
-                    data-action='remove'
+                    className="favorite"
+                    size="small"
+                    data-action="remove"
                     data-id={item.id}
                     data-title={item.title}
                     onClick={this.props.onClickFavorite}
-                   />
-                }
+                  />
+                )}
                 {fileStatus === 1 && (
                   <Icons.FileActionsConvertEditDocIcon
                     className="badge"

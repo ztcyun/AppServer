@@ -15,13 +15,13 @@ import {
   DragAndDrop,
   Box,
   Text,
+  utils,
 } from "asc-web-components";
 import EmptyFolderContainer from "./EmptyFolderContainer";
 import FilesRowContent from "./FilesRowContent";
 import FilesTileContent from "./FilesTileContent";
 import TileContainer from "./TileContainer";
 import Tile from "./Tile";
-
 import {
   api,
   constants,
@@ -89,6 +89,7 @@ import {
   getTooltipLabel,
   getIsPrivacyFolder,
   getPrivacyInstructionsLink,
+  getIconOfDraggedFile,
 } from "../../../../../store/files/selectors";
 import { SharingPanel, OperationsPanel } from "../../../../panels";
 const {
@@ -103,6 +104,7 @@ const {
 
 const { FilesFilter } = api;
 const { FileAction } = constants;
+const { Consumer } = utils.context;
 
 const linkStyles = {
   isHovered: true,
@@ -122,14 +124,28 @@ const CustomTooltip = styled.div`
   z-index: 150;
   background: #fff;
   border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
   -moz-border-radius: 6px;
   -webkit-border-radius: 6px;
   box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.13);
   -moz-box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.13);
   -webkit-box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.13);
+
+  .tooltip-moved-obj-wrapper {
+    display: flex;
+    align-items: center;
+  }
+  .tooltip-moved-obj-icon {
+    margin-right: 6px;
+  }
+  .tooltip-moved-obj-extension {
+    color: #a3a9ae;
+  }
 `;
 
 const SimpleFilesRow = styled(Row)`
+  margin-top: -2px;
   ${(props) =>
     !props.contextOptions &&
     `
@@ -137,9 +153,9 @@ const SimpleFilesRow = styled(Row)`
         width: 0px;
       }
   `}
-
   .share-button-icon {
-    margin-right: 8px;
+    margin-right: 7px;
+    margin-top: -1px;
   }
 
   .share-button,
@@ -148,6 +164,17 @@ const SimpleFilesRow = styled(Row)`
     div {
       color: "#657077";
     }
+  }
+
+  @media (max-width: 1312px) {
+    .share-button {
+      padding-top: 3px;
+    }
+  }
+
+  .styled-element {
+    margin-right: 1px;
+    margin-bottom: 2px;
   }
 `;
 
@@ -450,12 +477,16 @@ class SectionBodyContent extends React.Component {
     return window.open(this.props.selection[0].viewUrl, "_blank");
   };
 
-  openDocEditor = (id) => {
+  openDocEditor = (id, tab = null, url = null) => {
     return this.props
       .addFileToRecentlyViewed(id)
       .then(() => console.log("Pushed to recently viewed"))
       .catch((e) => console.error(e))
-      .finally(window.open(`./doceditor?fileId=${id}`, "_blank"));
+      .finally(
+        tab
+          ? (tab.location = url)
+          : window.open(`./doceditor?fileId=${id}`, "_blank")
+      );
   };
 
   onClickLinkEdit = (e) => {
@@ -656,7 +687,7 @@ class SectionBodyContent extends React.Component {
           return {
             key: option,
             label: t("MoveTo"),
-            icon: "DownloadAsIcon",
+            icon: "MoveToIcon",
             onClick: this.onMoveAction,
             disabled: false,
           };
@@ -721,6 +752,9 @@ class SectionBodyContent extends React.Component {
     if (currentProps.editing !== nextProps.editing) {
       return true;
     }
+    if (currentProps.sectionWidth !== nextProps.sectionWidth) {
+      return true;
+    }
     if (!isEqual(currentProps.data, nextProps.data)) {
       return true;
     }
@@ -749,7 +783,7 @@ class SectionBodyContent extends React.Component {
       <ReactSVG
         beforeInjection={(svg) => {
           svg.setAttribute("style", "margin-top: 4px");
-          isEdit && svg.setAttribute("style", "margin: 4px 0 0 24px");
+          isEdit && svg.setAttribute("style", "margin: 4px 0 0 28px");
         }}
         src={item.icon}
         loading={this.svgLoader}
@@ -1412,7 +1446,7 @@ class SectionBodyContent extends React.Component {
         as="span"
         title={this.props.t("Share")}
         fontSize="12px"
-        fontWeight={400}
+        fontWeight={600}
         color="#A3A9AE"
         display="inline-flex"
         onClick={this.onClickShare}
@@ -1421,11 +1455,43 @@ class SectionBodyContent extends React.Component {
           className="share-button-icon"
           color="#a3a9ae"
           hoverColor="#657077"
-          size={16}
+          size={18}
           iconName="CatalogSharedIcon"
         />
         {this.props.t("Share")}
       </Text>
+    );
+  };
+
+  renderFileMoveTooltip = () => {
+    const { selection, iconOfDraggedFile } = this.props;
+    const { title } = selection[0];
+
+    const reg = /^([^\\]*)\.(\w+)/;
+    const matches = title.match(reg);
+
+    let nameOfMovedObj, fileExtension;
+    if (matches) {
+      nameOfMovedObj = matches[1];
+      fileExtension = matches.pop();
+    } else {
+      nameOfMovedObj = title;
+    }
+
+    return (
+      <div className="tooltip-moved-obj-wrapper">
+        {iconOfDraggedFile ? (
+          <img
+            className="tooltip-moved-obj-icon"
+            src={`${iconOfDraggedFile}`}
+            alt=""
+          />
+        ) : null}
+        {nameOfMovedObj}
+        {fileExtension ? (
+          <span className="tooltip-moved-obj-extension">.{fileExtension}</span>
+        ) : null}
+      </div>
     );
   };
 
@@ -1450,7 +1516,6 @@ class SectionBodyContent extends React.Component {
       currentMediaFileId,
       viewAs,
       t,
-      widthProp,
       isMobile,
       firstLoad,
       filesList,
@@ -1470,6 +1535,16 @@ class SectionBodyContent extends React.Component {
       setIsLoading,
       isLoading,
     };
+
+    let fileMoveTooltip;
+    if (dragging) {
+      fileMoveTooltip = tooltipValue
+        ? selection.length === 1 &&
+          tooltipValue.label === "TooltipElementMoveMessage"
+          ? this.renderFileMoveTooltip()
+          : t(tooltipValue.label, { element: tooltipValue.filesCount })
+        : "";
+    }
 
     const items = filesList;
 
@@ -1527,11 +1602,7 @@ class SectionBodyContent extends React.Component {
             onClose={this.onCopyAction}
           />
         )}
-        <CustomTooltip ref={this.tooltipRef}>
-          {tooltipValue
-            ? t(tooltipValue.label, { element: tooltipValue.filesCount })
-            : ""}
-        </CustomTooltip>
+        <CustomTooltip ref={this.tooltipRef}>{fileMoveTooltip}</CustomTooltip>
 
         {viewAs === "tile" ? (
           <TileContainer
@@ -1613,77 +1684,90 @@ class SectionBodyContent extends React.Component {
             })}
           </TileContainer>
         ) : (
-          <RowContainer draggable useReactWindow={false}>
-            {items.map((item) => {
-              const { checked, isFolder, value, contextOptions } = item;
-              const isEdit =
-                !!fileAction.type &&
-                editingId === item.id &&
-                item.fileExst === fileAction.extension;
-              const contextOptionsProps =
-                !isEdit && contextOptions && contextOptions.length > 0
-                  ? {
-                      contextOptions: this.getFilesContextOptions(
-                        contextOptions,
-                        item
-                      ),
-                    }
-                  : {};
-              const checkedProps = isEdit || item.id <= 0 ? {} : { checked };
-              const element = this.getItemIcon(item, isEdit || item.id <= 0);
-              const sharedButton =
-                isRecycleBin || isEdit || item.id <= 0
-                  ? null
-                  : this.getSharedButton();
-              const displayShareButton =
-                widthProp < 500 ? "26px" : isRecycleBin ? "38px" : "96px";
-              let classNameProp =
-                isFolder && item.access < 2 && !isRecycleBin
-                  ? { className: " dropable" }
-                  : { className: "" };
+          <Consumer>
+            {(context) => (
+              <RowContainer draggable useReactWindow={false}>
+                {items.map((item) => {
+                  const { checked, isFolder, value, contextOptions } = item;
+                  const sectionWidth = context.sectionWidth;
+                  const isEdit =
+                    !!fileAction.type &&
+                    editingId === item.id &&
+                    item.fileExst === fileAction.extension;
+                  const contextOptionsProps =
+                    !isEdit && contextOptions && contextOptions.length > 0
+                      ? {
+                          contextOptions: this.getFilesContextOptions(
+                            contextOptions,
+                            item
+                          ),
+                        }
+                      : {};
+                  const checkedProps =
+                    isEdit || item.id <= 0 ? {} : { checked };
+                  const element = this.getItemIcon(
+                    item,
+                    isEdit || item.id <= 0
+                  );
+                  const sharedButton =
+                    isRecycleBin || isEdit || item.id <= 0 || sectionWidth < 500
+                      ? null
+                      : this.getSharedButton();
+                  const displayShareButton =
+                    sectionWidth < 500
+                      ? "26px"
+                      : isRecycleBin
+                      ? "38px"
+                      : "96px";
+                  let classNameProp =
+                    isFolder && item.access < 2 && !isRecycleBin
+                      ? { className: " dropable" }
+                      : { className: "" };
 
-              if (item.draggable) classNameProp.className += " draggable";
+                  if (item.draggable) classNameProp.className += " draggable";
 
-              return (
-                <DragAndDrop
-                  {...classNameProp}
-                  onDrop={this.onDrop.bind(this, item)}
-                  onMouseDown={this.onMouseDown}
-                  dragging={dragging && isFolder && item.access < 2}
-                  key={`dnd-key_${item.id}`}
-                  {...contextOptionsProps}
-                  value={value}
-                >
-                  <SimpleFilesRow
-                    widthProp={widthProp}
-                    key={item.id}
-                    data={item}
-                    element={element}
-                    contentElement={sharedButton}
-                    onSelect={this.onContentRowSelect}
-                    editing={editingId}
-                    {...checkedProps}
-                    {...contextOptionsProps}
-                    needForUpdate={this.needForUpdate}
-                    selectItem={this.onSelectItem.bind(this, item)}
-                    contextButtonSpacerWidth={displayShareButton}
-                  >
-                    <FilesRowContent
-                      widthProp={widthProp}
-                      isMobile={isMobile}
-                      item={item}
-                      viewer={viewer}
-                      culture={settings.culture}
-                      onEditComplete={this.onEditComplete}
-                      onMediaFileClick={this.onMediaFileClick}
-                      onClickFavorite={this.onClickFavorite}
-                      openDocEditor={this.openDocEditor}
-                    />
-                  </SimpleFilesRow>
-                </DragAndDrop>
-              );
-            })}
-          </RowContainer>
+                  return (
+                    <DragAndDrop
+                      {...classNameProp}
+                      onDrop={this.onDrop.bind(this, item)}
+                      onMouseDown={this.onMouseDown}
+                      dragging={dragging && isFolder && item.access < 2}
+                      key={`dnd-key_${item.id}`}
+                      {...contextOptionsProps}
+                      value={value}
+                    >
+                      <SimpleFilesRow
+                        sectionWidth={sectionWidth}
+                        key={item.id}
+                        data={item}
+                        element={element}
+                        contentElement={sharedButton}
+                        onSelect={this.onContentRowSelect}
+                        editing={editingId}
+                        {...checkedProps}
+                        {...contextOptionsProps}
+                        needForUpdate={this.needForUpdate}
+                        selectItem={this.onSelectItem.bind(this, item)}
+                        contextButtonSpacerWidth={displayShareButton}
+                      >
+                        <FilesRowContent
+                          sectionWidth={sectionWidth}
+                          isMobile={isMobile}
+                          item={item}
+                          viewer={viewer}
+                          culture={settings.culture}
+                          onEditComplete={this.onEditComplete}
+                          onMediaFileClick={this.onMediaFileClick}
+                          onClickFavorite={this.onClickFavorite}
+                          openDocEditor={this.openDocEditor}
+                        />
+                      </SimpleFilesRow>
+                    </DragAndDrop>
+                  );
+                })}
+              </RowContainer>
+            )}
+          </Consumer>
         )}
         {playlist.length > 0 && mediaViewerVisible && (
           <MediaViewer
@@ -1759,6 +1843,7 @@ const mapStateToProps = (state) => {
     viewAs: getViewAs(state),
     viewer: getCurrentUser(state),
     tooltipValue: getTooltipLabel(state),
+    iconOfDraggedFile: getIconOfDraggedFile(state)(state),
   };
 };
 
