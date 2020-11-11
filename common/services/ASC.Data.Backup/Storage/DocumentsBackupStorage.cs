@@ -32,7 +32,6 @@ using ASC.Core;
 using ASC.Data.Storage;
 using ASC.Files.Core;
 using ASC.Files.Core.Data;
-//using File = ASC.Files.Core.File;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -140,14 +139,22 @@ namespace ASC.Data.Backup.Storage
                 throw new FileNotFoundException("Folder not found.");
             }
 
-            using var source = File.OpenRead(localPath);
+            var bytes = File.ReadAllBytes(localPath);
             var newFile = ServiceProvider.GetService<File<T>>();
             newFile.Title = Path.GetFileName(localPath);
             newFile.FolderID = folder.ID;
-            newFile.ContentLength = source.Length;
-            var ChunkedUploadSession = fileDao.CreateUploadSession(newFile, 1000);
-            ChunkedUploadSession.UseChunks = true;
-            var file = fileDao.UploadChunk(ChunkedUploadSession, source, 1024);
+            newFile.ContentLength = bytes.Length;
+            var ChunkedUploadSession = fileDao.CreateUploadSession(newFile, bytes.Length);
+            File<T> file = null;
+            var lenght = 10000000;
+            for(int i = 0; i * lenght < bytes.Length; i++) 
+            {
+                var theMemStream = new MemoryStream();
+                var lenghtChunk = bytes.Length - (i * lenght) > lenght ? lenght : bytes.Length - i * lenght;
+                theMemStream.Write(bytes, i * lenght, lenghtChunk);
+                theMemStream.Position = 0;
+                file = fileDao.UploadChunk(ChunkedUploadSession, theMemStream, lenghtChunk);
+            }
             return file.ID;
         }
 

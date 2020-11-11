@@ -37,7 +37,6 @@ using ASC.Api.Core;
 using ASC.Api.Utils;
 using ASC.Common;
 using ASC.Core;
-using ASC.Core.Common.Configuration;
 using ASC.Core.Users;
 using ASC.FederatedLogin.Helpers;
 using ASC.FederatedLogin.LoginProviders;
