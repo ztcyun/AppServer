@@ -1,0 +1,15 @@
+mysqld
+kafka
+kafka_zookeeper
+api
+api_system
+urlshortener
+thumbnails
+studio_notify
+notify
+people
+files
+files_service
+studio
+backup
+nginx

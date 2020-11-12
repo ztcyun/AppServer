@@ -1,0 +1,13 @@
+[Unit]
+Description=AppServer-mysql
+
+[Service]
+PIDFile=/var/mysqld/mysqld.pid
+Type=simple
+user=mysql
+ExecStart=/usr/bin/pidproxy /var/mysqld/mysqld.pid /usr/bin/mysqld_safe
+TimeoutSec=300
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

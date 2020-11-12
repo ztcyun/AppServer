@@ -1,0 +1,15 @@
+[Unit]
+Description=AppServer-files
+
+[Service]
+PIDFile=/run/appserver/appserver-files.pid
+Type=simple
+user=root
+WorkingDirectory=/var/www/products/ASC.Files/server/
+ExecStart=/snap/bin/dotnet /var/www/products/ASC.Files/server/ASC.Files.dll --urls=http://0.0.0.0:5007 \
+--pathToConf=/app/onlyoffice/config/ --$STORAGE_ROOT=/app/onlyoffice/data/  --log:dir=/var/log/onlyoffice/ --log:name=files --ENVIRONMENT=test
+TimeoutSec=300
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

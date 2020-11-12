@@ -1,0 +1,15 @@
+[Unit]
+Description=AppServer-people
+
+[Service]
+PIDFile=/run/appserver/appserver-people.pid
+Type=simple
+user=root
+WorkingDirectory=/var/www/products/ASC.People/server/
+ExecStart=/snap/bin/dotnet /var/www/products/ASC.People/server/ASC.People.dll --urls=http://0.0.0.0:5004 \
+--pathToConf=/app/onlyoffice/config/  --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice/ --log:name=people --ENVIRONMENT=test
+TimeoutSec=300
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

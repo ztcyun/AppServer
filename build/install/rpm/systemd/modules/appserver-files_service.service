@@ -1,0 +1,16 @@
+[Unit]
+Description=AppServer-files_service
+
+[Service]
+PIDFile=/run/appserver/appserver-files_service.pid
+Type=simple
+user=root
+WorkingDirectory=/var/www/products/ASC.Files/service/
+ExecStart=/snap/bin/dotnet /var/www/products/ASC.Files/service/ASC.Files.Service.dll --urls=http://0.0.0.0:5009 \
+--pathToConf=/app/onlyoffice/config/  --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice/ --log:name=filesservice \
+--core:products:folder=/var/www/products --core:products:subfolder=server --ENVIRONMENT=test
+TimeoutSec=300
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

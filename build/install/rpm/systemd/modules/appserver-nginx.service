@@ -1,0 +1,15 @@
+[Unit]
+Description=AppServer-nginx
+StartLimitBurst=5
+
+[Service]
+PIDFile=/run/appserver/appserver-nginx.pid
+Type=simple
+user=root
+WorkingDirectory=/var/www/studio/backup/
+ExecStart=/usr/sbin/nginx -g "daemon off;"
+TimeoutSec=300
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
