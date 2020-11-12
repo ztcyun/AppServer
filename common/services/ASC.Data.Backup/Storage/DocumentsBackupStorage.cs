@@ -46,6 +46,7 @@ namespace ASC.Data.Backup.Storage
         private IDaoFactory DaoFactory { get; set; }
         private StorageFactory StorageFactory { get; set; }
         private IServiceProvider ServiceProvider { get; }
+        private int lenghtChunk = 10 * 1024 * 1024;
 
         public DocumentsBackupStorage(
             TenantManager tenantManager,
@@ -139,21 +140,23 @@ namespace ASC.Data.Backup.Storage
                 throw new FileNotFoundException("Folder not found.");
             }
 
-            var bytes = File.ReadAllBytes(localPath);
+            
             var newFile = ServiceProvider.GetService<File<T>>();
             newFile.Title = Path.GetFileName(localPath);
             newFile.FolderID = folder.ID;
-            newFile.ContentLength = bytes.Length;
-            var ChunkedUploadSession = fileDao.CreateUploadSession(newFile, bytes.Length);
             File<T> file = null;
-            var lenght = 10000000;
-            for(int i = 0; i * lenght < bytes.Length; i++) 
+            
+            using var stream = File.OpenRead(localPath);
+            var buffer = new byte[lenghtChunk];
+            newFile.ContentLength = stream.Length;
+            var chunkedUploadSession = fileDao.CreateUploadSession(newFile, stream.Length);
+            var bytesRead = 0;
+            while ((bytesRead = stream.Read(buffer, 0, lenghtChunk)) > 0)
             {
-                var theMemStream = new MemoryStream();
-                var lenghtChunk = bytes.Length - (i * lenght) > lenght ? lenght : bytes.Length - i * lenght;
-                theMemStream.Write(bytes, i * lenght, lenghtChunk);
+                using var theMemStream = new MemoryStream();
+                theMemStream.Write(buffer, 0, bytesRead);
                 theMemStream.Position = 0;
-                file = fileDao.UploadChunk(ChunkedUploadSession, theMemStream, lenghtChunk);
+                file = fileDao.UploadChunk(chunkedUploadSession, theMemStream, bytesRead);
             }
             return file.ID;
         }
