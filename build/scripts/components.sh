@@ -1,2 +1,5 @@
-yarn install --cwd web/ASC.Web.Components --frozen-lockfile
-yarn link --cwd packages/asc-web-components
+cd web/ASC.Web.Components
+yarn install --immutable
+yarn run build
+yarn link ../../packages/asc-web-components
+cd ../../

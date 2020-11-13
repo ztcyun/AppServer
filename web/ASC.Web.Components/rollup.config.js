@@ -75,7 +75,7 @@ const configureRollupPlugins = (options = {}) => [
 
 const deps = Object.keys(pkg.dependencies || {});
 const peerDeps = Object.keys(pkg.peerDependencies || {});
-const defaultExternal = ["stream", ...deps.concat(peerDeps)];
+const defaultExternal = ["stream", "react-dom/server","lodash/throttle","lodash/isEmpty","lodash/isEqual","lodash/differenceWith","lodash/uniqueId", ...deps.concat(peerDeps)];
 
 // We need to define 2 separate configs (`esm` and `cjs`) so that each can be
 // further customized.
