@@ -128,7 +128,6 @@
     "resize-image": "^0.1.0"
   },
   "resolutions": {
-    "js-yaml": "3.13.1",
-    "asc-web-components": "portal:/C:/Git/AppServer/packages/asc-web-components"
+    "js-yaml": "3.13.1"
   }
 }
