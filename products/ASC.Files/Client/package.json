@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "/products/files",
   "dependencies": {
+    "@csstools/normalize.css": "11.0.1",
     "@welldone-software/why-did-you-render": "^4.2.5",
     "asc-web-common": "file:../../../packages/asc-web-common",
     "asc-web-components": "file:../../../packages/asc-web-components",
@@ -68,5 +69,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "asc-web-common": "portal:../../../packages/asc-web-common",
+    "asc-web-components": "portal:../../../packages/asc-web-components"
   }
 }

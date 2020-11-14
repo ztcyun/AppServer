@@ -43,7 +43,7 @@
   "scripts": {
     "analyse": "node analyse.js",
     "start": "react-app-rewired start",
-    "build": "rimraf ./build && react-app-rewired build && npm run build-sw && npm run clean-cra-sw",
+    "build": "rimraf ./build && react-app-rewired build && yarn run build-sw && yarn run clean-cra-sw",
     "build-sw": "node ./src/sw-build.js",
     "clean-cra-sw": "rm -f build/precache-manifest.*.js && rm -f build/service-worker.js",
     "test": "cross-env CI=true react-app-rewired test --env=jsdom",
@@ -64,5 +64,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "asc-web-components": "portal:../../packages/asc-web-components",
+    "asc-web-common": "portal:../../packages/asc-web-common"
   }
 }
