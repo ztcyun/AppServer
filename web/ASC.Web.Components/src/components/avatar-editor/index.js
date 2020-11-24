@@ -12,6 +12,10 @@ const StyledButtonsWrapper = styled.div`
   min-width: 208px;
   max-width: 300px;
   width: max-content;
+
+  .avatar-cancel-button {
+    padding: 0 16px;
+  }
 `;
 
 class AvatarEditor extends React.Component {
@@ -219,6 +223,7 @@ class AvatarEditor extends React.Component {
             onClick={this.onSaveButtonClick}
           />
           <Button
+            className="avatar-cancel-button"
             key="CancelBtn"
             label={cancelButtonLabel}
             primary={false}
