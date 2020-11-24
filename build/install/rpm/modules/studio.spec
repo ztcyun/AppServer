@@ -17,14 +17,37 @@ License: OtherLicense
 
 %build
 
+git clone https://github.com/ONLYOFFICE/AppServer.git %{_builddir}/app/onlyoffice/src/ && \
+cd %{_builddir}/app/onlyoffice/src/ && \
+git checkout develop && \
+git pull
+
+cd %{_builddir}/app/onlyoffice/src/ && \
+yarn install --cwd web/ASC.Web.Components --frozen-lockfile > build/ASC.Web.Components.log && \
+yarn pack --cwd web/ASC.Web.Components
+
+dotnet restore ASC.Web.sln --configfile .nuget/NuGet.Config && \
+dotnet build -r linux-x64 ASC.Web.sln && \
+cd products/ASC.People/Server && \
+dotnet -d publish --no-build --self-contained -r linux-x64 -o %{_builddir}/var/www/products/ASC.People/server && \
+cd ../../../ && \
+cd products/ASC.Files/Server && \
+dotnet -d publish --no-build --self-contained -r linux-x64 -o %{_builddir}/var/www/products/ASC.Files/server && \
+cp -avrf DocStore %{_builddir}/var/www/products/ASC.Files/server/ && \
+cd ../../../ && \
+cd web/ASC.Web.Studio && \
+dotnet -d publish --no-build --self-contained -r linux-x64 -o %{_builddir}/var/www/studio/server
+
 %install
 
 #install studio
 mkdir -p "%{buildroot}/var/www/studio/server/"
-cp -r %{_builddir}/common/docker-entrypoint.sh "%{buildroot}/var/www/studio/server/"
-cp -r %{_builddir}/common/studio/server/* "%{buildroot}/var/www/studio/server/"
-cp -r %{_builddir}/common/products/ASC.People/server/ASC.People.dll "%{buildroot}/var/www/products/ASC.People/server/"
-cp -r %{_builddir}/common/products/ASC.Files/server/ASC.Files*.dll "%{buildroot}/var/www/products/ASC.Files/server/"
+mkdir -p "%{buildroot}/var/www/products/ASC.People/server/"
+mkdir -p "%{buildroot}/var/www/products/ASC.Files/server/"
+### cp -r %{_builddir}/common/docker-entrypoint.sh "%{buildroot}/var/www/studio/server/"
+cp -r %{_builddir}/var/www/studio/server/* "%{buildroot}/var/www/studio/server/"
+cp -r %{_builddir}/var/www/products/ASC.People/server/ASC.People.dll "%{buildroot}/var/www/products/ASC.People/server/"
+cp -r %{_builddir}/var/www/products/ASC.Files/server/ASC.Files*.dll "%{buildroot}/var/www/products/ASC.Files/server/"
 
 %clean
 
