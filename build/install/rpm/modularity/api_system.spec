@@ -1,6 +1,6 @@
 %define __strip    /bin/true
 Summary: AppServer
-Name: onlyoffice-appserver-config
+Name: onlyoffice-appserver-api_system
 Version: 0.0.0
 Release: 0
 Group: Applications/Internet
@@ -17,19 +17,13 @@ License: OtherLicense
 
 %build
 
-git clone https://github.com/ONLYOFFICE/AppServer.git %{_builddir}/app/onlyoffice/src/ && \
-cd %{_builddir}/app/onlyoffice/src/ && \
-git checkout develop && \
-git pull
-
 %install
-
-#install config
-mkdir -p "%{buildroot}/app/onlyoffice/config/"
-cp -r %{_builddir}/app/onlyoffice/config/* "%{buildroot}/app/onlyoffice/config/"
+#install api_system
+mkdir -p "%{buildroot}/var/www/services/apisystem/"
+cp -r %{_builddir}/common/docker-entrypoint.sh "%{buildroot}/var/www/services/apisystem/"
+cp -r %{_builddir}/common/apisystem/* "%{buildroot}/var/www/services/apisystem/"
 
 %clean
-
 
 %files
 
