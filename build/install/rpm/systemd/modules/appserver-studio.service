@@ -6,7 +6,7 @@ PIDFile=/run/appserver/appserver-studio.pid
 Type=simple
 user=root
 WorkingDirectory=/var/www/studio/server/
-ExecStart=/snap/bin/dotnet /var/www/studio/server/ASC.Web.Studio.dll --urls=http://0.0.0.0:5003 \
+ExecStart=/usr/bin/dotnet /var/www/studio/server/ASC.Web.Studio.dll --urls=http://0.0.0.0:5003 \
 --pathToConf=/app/onlyoffice/config/ --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=web --ENVIRONMENT=test
 TimeoutSec=300
 Restart=always

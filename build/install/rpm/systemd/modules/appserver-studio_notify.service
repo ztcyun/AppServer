@@ -6,7 +6,7 @@ PIDFile=/run/appserver/appserver-studio_notify.pid
 Type=simple
 user=root
 WorkingDirectory=/var/www/services/studio.notify/
-ExecStart=/snap/bin/dotnet /var/www/services/studio.notify/ASC.Studio.Notify.dll --urls=http://0.0.0.0:5006 \
+ExecStart=/usr/bin/dotnet /var/www/services/studio.notify/ASC.Studio.Notify.dll --urls=http://0.0.0.0:5006 \
 --pathToConf=/app/onlyoffice/config/ --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=notify.studio \
 --core:products:folder=/var/www/products/ --core:products:subfolder=server --ENVIRONMENT=test
 TimeoutSec=300

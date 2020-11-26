@@ -14,6 +14,6 @@ mkdir $pid_catalog
 
 for i in ${!service_name[@]}; do
 	touch $pid_catalog/appserver-${service_name[i]}.pid
-  echo "Enable ${service_name[i]}"
-  systemctl enable appserver-${service_name[i]}.service
+  echo "Start ${service_name[i]}"
+  systemctl start appserver-${service_name[i]}.service
 done

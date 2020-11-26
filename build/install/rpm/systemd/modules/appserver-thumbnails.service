@@ -5,8 +5,8 @@ Description=AppServer-thumbnails
 PIDFile=/run/appserver/appserver-thumbnails.pid
 Type=simple
 user=root
-WorkingDirectory=/services/thumbnails/service/
-ExecStart=/snap/bin/dotnet /services/thumbnails/service/ASC.Thumbnails.Svc.dll --urls=http://0.0.0.0:5016 \
+WorkingDirectory=/services/thumb/service/
+ExecStart=/usr/bin/dotnet /services/thumb/service/ASC.Thumbnails.Svc.dll --urls=http://0.0.0.0:5016 \
 --pathToConf=/app/onlyoffice/config/ --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=thumbnails
 TimeoutSec=300
 Restart=always

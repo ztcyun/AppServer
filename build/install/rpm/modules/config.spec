@@ -17,11 +17,6 @@ License: OtherLicense
 
 %build
 
-git clone https://github.com/ONLYOFFICE/AppServer.git %{_builddir}/app/onlyoffice/src/ && \
-cd %{_builddir}/app/onlyoffice/src/ && \
-git checkout develop && \
-git pull
-
 %install
 
 #install config

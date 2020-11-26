@@ -10,12 +10,11 @@ systemd_catalog=/etc/systemd/system
 pid_catalog=/run/appserver
 
 for i in ${!service_name[@]}; do
-  echo "STOP service_name ${service_name[i]}"
+  echo "disable service_name ${service_name[i]}"
   systemctl stop appserver-${service_name[i]}.service
+  systemctl disable appserver-${service_name[i]}.service
 done
 rm -rf $systemd_catalog/appserver-*.service 
 rm -rf $pid_catalog
 systemctl daemon-reload
-
-	
-
+systemctl reset-failed

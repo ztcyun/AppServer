@@ -6,7 +6,7 @@ PIDFile=/run/appserver/appserver-notify.pid
 Type=simple
 user=root
 WorkingDirectory=/var/www/services/notify/
-ExecStart=/snap/bin/dotnet /var/www/services/notify/ASC.Notify.dll --urls=http://0.0.0.0:5005 \
+ExecStart=/usr/bin/dotnet /var/www/services/notify/ASC.Notify.dll --urls=http://0.0.0.0:5005 \
 --pathToConf=/app/onlyoffice/config/ --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=notify \
 --core:products:folder=/var/www/products/ --core:products:subfolder=server
 TimeoutSec=300

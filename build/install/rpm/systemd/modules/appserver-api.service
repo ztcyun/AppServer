@@ -6,7 +6,7 @@ PIDFile=/run/appserver/appserver-api.pid
 Type=simple
 user=root
 WorkingDirectory=/var/www/studio/api/
-ExecStart=/snap/bin/dotnet /var/www/studio/api/ASC.Web.Api.dll --urls=http://0.0.0.0:5000 \
+ExecStart=/usr/bin/dotnet /var/www/studio/api/ASC.Web.Api.dll --urls=http://0.0.0.0:5000 \
 --pathToConf=/app/onlyoffice/config/ --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=api --ENVIRONMENT=test
 TimeoutSec=300
 Restart=always

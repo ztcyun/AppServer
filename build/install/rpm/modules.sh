@@ -1,6 +1,6 @@
 #!/bin/bash
 PWD=$(pwd)
-MODULARITY_DIR="$PWD/modularity"
+MODULARITY_DIR="$PWD/modules"
 
 rpmbuild -ba $MODULARITY_DIR/appserver.spec
 rpmbuild -ba $MODULARITY_DIR/api.spec

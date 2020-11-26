@@ -6,7 +6,7 @@ PIDFile=/run/appserver/appserver-urlshortener.pid
 Type=simple
 user=root
 WorkingDirectory=/services/urlshortener/service/
-ExecStart=/snap/bin/dotnet /services/urlshortener/service/ASC.UrlShortener.Svc.dll --urls=http://0.0.0.0:5015 \
+ExecStart=/usr/bin/dotnet /services/urlshortener/service/ASC.UrlShortener.Svc.dll --urls=http://0.0.0.0:5015 \
 --pathToConf=/app/onlyoffice/config/ --$STORAGE_ROOT=/app/onlyoffice/data/ --log:dir=/var/log/onlyoffice --log:name=urlshortener --ENVIRONMENT=test
 TimeoutSec=300
 Restart=always
